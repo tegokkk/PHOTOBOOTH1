@@ -11,16 +11,13 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 if (process.env.NODE_ENV === 'production') {
-  const requiredProductionEnv = ['DATABASE_URL', 'JWT_SECRET', 'FRONTEND_URL', 'UPLOAD_DIR'];
+  const requiredProductionEnv = ['DATABASE_URL', 'JWT_SECRET', 'FRONTEND_URL'];
   const missing = requiredProductionEnv.filter((key) => !process.env[key]);
   if (missing.length > 0) {
     throw new Error(`Missing production environment variables: ${missing.join(', ')}`);
   }
   if (process.env.JWT_SECRET.length < 32) {
     throw new Error('JWT_SECRET must be at least 32 characters in production');
-  }
-  if (!path.isAbsolute(process.env.UPLOAD_DIR)) {
-    throw new Error('UPLOAD_DIR must be an absolute path in production');
   }
 }
 
