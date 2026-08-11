@@ -156,14 +156,16 @@ export function ExportDialog({
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       onClick={() => handleDownloadLocal("png")}
-                      className="px-3 py-3 bg-paper-white text-ink-black border-2 border-ink-black sketch-border-thin hover:bg-surface-container-high active:scale-95 transition-all flex flex-col items-center gap-1 font-label-caps text-xs"
+                      disabled={isProcessing}
+                      className="px-3 py-3 bg-paper-white text-ink-black border-2 border-ink-black sketch-border-thin hover:bg-surface-container-high active:scale-95 transition-all flex flex-col items-center gap-1 font-label-caps text-xs disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <span className="material-symbols-outlined text-xl">image</span>
                       PNG (High Res)
                     </button>
                     <button
                       onClick={() => handleDownloadLocal("jpg")}
-                      className="px-3 py-3 bg-paper-white text-ink-black border-2 border-ink-black sketch-border-thin hover:bg-surface-container-high active:scale-95 transition-all flex flex-col items-center gap-1 font-label-caps text-xs"
+                      disabled={isProcessing}
+                      className="px-3 py-3 bg-paper-white text-ink-black border-2 border-ink-black sketch-border-thin hover:bg-surface-container-high active:scale-95 transition-all flex flex-col items-center gap-1 font-label-caps text-xs disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <span className="material-symbols-outlined text-xl">photo</span>
                       JPG (Kecil)
