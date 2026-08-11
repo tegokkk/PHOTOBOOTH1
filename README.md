@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/tegokkk/RIRI/main/frontend/public/icons/icon-512x512.png" alt="RIRI PHOTOBOOTH login banner" width="200" style="border-radius: 20px;" />
+  <img src="./docs/banner.png" alt="RIRI PHOTOBOOTH login banner" width="100%" style="border-radius: 20px;" />
 </p>
 
 <h1 align="center">RIRI PHOTOBOOTH</h1>
