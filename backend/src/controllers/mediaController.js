@@ -83,21 +83,38 @@ const getMedia = async (req, res) => {
     }
 
     // Serve the file
-    const uploadsDir = path.resolve(process.env.UPLOAD_DIR || path.join(__dirname, '../../uploads'));
-    const filePath = path.resolve(uploadsDir, filename);
-    if (!filePath.startsWith(`${uploadsDir}${path.sep}`)) {
-      return res.status(400).json({ success: false, message: 'Invalid filename' });
+    const supabase = require('../lib/supabase');
+    if (supabase) {
+      // Stream from Supabase Storage
+      const { data, error } = await supabase.storage.from('photos').download(filename);
+      if (error || !data) {
+        return res.status(404).json({ success: false, message: 'File not found on cloud storage' });
+      }
+      
+      res.set('X-Content-Type-Options', 'nosniff');
+      res.set('Cache-Control', 'private, max-age=3600');
+      res.set('Content-Type', data.type);
+      
+      // Convert Blob to buffer and send
+      const arrayBuffer = await data.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      return res.send(buffer);
+    } else {
+      // Local fallback
+      const uploadsDir = path.resolve(process.env.UPLOAD_DIR || path.join(__dirname, '../../uploads'));
+      const filePath = path.resolve(uploadsDir, filename);
+      if (!filePath.startsWith(`${uploadsDir}${path.sep}`)) {
+        return res.status(400).json({ success: false, message: 'Invalid filename' });
+      }
+
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ success: false, message: 'File not found on disk' });
+      }
+
+      res.set('X-Content-Type-Options', 'nosniff');
+      res.set('Cache-Control', 'private, max-age=3600'); 
+      res.sendFile(filePath);
     }
-
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ success: false, message: 'File not found on disk' });
-    }
-
-    // Security headers appropriate to privacy
-    res.set('X-Content-Type-Options', 'nosniff');
-    res.set('Cache-Control', 'private, max-age=3600'); // Cache privately
-
-    res.sendFile(filePath);
   } catch (error) {
     console.error('Media Access Error:', error);
     res.status(500).json({ success: false, message: 'Server error' });

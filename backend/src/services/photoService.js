@@ -153,14 +153,30 @@ const processAndSavePhoto = async ({ frameId, compositeImageBase64, userId, user
   const filePath = path.join(uploadsDir, fileName);
   const guestAccessToken = userId ? null : crypto.randomBytes(32).toString('hex');
 
-  if (!fs.existsSync(uploadsDir)) {
-    await fsPromises.mkdir(uploadsDir, { recursive: true });
-  }
-
+  const supabase = require('../lib/supabase');
   let fileWritten = false;
   try {
-    await fsPromises.writeFile(filePath, imageBuffer);
-    fileWritten = true;
+    if (supabase) {
+      const { data, error } = await supabase.storage
+        .from('photos')
+        .upload(fileName, imageBuffer, {
+          contentType: actualMime === 'jpeg' ? 'image/jpeg' : 'image/png',
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        throw new Error('Supabase Storage Error: ' + error.message);
+      }
+      fileWritten = true;
+    } else {
+      // Fallback for local testing without Supabase
+      if (!fs.existsSync(uploadsDir)) {
+        await fsPromises.mkdir(uploadsDir, { recursive: true });
+      }
+      await fsPromises.writeFile(filePath, imageBuffer);
+      fileWritten = true;
+    }
 
     // Use /api/media/ path instead of static /uploads/
     const imageUrl = `/api/media/${fileName}`;
@@ -183,8 +199,10 @@ const processAndSavePhoto = async ({ frameId, compositeImageBase64, userId, user
 
     return guestAccessToken ? { ...newPhoto, guestAccessToken } : newPhoto;
   } catch (error) {
-    if (fileWritten && fs.existsSync(filePath)) {
+    if (fileWritten && !supabase && fs.existsSync(filePath)) {
       await fsPromises.unlink(filePath).catch(console.error);
+    } else if (fileWritten && supabase) {
+      await supabase.storage.from('photos').remove([fileName]).catch(console.error);
     }
     throw error;
   }
@@ -270,13 +288,18 @@ const permanentDeletePhoto = async (id, userId, isAdmin) => {
 
   if (photo.compositeImageUrl) {
     const fileName = photo.compositeImageUrl.split('/').pop();
-    const uploadsDir = path.resolve(process.env.UPLOAD_DIR || path.join(__dirname, '../../uploads'));
-    const filePath = path.resolve(uploadsDir, fileName);
-    if (!filePath.startsWith(`${uploadsDir}${path.sep}`)) {
-      throw new Error('Invalid media path');
-    }
-    if (fs.existsSync(filePath)) {
-      await fsPromises.unlink(filePath).catch(console.error);
+    const supabase = require('../lib/supabase');
+    if (supabase) {
+      await supabase.storage.from('photos').remove([fileName]).catch(console.error);
+    } else {
+      const uploadsDir = path.resolve(process.env.UPLOAD_DIR || path.join(__dirname, '../../uploads'));
+      const filePath = path.resolve(uploadsDir, fileName);
+      if (!filePath.startsWith(`${uploadsDir}${path.sep}`)) {
+        throw new Error('Invalid media path');
+      }
+      if (fs.existsSync(filePath)) {
+        await fsPromises.unlink(filePath).catch(console.error);
+      }
     }
   }
 

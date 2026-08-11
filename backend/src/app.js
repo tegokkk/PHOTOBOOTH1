@@ -137,20 +137,23 @@ app.use((err, req, res, next) => {
   });
 });
 
-const server = app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
-const shutdown = async (signal) => {
-  console.log(`Received ${signal}, shutting down`);
-  server.close(async () => {
-    const prisma = require('./lib/prisma');
-    await prisma.$disconnect();
-    process.exit(0);
+// Only start the server if we are NOT in a Vercel serverless environment
+if (!process.env.VERCEL) {
+  const server = app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
   });
-};
 
-process.on('SIGTERM', () => shutdown('SIGTERM'));
-process.on('SIGINT', () => shutdown('SIGINT'));
+  const shutdown = async (signal) => {
+    console.log(`Received ${signal}, shutting down`);
+    server.close(async () => {
+      const prisma = require('./lib/prisma');
+      await prisma.$disconnect();
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
+}
 
 module.exports = app;
