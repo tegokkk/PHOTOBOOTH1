@@ -6,6 +6,11 @@ const getFrames = async (req, res) => {
       where: {
         isActive: true
       },
+      include: {
+        slots: {
+          orderBy: { zIndex: 'asc' }
+        }
+      },
       orderBy: {
         createdAt: 'asc'
       }
@@ -27,7 +32,12 @@ const getFrameById = async (req, res) => {
   try {
     const { id } = req.params;
     const frame = await prisma.frame.findUnique({
-      where: { id }
+      where: { id },
+      include: {
+        slots: {
+          orderBy: { zIndex: 'asc' }
+        }
+      }
     });
 
     if (!frame) {

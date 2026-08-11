@@ -1,0 +1,231 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-on-error-container: #93000a;
+  --color-surface-container-low: #fff0ef;
+  --color-surface-variant: #fddbd8;
+  --color-on-primary-fixed: #410004;
+  --color-tertiary-fixed-dim: #78d1ff;
+  --color-background: #fff8f7;
+  --color-surface-container-highest: #fddbd8;
+  --color-primary: #bd001b;
+  --color-ink-black: #0F0F0F;
+  --color-on-secondary-fixed: #1b1b1b;
+  --color-on-error: #ffffff;
+  --color-tertiary-fixed: #c2e8ff;
+  --color-secondary-fixed-dim: #c6c6c6;
+  --color-on-secondary: #ffffff;
+  --color-error: #ba1a1a;
+  --color-on-secondary-fixed-variant: #474747;
+  --color-on-primary-fixed-variant: #930012;
+  --color-on-secondary-container: #646464;
+  --color-secondary: #5e5e5e;
+  --color-on-tertiary-fixed-variant: #004d68;
+  --color-on-background: #291715;
+  --color-surface-tint: #c0001b;
+  --color-on-tertiary-fixed: #001e2c;
+  --color-outline-variant: #e7bdb9;
+  --color-surface: #fff8f7;
+  --color-secondary-fixed: #e2e2e2;
+  --color-surface-container-high: #ffe2df;
+  --color-on-primary: #ffffff;
+  --color-surface-container: #ffe9e7;
+  --color-inverse-on-surface: #ffedeb;
+  --color-on-primary-container: #fffdff;
+  --color-on-surface: #291715;
+  --color-error-container: #ffdad6;
+  --color-inverse-surface: #402b29;
+  --color-paper-white: #FFFFFF;
+  --color-tertiary-container: #007ea8;
+  --color-outline: #926e6b;
+  --color-surface-container-lowest: #ffffff;
+  --color-on-surface-variant: #5d3f3d;
+  --color-on-tertiary: #ffffff;
+  --color-blueprint-blue: #2B59FF;
+  --color-primary-fixed: #ffdad7;
+  --color-secondary-container: #e2e2e2;
+  --color-primary-container: #e61d2b;
+  --color-on-tertiary-container: #fdfdff;
+  --color-tertiary: #006486;
+  --color-primary-fixed-dim: #ffb3ad;
+  --color-surface-dim: #f4d2cf;
+  --color-surface-bright: #fff8f7;
+  --color-curtain-red: #E61D2B;
+  --color-inverse-primary: #ffb3ad;
+
+  --radius: 0.125rem;
+  --radius-lg: 0.25rem;
+  --radius-xl: 0.5rem;
+  --radius-full: 0.75rem;
+
+  --spacing-stack-md: 1rem;
+  --spacing-stack-sm: 0.5rem;
+  --spacing-gutter: 1.5rem;
+  --spacing-margin-page: 2rem;
+  --spacing-touch-target: 3rem;
+
+  --font-body-md: "Courier Prime", monospace;
+  --font-label-caps: "Courier Prime", monospace;
+  --font-headline-lg-mobile: "Bricolage Grotesque", sans-serif;
+  --font-interactive-btn: "Bricolage Grotesque", sans-serif;
+  --font-headline-lg: "Bricolage Grotesque", sans-serif;
+  --font-headline-xl: "Bricolage Grotesque", sans-serif;
+  
+  --font-sans: var(--font-headline-lg-mobile);
+}
+
+@layer base {
+  * {
+    @apply border-ink-black outline-ink-black/50;
+  }
+  body {
+    @apply bg-background text-on-background font-body-md selection:bg-curtain-red selection:text-paper-white;
+  }
+  html {
+    @apply font-body-md;
+  }
+}
+
+/* Z-INDEX LAYERING GUIDE:
+   - base: 0 (konten normal)
+   - floating: 40 (tape corners, element melayang)
+   - header: 50 (navbar, sticky controls)
+   - modal: 100 (dialogs, popups)
+   - toast: 150 (notifications, alerts)
+*/
+
+/* Custom sketch-like styles */
+.sketch-border {
+    border: 3px solid var(--color-ink-black);
+    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+}
+.sketch-border-thin {
+    border: 2px solid var(--color-ink-black);
+    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+}
+.sketchy-border {
+    border: 3px solid var(--color-ink-black);
+    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+}
+.sketchy-border-alt {
+    border: 2px solid var(--color-ink-black);
+    border-radius: 15px 225px 15px 255px/255px 15px 225px 15px;
+}
+.hard-shadow {
+    box-shadow: 4px 4px 0px 0px var(--color-ink-black);
+}
+.hard-shadow:active {
+    box-shadow: 1px 1px 0px 0px var(--color-ink-black);
+    transform: translate(3px, 3px);
+}
+.hard-shadow-lg {
+    box-shadow: 8px 8px 0px 0px var(--color-ink-black);
+}
+.tape-corner-tl {
+    position: absolute;
+    top: -10px;
+    left: -15px;
+    width: 60px;
+    height: 25px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(15,15,15,0.3);
+    transform: rotate(-15deg);
+    z-index: 40;
+    backdrop-filter: blur(2px);
+}
+.tape-corner-br {
+    position: absolute;
+    bottom: -10px;
+    right: -15px;
+    width: 60px;
+    height: 25px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(15,15,15,0.3);
+    transform: rotate(-10deg);
+    z-index: 40;
+    backdrop-filter: blur(2px);
+}
+.wiggle-hover:hover, .hover-wiggle:hover {
+    animation: wiggle 0.3s ease-in-out infinite alternate;
+}
+@keyframes wiggle {
+    0% { transform: rotate(-2deg) scale(1.02); }
+    100% { transform: rotate(2deg) scale(1.02); }
+}
+.jiggle-active:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px 0px var(--color-ink-black) !important;
+}
+
+/* Loading scribble animation */
+.scribble-loader {
+    display: inline-block;
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+.scribble-loader svg {
+    animation: rotate 2s linear infinite;
+}
+.scribble-loader circle {
+    stroke: var(--color-ink-black);
+    stroke-width: 4;
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+    animation: dash 1.5s ease-in-out infinite, color 6s ease-in-out infinite;
+    stroke-linecap: round;
+}
+@keyframes rotate {
+    100% { transform: rotate(360deg); }
+}
+@keyframes dash {
+    0% { stroke-dasharray: 1, 200; stroke-dashoffset: 0; }
+    50% { stroke-dasharray: 89, 200; stroke-dashoffset: -35px; }
+    100% { stroke-dasharray: 89, 200; stroke-dashoffset: -124px; }
+}
+
+/* Safe Area Insets for Mobile Notches */
+body {
+  /* Handle iPhone Notch and Android cutouts */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  /* Make sure background extends behind the notch */
+  background-color: var(--color-paper-white);
+}
+
+/* Base minimum tap target for accessibility */
+button, 
+a, 
+input[type="button"], 
+input[type="submit"], 
+input[type="reset"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Hide scrollbar for clean UI but allow scrolling */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

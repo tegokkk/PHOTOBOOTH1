@@ -24,7 +24,11 @@ model Frame {
   deletedAt      DateTime? @map("deleted_at")
 
   photos Photo[]
+  slots  FrameSlot[]
 
+  @@index([category])
+  @@index([isActive])
+  @@index([isPremium])
   @@map("frames")
 }
 
@@ -38,6 +42,7 @@ model Photo {
   height            Int?
   fileSize          Int?      @map("file_size")
   metadata          String?   // JSON string
+  guestAccessTokenHash String? @map("guest_access_token_hash")
   source            String?
   isPublic          Boolean   @default(false) @map("is_public")
   downloadCount     Int       @default(0) @map("download_count")
@@ -45,9 +50,15 @@ model Photo {
   createdAt         DateTime  @default(now()) @map("created_at")
   deletedAt         DateTime? @map("deleted_at")
 
-  frame Frame? @relation(fields: [frameId], references: [id])
-  user  User?  @relation(fields: [userId], references: [id])
+  frame      Frame?      @relation(fields: [frameId], references: [id])
+  user       User?       @relation(fields: [userId], references: [id])
+  shareLinks ShareLink[]
 
+  @@index([userId])
+  @@index([frameId])
+  @@index([createdAt])
+  @@index([isPublic])
+  @@index([deletedAt])
   @@map("photos")
 }
 
@@ -63,7 +74,72 @@ model User {
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at")
   deletedAt         DateTime? @map("deleted_at")
+  
   photos            Photo[]
+  preferences       UserPreference?
+  auditLogs         AuditLog[]
+  shareLinks        ShareLink[]
 
   @@map("users")
+}
+
+model FrameSlot {
+  id          String   @id @default(uuid())
+  frameId     String   @map("frame_id")
+  x           Float    // Koordinat X normalisasi 0-1
+  y           Float    // Koordinat Y normalisasi 0-1
+  width       Float    // Lebar normalisasi 0-1
+  height      Float    // Tinggi normalisasi 0-1
+  rotation    Float    @default(0) // Derajat rotasi
+  zIndex      Int      @default(0) @map("z_index")
+  
+  frame       Frame    @relation(fields: [frameId], references: [id], onDelete: Cascade)
+
+  @@index([frameId])
+  @@map("frame_slots")
+}
+
+model ShareLink {
+  id          String   @id @default(uuid())
+  photoId     String   @map("photo_id")
+  createdById String?  @map("created_by_id")
+  token       String   @unique // URL token
+  password    String?  // Optional password (hashed)
+  expiresAt   DateTime? @map("expires_at")
+  accessCount Int      @default(0) @map("access_count")
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  photo       Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([photoId])
+  @@index([token])
+  @@map("share_links")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?  @map("user_id")
+  action      String   // misal: 'LOGIN_FAILED', 'PHOTO_DELETED'
+  details     String?  // JSON string
+  ipAddress   String?  @map("ip_address")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([action])
+  @@map("audit_logs")
+}
+
+model UserPreference {
+  id               String   @id @default(uuid())
+  userId           String   @unique @map("user_id")
+  receiveEmails    Boolean  @default(true) @map("receive_emails")
+  highQualityExport Boolean @default(true) @map("high_quality_export")
+  updatedAt        DateTime @default(now()) @updatedAt @map("updated_at")
+
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
 }

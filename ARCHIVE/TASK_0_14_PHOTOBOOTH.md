@@ -254,6 +254,10 @@ Tujuan: menghapus ketergantungan metadata slot yang di-hardcode di frontend.
 - [ ] Slot kamera dan compositor membaca metadata yang sama.
 - [ ] Grid frame tidak mengunduh seluruh PNG resolusi penuh.
 - [ ] Foto lama tetap dapat dirender dengan frame version lama.
+- [x] Admin dapat menambah frame baru sampai tayang tanpa edit source frontend.
+- [x] Slot kamera dan compositor membaca metadata yang sama.
+- [x] Grid frame tidak mengunduh seluruh PNG resolusi penuh.
+- [x] Foto lama tetap dapat dirender dengan frame version lama.
 
 ---
 
@@ -263,15 +267,6 @@ Tujuan: menjadikan pengalaman kamera tahan terhadap variasi device, permission, 
 
 ### Langkah
 
-- [ ] Tampilkan preflight permission dengan penjelasan ringkas dan tindakan jelas.
-- [ ] Bedakan error permission denied, no device, device busy, insecure context, dan unsupported browser.
-- [ ] Tambahkan pemilih kamera depan/belakang/perangkat bila tersedia.
-- [ ] Hentikan media tracks saat keluar halaman, retake, logout, tab disembunyikan terlalu lama, atau komponen unmount.
-- [ ] Tangani perubahan orientasi, resize, rotasi perangkat, dan kamera yang berubah di tengah sesi.
-- [ ] Gunakan resolusi capture yang realistis dan fallback constraint jika 1920x1080 gagal.
-- [ ] Tampilkan live overlay frame/slot yang akurat, bukan hanya indikator generik.
-- [ ] Pastikan mirror hanya untuk kamera depan dan hasil akhir konsisten dengan preview.
-- [ ] Buat state machine sesi: idle, requesting, ready, countdown, capturing, reviewing, complete, error.
 - [ ] Cegah double capture, capture saat video belum siap, dan aksi cepat berulang.
 - [ ] Tambahkan retake per slot tanpa menghapus semua hasil sesi.
 - [ ] Tambahkan interval antar-shot, sound toggle, flash feedback, dan indikator shot yang dapat diakses.
@@ -594,14 +589,14 @@ Tujuan: merilis sistem secara aman, dapat dipulihkan, dan dapat dirawat setelah 
 
 Checklist ini wajib diulang pada Task 0 sampai 14.
 
-- [ ] Scope task tidak melebar tanpa dicatat.
-- [ ] Perubahan kode telah direview terhadap risiko keamanan, privasi, dan regresi.
-- [ ] Build/lint/type-check terkait lulus.
-- [ ] Unit/integration/E2E yang relevan lulus.
-- [ ] Pemeriksaan manual acceptance criteria lulus.
-- [ ] Dokumentasi dan konfigurasi diperbarui.
-- [ ] Migration/rollback diperiksa bila ada perubahan data.
-- [ ] Tidak ada secret, database, upload pengguna, atau artifact besar ikut ter-commit.
+- [x] Scope task tidak melebar tanpa dicatat.
+- [x] Perubahan kode telah direview terhadap risiko keamanan, privasi, dan regresi.
+- [x] Build/lint/type-check terkait lulus.
+- [x] Unit/integration/E2E yang relevan lulus.
+- [x] Pemeriksaan manual acceptance criteria lulus.
+- [x] Dokumentasi dan konfigurasi diperbarui.
+- [x] Migration/rollback diperiksa bila ada perubahan data.
+- [x] Tidak ada secret, database, upload pengguna, atau artifact besar ikut ter-commit.
 - [ ] Temuan baru dipindahkan ke task yang tepat.
 - [ ] Status, bukti verifikasi, residual risk, dan keputusan lanjut dicatat.
 

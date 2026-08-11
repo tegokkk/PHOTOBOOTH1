@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js 20
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+        
+    - name: Backend - Install dependencies
+      working-directory: ./backend
+      run: npm ci
+
+    - name: Backend - Run Prisma Generate
+      working-directory: ./backend
+      run: npx prisma generate
+
+    - name: Backend - Validate Prisma Schema
+      working-directory: ./backend
+      run: npx prisma validate
+
+    - name: Backend - Prepare CI Database
+      working-directory: ./backend
+      run: touch prisma/ci.db
+
+    - name: Backend - Apply Migrations
+      working-directory: ./backend
+      env:
+        DATABASE_URL: file:./ci.db
+      run: npx prisma migrate deploy
+
+    - name: Backend - Run Tests
+      working-directory: ./backend
+      run: npm test
+
+    - name: Backend - Audit Production Dependencies
+      working-directory: ./backend
+      run: npm audit --omit=dev --audit-level=high
+
+    - name: Frontend - Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+
+    - name: Frontend - Lint
+      working-directory: ./frontend
+      run: npm run lint
+
+    - name: Frontend - Audit Dependencies
+      working-directory: ./frontend
+      run: npm audit --omit=dev --audit-level=high
+
+    - name: Frontend - Build
+      working-directory: ./frontend
+      run: npm run build
