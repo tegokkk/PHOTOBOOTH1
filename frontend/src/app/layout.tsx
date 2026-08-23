@@ -5,6 +5,7 @@ import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import Link from "next/link";
 import TopAppBar from "@/components/ui/TopAppBar";
 import SideNavBar from "@/components/ui/SideNavBar";
+import { GlobalDebounce } from "@/components/ui/GlobalDebounce";
 
 export const metadata: Metadata = {
   title: "Tego Photobooth",
@@ -24,6 +25,9 @@ export default function RootLayout({
       </head>
       <body className="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden selection:bg-curtain-red selection:text-paper-white">
         
+        {/* Global Debounce for all clicks */}
+        <GlobalDebounce />
+
         {/* TopAppBar */}
         <TopAppBar />
 
