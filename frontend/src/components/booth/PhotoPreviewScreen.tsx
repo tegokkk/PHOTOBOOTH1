@@ -155,58 +155,60 @@ export function PhotoPreviewScreen() {
           <div className="absolute bottom-0 right-4 w-12 h-6 bg-yellow-200/80 z-20 -rotate-2" style={{ clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)" }} />
 
           {/* Photo area */}
-          <div className="relative w-full overflow-hidden bg-white"
-               style={{ aspectRatio: frameMeta ? '1/2.8' : '4/3' }}>
+          <div className="relative w-full overflow-hidden bg-white flex items-center justify-center">
             
-            {/* 1. Draw raw photos strictly placed according to frameMeta slots (Layer 1) */}
-            {frameMeta && frameMeta.slots.length > 0 ? (
-              frameMeta.slots.map((slot, i) => (
-                <div
-                  key={i}
-                  className="absolute overflow-hidden"
-                  style={{
-                    left: `${slot.x * 100}%`,
-                    top: `${slot.y * 100}%`,
-                    width: `${slot.width * 100}%`,
-                    height: `${slot.height * 100}%`,
-                  }}
-                >
-                  <img
-                    src={capturedPhotos[Math.min(i, capturedPhotos.length - 1)]}
-                    alt={`Foto ${i + 1}`}
-                    decoding="async"
-                    className="w-full h-full object-cover origin-center"
-                    style={{ filter: filterStyle }}
-                  />
-                </div>
-              ))
-            ) : (
-              /* Fallback if no frameMeta slots exist */
-              <div className={`absolute inset-0 flex ${capturedPhotos.length > 1 ? 'flex-col' : ''} gap-0`}>
-                {capturedPhotos.map((photo, i) => (
-                  <div key={i} className="flex-1 overflow-hidden">
-                    <img
-                      src={photo}
-                      alt={`Foto ${i + 1}`}
-                      decoding="async"
-                      className="w-full h-full object-cover"
-                      style={{ filter: filterStyle }}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* 2. Draw Frame Image as Overlay (Layer 2) */}
-            {currentFrame?.imageUrl && (
+            {/* The Frame Image dictates the container's aspect ratio! */}
+            {currentFrame?.imageUrl ? (
               <img
                 src={currentFrame.imageUrl}
                 alt="Frame Overlay"
                 decoding="async"
-                className="absolute inset-0 w-full h-full object-contain pointer-events-none z-10"
+                className="relative w-full h-auto object-contain pointer-events-none z-10 block"
               />
+            ) : (
+               <div className="w-full" style={{ paddingBottom: '75%' }} />
             )}
 
+            {/* 1. Draw raw photos strictly placed according to frameMeta slots (Layer 1) */}
+            <div className="absolute inset-0 z-0">
+              {frameMeta && frameMeta.slots.length > 0 ? (
+                frameMeta.slots.map((slot, i) => (
+                  <div
+                    key={i}
+                    className="absolute overflow-hidden"
+                    style={{
+                      left: `${slot.x * 100}%`,
+                      top: `${slot.y * 100}%`,
+                      width: `${slot.width * 100}%`,
+                      height: `${slot.height * 100}%`,
+                    }}
+                  >
+                    <img
+                      src={capturedPhotos[Math.min(i, capturedPhotos.length - 1)]}
+                      alt={`Foto ${i + 1}`}
+                      decoding="async"
+                      className="w-full h-full object-cover origin-center"
+                      style={{ filter: filterStyle }}
+                    />
+                  </div>
+                ))
+              ) : (
+                /* Fallback if no frameMeta slots exist */
+                <div className={`absolute inset-0 flex ${capturedPhotos.length > 1 ? 'flex-col' : ''} gap-0`}>
+                  {capturedPhotos.map((photo, i) => (
+                    <div key={i} className="flex-1 overflow-hidden">
+                      <img
+                        src={photo}
+                        alt={`Foto ${i + 1}`}
+                        decoding="async"
+                        className="w-full h-full object-cover"
+                        style={{ filter: filterStyle }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Metadata */}

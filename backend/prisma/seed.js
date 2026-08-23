@@ -75,6 +75,133 @@ const MOCK_FRAMES = [
       { x: 0.072, y: 0.3138, width: 0.84, height: 0.2188 },
       { x: 0.072, y: 0.5634, width: 0.84, height: 0.2188 }
     ]
+  },
+  {
+    name: 'Newspaper Collage',
+    category: 'Aesthetic',
+    imageUrl: '/frames/Black and White Creative Photostrip Newspaper Photo Collage.png',
+    cssPlaceholder: 'border-4 border-gray-400 bg-transparent',
+    slots: [
+      { x: 0.0559, y: 0.1709, width: 0.4276, height: 0.2136 },
+      { x: 0.5148, y: 0.1709, width: 0.4276, height: 0.2136 },
+      { x: 0.0559, y: 0.4034, width: 0.4276, height: 0.2138 },
+      { x: 0.5148, y: 0.4034, width: 0.4276, height: 0.2138 },
+      { x: 0.0559, y: 0.636, width: 0.4276, height: 0.2136 },
+      { x: 0.5148, y: 0.636, width: 0.4276, height: 0.2136 }
+    ]
+  },
+  {
+    name: 'Blue & Pink Friendship',
+    category: 'Cute',
+    imageUrl: '/frames/Blue and Pink Playful Friendship Photo Strip Bookmark.png',
+    cssPlaceholder: 'border-4 border-pink-300 bg-transparent',
+    slots: [
+      { x: 0.1109, y: 0.1468, width: 0.7787, height: 0.168 },
+      { x: 0.1109, y: 0.3307, width: 0.7787, height: 0.168 },
+      { x: 0.1109, y: 0.5145, width: 0.7787, height: 0.168 },
+      { x: 0.1109, y: 0.6983, width: 0.7787, height: 0.168 }
+    ]
+  },
+  {
+    name: 'Blue Jeans Modern',
+    category: 'Vintage',
+    imageUrl: '/frames/Blue Jeans Trendy Modern Vintage Photostrip Bookmark.png',
+    cssPlaceholder: 'border-4 border-blue-500 bg-transparent',
+    slots: [
+      { x: 0.0808, y: 0.0417, width: 0.6531, height: 0.157 },
+      { x: 0.2461, y: 0.2663, width: 0.6455, height: 0.157 },
+      { x: 0.0813, y: 0.4906, width: 0.6553, height: 0.157 },
+      { x: 0.2385, y: 0.715, width: 0.6531, height: 0.157 }
+    ]
+  },
+  {
+    name: 'Brown Playful',
+    category: 'Aesthetic',
+    imageUrl: '/frames/Brown Playful Friendship Photostrip Bookmark.png',
+    cssPlaceholder: 'border-4 border-yellow-700 bg-transparent',
+    slots: [
+      { x: 0.1211, y: 0.1163, width: 0.7573, height: 0.1941 },
+      { x: 0.1211, y: 0.3518, width: 0.7573, height: 0.1941 },
+      { x: 0.1211, y: 0.5872, width: 0.7573, height: 0.1941 }
+    ]
+  },
+  {
+    name: 'Green Scrapbook',
+    category: 'Minimalist',
+    imageUrl: '/frames/Green Neutral Minimalist Simple Scrapbook Photo Frame Instagram Post (1).png',
+    cssPlaceholder: 'border-4 border-green-300 bg-transparent',
+    slots: [
+      { x: 0.2421, y: 0.2766, width: 0.5159, height: 0.4802 }
+    ]
+  },
+  {
+    name: 'Pink Illustrated Friendship',
+    category: 'Cute',
+    imageUrl: '/frames/Pink and Blue Illustrated Friendship Photobooth Bookmark.png',
+    cssPlaceholder: 'border-4 border-pink-400 bg-transparent',
+    slots: [
+      { x: 0.1488, y: 0.0843, width: 0.7605, height: 0.2665 },
+      { x: 0.0763, y: 0.3852, width: 0.8437, height: 0.1861 },
+      { x: 0.0805, y: 0.6071, width: 0.8352, height: 0.2786 }
+    ]
+  },
+  {
+    name: 'Pink Home Decor',
+    category: 'Cute',
+    imageUrl: '/frames/Pink and Blue Illustrated Home Decor Photo Strip Bookmark.png',
+    cssPlaceholder: 'border-4 border-pink-400 bg-transparent',
+    slots: [
+      { x: 0.1275, y: 0.1534, width: 0.7205, height: 0.2299 },
+      { x: 0.0784, y: 0.4871, width: 0.8336, height: 0.2672 }
+    ]
+  },
+  {
+    name: 'Pink Strike A Pose',
+    category: 'Cute',
+    imageUrl: '/frames/Pink and Blue Minimalist Strike A Pose Photostrip.png',
+    cssPlaceholder: 'border-4 border-pink-400 bg-transparent',
+    slots: [
+      { x: 0.0783, y: 0.0779, width: 0.8014, height: 0.1717 },
+      { x: 0.1615, y: 0.2742, width: 0.7597, height: 0.1717 },
+      { x: 0.0783, y: 0.4707, width: 0.843, height: 0.1717 },
+      { x: 0.0783, y: 0.667, width: 0.843, height: 0.1574 }
+    ]
+  },
+  {
+    name: 'Pink Captured In Fun',
+    category: 'Cute',
+    imageUrl: '/frames/Pink and Blue Playful Captured In Fun Photostrip.png',
+    cssPlaceholder: 'border-4 border-pink-400 bg-transparent',
+    slots: [
+      { x: 0.1104, y: 0.0862, width: 0.7787, height: 0.2106 },
+      { x: 0.1104, y: 0.3258, width: 0.7787, height: 0.2107 },
+      { x: 0.1104, y: 0.5654, width: 0.7787, height: 0.2107 }
+    ]
+  },
+  {
+    name: 'Purple Vintage Friends',
+    category: 'Vintage',
+    imageUrl: '/frames/Purple Vintage Friends Photostrip Photo Collage (1).png',
+    cssPlaceholder: 'border-4 border-purple-500 bg-transparent',
+    slots: [
+      { x: 0.0456, y: 0.2038, width: 0.4022, height: 0.1928 },
+      { x: 0.5515, y: 0.2038, width: 0.4024, height: 0.1928 },
+      { x: 0.0456, y: 0.4102, width: 0.4022, height: 0.2085 },
+      { x: 0.5515, y: 0.4102, width: 0.4024, height: 0.2085 },
+      { x: 0.0456, y: 0.6322, width: 0.4022, height: 0.2082 },
+      { x: 0.5515, y: 0.6322, width: 0.4024, height: 0.2082 }
+    ]
+  },
+  {
+    name: 'Yellow Girl Gang',
+    category: 'Party',
+    imageUrl: '/frames/Yellow and Pink Playful Girl Gang Photobooth Bookmark.png',
+    cssPlaceholder: 'border-4 border-yellow-400 bg-transparent',
+    slots: [
+      { x: 0.1061, y: 0.0821, width: 0.7872, height: 0.1684 },
+      { x: 0.1061, y: 0.3145, width: 0.7872, height: 0.1684 },
+      { x: 0.1056, y: 0.5476, width: 0.7877, height: 0.1684 }
+    ]
   }
 ];
 

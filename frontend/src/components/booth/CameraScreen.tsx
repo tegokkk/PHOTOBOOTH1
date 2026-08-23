@@ -188,18 +188,31 @@ export function CameraScreen() {
       )}
 
       {/* Camera Box */}
-      <div className="relative w-full max-w-2xl bg-ink-black sketch-border hard-shadow-lg flex items-center justify-center overflow-hidden mb-6"
-        style={{ aspectRatio: photoCount > 1 ? '3/4' : '4/3' }}>
+      <div className="relative w-full max-w-2xl bg-ink-black sketch-border hard-shadow-lg flex items-center justify-center overflow-hidden mb-6">
         
-        <CameraOverlays
-          hasPermission={hasPermission}
-          error={error}
-          onRequestPermission={() => requestPermission()}
-          countdown={countdown}
-          flashVisible={flashVisible}
-          frameMeta={frameMeta}
-          currentPhotoIndex={currentPhotoIndex}
-        />
+        {/* Invisible image to dictate aspect ratio, or fallback padding */}
+        {currentFrame?.imageUrl ? (
+          <img 
+            src={currentFrame.imageUrl} 
+            alt="aspect-ratio-placeholder" 
+            className="relative w-full h-auto opacity-0 pointer-events-none" 
+            aria-hidden="true" 
+          />
+        ) : (
+          <div className="w-full" style={{ paddingBottom: photoCount > 1 ? '133.33%' : '75%' }} />
+        )}
+
+        <div className="absolute inset-0 z-20 pointer-events-none">
+          <CameraOverlays
+            hasPermission={hasPermission}
+            error={error}
+            onRequestPermission={() => requestPermission()}
+            countdown={countdown}
+            flashVisible={flashVisible}
+            frameMeta={frameMeta}
+            currentPhotoIndex={currentPhotoIndex}
+          />
+        </div>
 
         {/* Video stream */}
         <video
@@ -207,7 +220,7 @@ export function CameraScreen() {
           autoPlay
           playsInline
           muted
-          className={`w-full h-full object-cover transition-transform duration-300 ${facingMode === 'user' ? 'transform scale-x-[-1]' : ''}`}
+          className={`absolute inset-0 w-full h-full object-cover transition-transform duration-300 z-10 ${facingMode === 'user' ? 'transform scale-x-[-1]' : ''}`}
         />
       </div>
 
