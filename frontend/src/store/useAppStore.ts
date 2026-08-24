@@ -15,6 +15,8 @@ export interface FrameData {
   name: string;
   category: string;
   imageUrl: string;
+  previewImageUrl?: string | null;
+  masterImageUrl?: string | null;
   cssPlaceholder: string;
   slots: FrameSlotData[];
 }
@@ -137,7 +139,7 @@ export const useAppStore = create<AppState>()(
         try {
           const res = await fetch(`${API_URL}/api/frames`);
           const data = await res.json();
-          if (data.success) {
+          if (data.success && Array.isArray(data.data)) {
             set((state) => ({
               frames: data.data,
               isLoadingFrames: false,

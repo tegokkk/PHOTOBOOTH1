@@ -7,7 +7,7 @@ import { FrameSelector } from "@/components/frame/FrameSelector";
 import { EditPanel } from "@/components/editor/EditPanel";
 import { ExportDialog } from "@/components/export/ExportDialog";
 import { compositeAndDownload, compositeToDataUrl } from "@/lib/compositor";
-import { getFrameMeta } from "@/lib/frameMeta";
+import { getFrameMeta, getFramePreviewUrl } from "@/lib/frameMeta";
 import { useAuthStore } from "@/store/useAuthStore";
 import { API_URL } from "@/lib/api";
 
@@ -28,7 +28,8 @@ export function PhotoPreviewScreen() {
   const [finalCompositeUrl, setFinalCompositeUrl] = useState<string | null>(null);
 
   const currentFrame = frames.find((f) => f.id === selectedFrameId) || null;
-  const frameMeta = currentFrame?.imageUrl ? getFrameMeta(currentFrame.imageUrl) : null;
+  const previewFrameUrl = currentFrame ? getFramePreviewUrl(currentFrame) : "";
+  const frameMeta = previewFrameUrl ? getFrameMeta(previewFrameUrl) : null;
 
   const handleRetake = () => {
     clearPhotos();
@@ -158,9 +159,9 @@ export function PhotoPreviewScreen() {
           <div className="relative w-full overflow-hidden bg-white flex items-center justify-center">
             
             {/* The Frame Image dictates the container's aspect ratio! */}
-            {currentFrame?.imageUrl ? (
+            {previewFrameUrl ? (
               <img
-                src={currentFrame.imageUrl}
+                src={previewFrameUrl}
                 alt="Frame Overlay"
                 decoding="async"
                 className="relative w-full h-auto object-contain pointer-events-none z-10 block"

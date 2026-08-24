@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
-import { getPhotoCount } from "@/lib/frameMeta";
+import { getFramePreviewUrl, getPhotoCount } from "@/lib/frameMeta";
 
 const CATEGORIES = ["Semua", "Basic", "Vintage", "Party", "Aesthetic"];
 
@@ -12,15 +12,20 @@ export function FrameSelectionScreen() {
   const [activeCategory, setActiveCategory] = useState("Semua");
 
   useEffect(() => {
-    fetchFrames();
-  }, [fetchFrames]);
+    if (frames.length === 0) fetchFrames();
+  }, [fetchFrames, frames.length]);
 
-  const filtered =
-    activeCategory === "Semua"
+  const filtered = useMemo(
+    () => activeCategory === "Semua"
       ? frames
-      : frames.filter((f) => f.category === activeCategory);
+      : frames.filter((f) => f.category === activeCategory),
+    [activeCategory, frames]
+  );
 
-  const selectedFrame = frames.find((f) => f.id === selectedFrameId);
+  const selectedFrame = useMemo(
+    () => frames.find((f) => f.id === selectedFrameId),
+    [frames, selectedFrameId]
+  );
 
   return (
     <main className="flex-grow flex flex-col md:flex-row relative z-10 w-full max-w-[1600px] mx-auto p-4 md:p-gutter gap-6 md:gap-gutter pb-[100px] md:pb-gutter pt-6">
@@ -76,6 +81,7 @@ export function FrameSelectionScreen() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {filtered.map((frame) => {
               const isSelected = selectedFrameId === frame.id;
+              const previewUrl = getFramePreviewUrl(frame);
               return (
                 <button
                   key={frame.id}
@@ -101,9 +107,9 @@ export function FrameSelectionScreen() {
                     `}
                   >
                     {/* Frame image or CSS placeholder */}
-                    {frame.imageUrl ? (
+                    {previewUrl ? (
                       <img
-                        src={frame.imageUrl}
+                        src={previewUrl}
                         alt={frame.name}
                         className="absolute inset-0 w-full h-full object-cover"
                         loading="lazy"
@@ -130,10 +136,10 @@ export function FrameSelectionScreen() {
                     </div>
 
                     {/* Photo count badge */}
-                    {frame.imageUrl && getPhotoCount(frame.imageUrl) > 1 && (
+                    {previewUrl && getPhotoCount(previewUrl) > 1 && (
                       <div className="absolute top-2 left-2 z-30 bg-ink-black text-paper-white text-[10px] font-label-caps px-2 py-0.5 flex items-center gap-1">
                         <span className="material-symbols-outlined text-[10px]" style={{ fontVariationSettings: "'FILL' 1" }}>camera</span>
-                        {getPhotoCount(frame.imageUrl)}x
+                        {getPhotoCount(previewUrl)}x
                       </div>
                     )}
 
@@ -167,9 +173,9 @@ export function FrameSelectionScreen() {
             <>
               {/* Frame Preview Card */}
               <div className="relative aspect-[3/4] bg-surface-container sketch-border overflow-hidden mb-4 hard-shadow">
-                {selectedFrame.imageUrl ? (
+                {getFramePreviewUrl(selectedFrame) ? (
                   <img
-                    src={selectedFrame.imageUrl}
+                    src={getFramePreviewUrl(selectedFrame)}
                     alt={selectedFrame.name}
                     className="absolute inset-0 w-full h-full object-cover"
                     loading="lazy"

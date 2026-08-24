@@ -1,4 +1,4 @@
-import { useAppStore } from '../store/useAppStore';
+import { useAppStore, FrameData } from '../store/useAppStore';
 
 export interface PhotoSlot {
   x: number;
@@ -11,6 +11,14 @@ export interface FrameMeta {
   imageUrlBasename: string;
   photoCount: number;
   slots: PhotoSlot[];
+}
+
+export function getFramePreviewUrl(frame: FrameData): string {
+  return frame.previewImageUrl || frame.imageUrl || '';
+}
+
+export function getFrameMasterUrl(frame: FrameData): string {
+  return frame.masterImageUrl || getFramePreviewUrl(frame);
 }
 
 /**

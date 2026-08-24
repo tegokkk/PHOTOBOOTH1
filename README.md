@@ -23,7 +23,7 @@
 
 RIRI PHOTOBOOTH memindahkan pengalaman photobooth ke perangkat yang memiliki kamera dan browser modern. Pengguna dapat memilih frame, mengambil satu atau beberapa foto, mengatur tampilan foto, lalu mengunduh atau membuat tautan berbagi.
 
-Frontend menggunakan Next.js dan React. Backend menyediakan REST API berbasis Express, Prisma, dan PostgreSQL. File foto dapat disimpan di Supabase Storage ketika kredensial Supabase tersedia, atau di filesystem lokal untuk pengembangan dan pengujian.
+Frontend menggunakan Next.js dan React. Backend menyediakan REST API berbasis Express, Prisma, dan PostgreSQL. File foto dapat disimpan di Supabase Storage ketika kredensial Supabase tersedia, atau di filesystem lokal untuk pengembangan dan pengujian. Asset frame memakai dua versi: preview ringan untuk navigasi dan master beresolusi tinggi untuk compositing serta export.
 
 ## Fitur Utama
 
@@ -105,7 +105,7 @@ flowchart TB
 | Backend | Node.js 20+, Express 5, CommonJS |
 | Data | Prisma 5, PostgreSQL |
 | Auth dan security | JWT, bcryptjs, CORS allowlist, express-rate-limit |
-| Storage | Supabase Storage opsional, filesystem fallback |
+| Storage | Supabase Storage untuk foto dan asset frame, filesystem fallback |
 | Quality | Jest, Supertest, ESLint, Prisma validation, npm audit |
 | CI | GitHub Actions |
 
@@ -173,6 +173,9 @@ FRONTEND_URL="http://localhost:3000"
 PORT=5000
 NODE_ENV="development"
 UPLOAD_DIR="./uploads"
+FRAME_STORAGE_BUCKET="frames"
+FRAME_MASTER_DIR="../FRAME/masters"
+FRAME_ASSET_COLUMNS_ENABLED="false"
 ```
 
 Untuk memakai Supabase Storage, tambahkan konfigurasi berikut ke `backend/.env`:
@@ -189,6 +192,21 @@ npx prisma migrate dev
 npx prisma db seed
 npm run dev
 ```
+
+Setelah migration asset frame berhasil diterapkan dan bucket `frames` tersedia, aktifkan kolom asset lalu sinkronkan preview dan master ke Supabase:
+
+```bash
+FRAME_ASSET_COLUMNS_ENABLED=true npm run frames:sync
+```
+
+Pada PowerShell:
+
+```powershell
+$env:FRAME_ASSET_COLUMNS_ENABLED = "true"
+npm run frames:sync
+```
+
+Bucket `frames` dapat public dan cacheable karena berisi desain frame. Bucket `photos` tetap private.
 
 `SEED_ADMIN_PASSWORD` bersifat opsional. Jika diisi sebelum `npx prisma db seed`, seed akan membuat atau mereset akun admin `admin@riri.com`. Password harus memiliki 8 sampai 72 karakter dan mengandung huruf serta angka.
 
@@ -284,6 +302,7 @@ Script tersebut memeriksa hygiene repository, asset frame, potensi secret, test,
 ## Keamanan dan Privasi
 
 - Jangan commit `backend/.env`, `frontend/.env`, JWT secret, atau Supabase service role key.
+- Simpan master frame di storage permanen. Folder `FRAME/masters` hanya menjadi sumber lokal untuk proses sinkronisasi dan diabaikan oleh Git.
 - Gunakan HTTPS pada production agar akses kamera dan token tetap terlindungi.
 - `JWT_SECRET` production wajib memiliki minimal 32 karakter.
 - Upload hanya menerima PNG atau JPEG dengan validasi magic bytes, batas 5 MB, dimensi maksimum 8.000 px, dan maksimum 40 juta pixel.

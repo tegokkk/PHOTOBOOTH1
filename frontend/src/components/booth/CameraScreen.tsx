@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useCamera } from "@/hooks/useCamera";
 import { useAppStore } from "@/store/useAppStore";
 import { useUIStore } from "@/store/useUIStore";
-import { getFrameMeta } from "@/lib/frameMeta";
+import { getFrameMeta, getFramePreviewUrl } from "@/lib/frameMeta";
 import { CameraOverlays } from "./camera/CameraOverlays";
 import { CameraControls } from "./camera/CameraControls";
 
@@ -26,7 +26,8 @@ export function CameraScreen() {
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
 
   const currentFrame = frames.find((f) => f.id === selectedFrameId) || null;
-  const frameMeta = currentFrame?.imageUrl ? getFrameMeta(currentFrame.imageUrl) : null;
+  const previewFrameUrl = currentFrame ? getFramePreviewUrl(currentFrame) : "";
+  const frameMeta = previewFrameUrl ? getFrameMeta(previewFrameUrl) : null;
   const photoCount = frameMeta?.photoCount ?? 1;
 
   // Init photo session on mount
@@ -191,9 +192,9 @@ export function CameraScreen() {
       <div className="relative w-full max-w-2xl bg-ink-black sketch-border hard-shadow-lg flex items-center justify-center overflow-hidden mb-6">
         
         {/* Invisible image to dictate aspect ratio, or fallback padding */}
-        {currentFrame?.imageUrl ? (
+        {previewFrameUrl ? (
           <img 
-            src={currentFrame.imageUrl} 
+            src={previewFrameUrl}
             alt="aspect-ratio-placeholder" 
             className="relative w-full h-auto opacity-0 pointer-events-none" 
             aria-hidden="true" 

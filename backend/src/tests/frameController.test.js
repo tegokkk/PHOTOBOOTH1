@@ -20,7 +20,9 @@ describe('Frame controller', () => {
     await getFrames({}, res);
 
     expect(prisma.frame.findMany).toHaveBeenCalledWith(expect.objectContaining({
-      include: { slots: { orderBy: { zIndex: 'asc' } } },
+      select: expect.objectContaining({
+        slots: { orderBy: { zIndex: 'asc' } },
+      }),
     }));
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
@@ -34,7 +36,9 @@ describe('Frame controller', () => {
 
     expect(prisma.frame.findUnique).toHaveBeenCalledWith({
       where: { id: 'frame-1' },
-      include: { slots: { orderBy: { zIndex: 'asc' } } },
+      select: expect.objectContaining({
+        slots: { orderBy: { zIndex: 'asc' } },
+      }),
     });
     expect(res.status).toHaveBeenCalledWith(200);
   });

@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const useFrameAssetColumns = process.env.FRAME_ASSET_COLUMNS_ENABLED === 'true';
 
 const MOCK_FRAMES = [
   {
@@ -219,6 +220,7 @@ async function main() {
         data: {
           category: frame.category,
           imageUrl: frame.imageUrl,
+          ...(useFrameAssetColumns ? { previewImageUrl: frame.imageUrl || null } : {}),
           cssPlaceholder: frame.cssPlaceholder,
           isActive: true,
         }
@@ -230,6 +232,10 @@ async function main() {
           name: frame.name,
           category: frame.category,
           imageUrl: frame.imageUrl,
+          ...(useFrameAssetColumns ? {
+            previewImageUrl: frame.imageUrl || null,
+            masterImageUrl: null,
+          } : {}),
           cssPlaceholder: frame.cssPlaceholder,
           isActive: true,
         }

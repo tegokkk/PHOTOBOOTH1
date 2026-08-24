@@ -1,16 +1,41 @@
 const prisma = require('../lib/prisma');
 
+const frameAssetColumnsEnabled = process.env.FRAME_ASSET_COLUMNS_ENABLED === 'true';
+
+const frameSelect = {
+  id: true,
+  name: true,
+  category: true,
+  imageUrl: true,
+  cssPlaceholder: true,
+  width: true,
+  height: true,
+  description: true,
+  isActive: true,
+  isPremium: true,
+  designCredit: true,
+  createdAt: true,
+  updatedAt: true,
+  deletedAt: true,
+  slots: {
+    orderBy: { zIndex: 'asc' },
+  },
+};
+
+if (frameAssetColumnsEnabled) {
+  frameSelect.previewImageUrl = true;
+  frameSelect.masterImageUrl = true;
+}
+
+const frameRelationsQuery = { select: frameSelect };
+
 const getFrames = async (req, res) => {
   try {
     const frames = await prisma.frame.findMany({
       where: {
         isActive: true
       },
-      include: {
-        slots: {
-          orderBy: { zIndex: 'asc' }
-        }
-      },
+      ...frameRelationsQuery,
       orderBy: {
         createdAt: 'asc'
       }
@@ -33,11 +58,7 @@ const getFrameById = async (req, res) => {
     const { id } = req.params;
     const frame = await prisma.frame.findUnique({
       where: { id },
-      include: {
-        slots: {
-          orderBy: { zIndex: 'asc' }
-        }
-      }
+      ...frameRelationsQuery,
     });
 
     if (!frame) {

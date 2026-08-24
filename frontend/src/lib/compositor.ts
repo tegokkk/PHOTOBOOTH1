@@ -1,5 +1,5 @@
 import { FrameData } from '@/store/useAppStore';
-import { getFrameMeta, PhotoSlot } from './frameMeta';
+import { getFrameMasterUrl, getFrameMeta, getFramePreviewUrl, PhotoSlot } from './frameMeta';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -92,7 +92,7 @@ export async function compositeToDataUrl(
   if (!ctx) throw new Error('No 2D canvas context');
 
   // ── Case 1: No frame → single photo fills canvas ───────────────────────────
-  if (!frame || !frame.imageUrl) {
+  if (!frame || !getFrameMasterUrl(frame)) {
     const photo = await loadImage(photos[0]);
     canvas.width = photo.width;
     canvas.height = photo.height;
@@ -105,12 +105,12 @@ export async function compositeToDataUrl(
 
   // ── Load frame PNG ──────────────────────────────────────────────────────────
   // Build correct URL (frames are served from /public/frames/... → /frames/...)
-  const frameImg = await loadImage(frame.imageUrl);
+  const frameImg = await loadImage(getFrameMasterUrl(frame));
   canvas.width = frameImg.naturalWidth;
   canvas.height = frameImg.naturalHeight;
 
   // ── Case 2: Frame with slot metadata (multi or single slot) ────────────────
-  const meta = getFrameMeta(frame.imageUrl);
+  const meta = getFrameMeta(getFramePreviewUrl(frame));
 
   if (meta && meta.slots.length > 0) {
     // Clear to white (most frames have white/coloured background)

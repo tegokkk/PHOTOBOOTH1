@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useAppStore } from '@/store/useAppStore';
+import { getFramePreviewUrl } from '@/lib/frameMeta';
 
 export function FrameSelector() {
   const { selectedFrameId, setSelectedFrameId, frames, isLoadingFrames, setCurrentStep } = useAppStore();
@@ -15,6 +16,7 @@ export function FrameSelector() {
       <div className="flex md:grid md:grid-cols-2 gap-4 overflow-x-auto md:overflow-visible no-scrollbar pb-4 md:pb-0 snap-x w-full">
         {frames.map((frame) => {
           const isSelected = selectedFrameId === frame.id;
+          const previewUrl = getFramePreviewUrl(frame);
           return (
             <button 
               key={frame.id}
@@ -29,8 +31,8 @@ export function FrameSelector() {
               )}
               
               <div className={`w-full h-full bg-surface-container sketch-border-thin overflow-hidden relative transition-all ${isSelected ? 'grayscale-0' : 'grayscale hover:grayscale-0'}`}>
-                {frame.imageUrl ? (
-                  <img src={frame.imageUrl} alt={frame.name} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover z-10" />
+                {previewUrl ? (
+                  <img src={previewUrl} alt={frame.name} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover z-10" />
                 ) : frame.cssPlaceholder !== 'border-0' ? (
                   <div className={`absolute inset-0 z-10 ${frame.cssPlaceholder}`} />
                 ) : (
