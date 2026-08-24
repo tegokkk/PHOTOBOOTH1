@@ -216,8 +216,7 @@ export function CameraScreen() {
                 left: `${slot.x * 100}%`,
                 top: `${slot.y * 100}%`,
                 width: `${slot.width * 100}%`,
-                height: `${slot.height * 100}%`,
-                transform: facingMode === 'user' ? 'scaleX(-1)' : 'none'
+                height: `${slot.height * 100}%`
               }}
             />
           );
