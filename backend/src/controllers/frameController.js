@@ -41,6 +41,7 @@ const getFrames = async (req, res) => {
       }
     });
 
+    res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=31536000');
     res.status(200).json({
       success: true,
       data: frames

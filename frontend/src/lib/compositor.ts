@@ -117,12 +117,19 @@ export async function compositeToDataUrl(
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 1. Draw each photo into its corresponding slot (BEHIND THE FRAME)
+    // 1. Preload all photos concurrently
+    const loadedPhotos = await Promise.all(
+      meta.slots.map(async (_, i) => {
+        const photoUrl = photos[Math.min(i, photos.length - 1)]; // fallback to last photo
+        return loadImage(photoUrl);
+      })
+    );
+
+    // 2. Draw each photo into its corresponding slot (BEHIND THE FRAME)
     for (let i = 0; i < meta.slots.length; i++) {
       const slot: PhotoSlot = meta.slots[i];
-      const photoUrl = photos[Math.min(i, photos.length - 1)]; // fallback to last photo
+      const photo = loadedPhotos[i];
 
-      const photo = await loadImage(photoUrl);
       const slotX = slot.x * canvas.width;
       const slotY = slot.y * canvas.height;
       const slotW = slot.width * canvas.width;
@@ -132,7 +139,7 @@ export async function compositeToDataUrl(
       drawPhotoIntoSlot(ctx, photo, slotX, slotY, slotW, slotH, filters);
     }
 
-    // 2. Draw frame PNG ON TOP (This requires the frame to have transparent holes!)
+    // 3. Draw frame PNG ON TOP (This requires the frame to have transparent holes!)
     ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
   } else {
     // ── Case 3: Frame with imageUrl but NO slot metadata ─────────────────────
@@ -148,11 +155,9 @@ export async function compositeToDataUrl(
     ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
   }
 
-  const mimeType = format === 'jpg' ? 'image/jpeg' : 'image/png';
-  return canvas.toDataURL(mimeType, format === 'jpg' ? 0.88 : 1.0);
+  const mimeType = format === 'jpg' ? 'image/jpeg' : 'image/webp';
+  return canvas.toDataURL(mimeType, format === 'jpg' ? 0.88 : 0.9);
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
 // compositeAndDownload
 // ─────────────────────────────────────────────────────────────────────────────
 
