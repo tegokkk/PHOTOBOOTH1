@@ -326,10 +326,11 @@ Backend memiliki konfigurasi Vercel pada `backend/vercel.json`. Untuk deployment
 
 1. Sediakan PostgreSQL production dan jalankan `npx prisma migrate deploy`.
 2. Set `DATABASE_URL`, `JWT_SECRET`, `FRONTEND_URL`, dan `NODE_ENV=production` pada backend.
-3. Pilih Supabase Storage atau filesystem persisten untuk media. Filesystem ephemeral tidak cocok untuk production.
-4. Set `NEXT_PUBLIC_API_URL` pada frontend ke URL backend production. Biarkan `NEXT_PUBLIC_PRINT_BRIDGE_URL` kosong jika memakai dialog printer iPad.
-5. Set `GUEST_PHOTO_RETENTION_HOURS` lalu jadwalkan `npm run photos:cleanup` sebagai cron/Task Scheduler.
-6. Jalankan CI dan pastikan endpoint `/health` serta `/ready` merespons sesuai harapan.
+3. Jika `DATABASE_URL` memakai transaction pooler, set `PRISMA_PGBOUNCER=true`. Runtime production otomatis memakai mode kompatibel untuk mencegah konflik prepared statement.
+4. Pilih Supabase Storage atau filesystem persisten untuk media. Filesystem ephemeral tidak cocok untuk production.
+5. Set `NEXT_PUBLIC_API_URL` pada frontend ke URL backend production. Biarkan `NEXT_PUBLIC_PRINT_BRIDGE_URL` kosong jika memakai dialog printer iPad.
+6. Set `GUEST_PHOTO_RETENTION_HOURS` lalu jadwalkan `npm run photos:cleanup` sebagai cron/Task Scheduler.
+7. Jalankan CI dan pastikan endpoint `/health` serta `/ready` merespons sesuai harapan.
 
 Dokumen teknis tambahan tersedia di [ARCHITECTURE.md](./ARCHITECTURE.md) dan [DEPLOY_READINESS_PLAN_0_14.md](./DEPLOY_READINESS_PLAN_0_14.md).
 

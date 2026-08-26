@@ -24,6 +24,7 @@ This document outlines the production architecture for the Photobooth applicatio
 * **API URL:** `https://api.photobooth.example.com` (Target backend domain)
 * **Environment Variables:**
   * `DATABASE_URL` (PostgreSQL connection string)
+  * `PRISMA_PGBOUNCER` (`true` when the runtime URL uses a transaction pooler; production defaults to compatibility mode)
   * `JWT_SECRET` (Strong randomly generated string)
   * `FRONTEND_URL` (Matches the App URL for CORS validation)
   * `UPLOAD_DIR` (Absolute path for persistent volume)
