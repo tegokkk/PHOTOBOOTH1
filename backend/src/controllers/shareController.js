@@ -56,7 +56,7 @@ const createShareLink = async (req, res) => {
     res.status(201).json({ success: true, data: { token: shareLink.token, expiresAt: shareLink.expiresAt } });
   } catch (error) {
     console.error('Failed to create share link:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error', requestId: req.requestId });
   }
 };
 
@@ -118,7 +118,7 @@ const getSharedPhoto = async (req, res) => {
     });
   } catch (error) {
     console.error('Failed to get shared photo:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error', requestId: req.requestId });
   }
 };
 
@@ -153,7 +153,7 @@ const revokeShareLink = async (req, res) => {
     res.status(200).json({ success: true, message: 'Share link revoked' });
   } catch (error) {
     console.error('Failed to revoke share link:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error', requestId: req.requestId });
   }
 };
 

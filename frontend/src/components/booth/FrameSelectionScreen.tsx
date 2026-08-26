@@ -4,22 +4,26 @@ import { useEffect, useMemo, useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { getFramePreviewUrl, getPhotoCount } from "@/lib/frameMeta";
 
-const CATEGORIES = ["Semua", "Basic", "Vintage", "Party", "Aesthetic"];
-
 export function FrameSelectionScreen() {
   const { frames, isLoadingFrames, fetchFrames, selectedFrameId, setSelectedFrameId, setCurrentStep } =
     useAppStore();
   const [activeCategory, setActiveCategory] = useState("Semua");
 
+  const categories = useMemo(
+    () => ["Semua", ...Array.from(new Set(frames.map((frame) => frame.category).filter(Boolean))).sort()],
+    [frames]
+  );
+
   useEffect(() => {
     if (frames.length === 0) fetchFrames();
   }, [fetchFrames, frames.length]);
 
+  const effectiveCategory = categories.includes(activeCategory) ? activeCategory : "Semua";
   const filtered = useMemo(
-    () => activeCategory === "Semua"
+    () => effectiveCategory === "Semua"
       ? frames
-      : frames.filter((f) => f.category === activeCategory),
-    [activeCategory, frames]
+      : frames.filter((f) => f.category === effectiveCategory),
+    [effectiveCategory, frames]
   );
 
   const selectedFrame = useMemo(
@@ -48,7 +52,7 @@ export function FrameSelectionScreen() {
 
         {/* Category Tabs */}
         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
@@ -56,7 +60,7 @@ export function FrameSelectionScreen() {
                 shrink-0 px-4 py-2 font-label-caps text-label-caps text-sm border-2 border-ink-black
                 transition-all duration-150
                 ${
-                  activeCategory === cat
+                    effectiveCategory === cat
                     ? "bg-ink-black text-paper-white"
                     : "bg-paper-white text-ink-black hover:bg-surface-container-high"
                 }
@@ -172,7 +176,10 @@ export function FrameSelectionScreen() {
           {selectedFrame ? (
             <>
               {/* Frame Preview Card */}
-              <div className="relative aspect-[3/4] bg-surface-container sketch-border overflow-hidden mb-4 hard-shadow">
+              <div
+                className="relative aspect-[3/4] bg-surface-container sketch-border overflow-hidden mb-4 hard-shadow"
+                style={selectedFrame.width && selectedFrame.height ? { aspectRatio: `${selectedFrame.width} / ${selectedFrame.height}` } : undefined}
+              >
                 {getFramePreviewUrl(selectedFrame) ? (
                   <img
                     src={getFramePreviewUrl(selectedFrame)}

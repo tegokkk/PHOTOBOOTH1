@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useUIStore } from "@/store/useUIStore";
 import { QRCodeSVG } from "qrcode.react";
 
@@ -23,6 +23,7 @@ export function ExportDialog({
 }: ExportDialogProps) {
   const { showToast } = useUIStore();
   const [isProcessing, setIsProcessing] = useState(false);
+  const isProcessingRef = useRef(false);
   const [shareLinkToken, setShareLinkToken] = useState<string | null>(null);
 
   useEffect(() => {
@@ -49,7 +50,8 @@ export function ExportDialog({
   };
 
   const handleCreateShareLink = async () => {
-    if (!compositeDataUrl) return;
+    if (!compositeDataUrl || isProcessingRef.current) return;
+    isProcessingRef.current = true;
     setIsProcessing(true);
     try {
       const token = await onCreateShareLink();
@@ -61,6 +63,7 @@ export function ExportDialog({
       const message = err instanceof Error ? err.message : "Gagal memproses bagikan foto.";
       showToast(message, "error");
     } finally {
+      isProcessingRef.current = false;
       setIsProcessing(false);
     }
   };
@@ -100,7 +103,7 @@ export function ExportDialog({
       >
         <div className="flex items-center justify-between px-6 py-4 border-b-2 border-ink-black sticky top-0 bg-paper-white z-10">
           <div>
-            <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-ink-black">Simpan & Bagikan</h2>
+            <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-ink-black">QR & Download</h2>
             <p className="font-body-md text-body-md text-on-surface-variant text-sm">Frame: <strong>{frameName}</strong></p>
           </div>
           <button onClick={onClose} className="w-10 h-10 flex items-center justify-center border-2 border-ink-black hover:bg-surface-container-high transition-colors">

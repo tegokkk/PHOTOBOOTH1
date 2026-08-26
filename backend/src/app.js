@@ -127,10 +127,19 @@ app.use((err, req, res, next) => {
     return res.status(403).json({ success: false, message: 'Origin is not allowed' });
   }
 
+  if (err.type === 'entity.too.large') {
+    return res.status(413).json({
+      success: false,
+      message: 'Payload foto terlalu besar. Kompres foto lalu coba lagi.',
+      requestId: req.requestId,
+    });
+  }
+
   // Do not leak stack traces or internal paths in production
   res.status(500).json({
     success: false,
-    message: isProduction ? 'Server Error' : (err.message || 'Server Error')
+    message: isProduction ? 'Server Error' : (err.message || 'Server Error'),
+    requestId: req.requestId,
   });
 });
 

@@ -1,5 +1,5 @@
 import { FrameData } from '@/store/useAppStore';
-import { getFrameMasterUrl, getFrameMeta, getFramePreviewUrl, PhotoSlot } from './frameMeta';
+import { getFrameMasterUrl, getFrameMetaFromFrame, PhotoSlot } from './frameMeta';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -27,12 +27,10 @@ function drawPhotoIntoSlot(
   slotY: number,
   slotW: number,
   slotH: number,
-  filters: { brightness: number; contrast: number; saturation: number }
+  filters: { brightness: number; contrast: number; saturation: number },
+  rotation = 0
 ) {
   const { brightness, contrast, saturation } = filters;
-
-  // Apply CSS-style filters
-  ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
 
   // object-fit: cover
   const photoRatio = photo.width / photo.height;
@@ -50,8 +48,12 @@ function drawPhotoIntoSlot(
     drawY = slotY - (drawH - slotH) / 2;
   }
 
-  // Clip to slot boundaries
+  // Rotate and clip in the same local slot coordinates used by the preview.
   ctx.save();
+  ctx.translate(slotX + slotW / 2, slotY + slotH / 2);
+  ctx.rotate((rotation * Math.PI) / 180);
+  ctx.translate(-(slotX + slotW / 2), -(slotY + slotH / 2));
+  ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
   ctx.beginPath();
   ctx.rect(slotX, slotY, slotW, slotH);
   ctx.clip();
@@ -59,7 +61,6 @@ function drawPhotoIntoSlot(
   ctx.drawImage(photo, drawX, drawY, drawW, drawH);
 
   ctx.restore();
-  ctx.filter = 'none';
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -110,7 +111,7 @@ export async function compositeToDataUrl(
   canvas.height = frameImg.naturalHeight;
 
   // ── Case 2: Frame with slot metadata (multi or single slot) ────────────────
-  const meta = getFrameMeta(getFramePreviewUrl(frame));
+  const meta = getFrameMetaFromFrame(frame);
 
   if (meta && meta.slots.length > 0) {
     // Clear to white (most frames have white/coloured background)
@@ -136,7 +137,7 @@ export async function compositeToDataUrl(
       const slotH = slot.height * canvas.height;
 
       // Make sure we save and restore state inside drawPhotoIntoSlot so we don't clip the rest of the photos
-      drawPhotoIntoSlot(ctx, photo, slotX, slotY, slotW, slotH, filters);
+      drawPhotoIntoSlot(ctx, photo, slotX, slotY, slotW, slotH, filters, slot.rotation || 0);
     }
 
     // 3. Draw frame PNG ON TOP (This requires the frame to have transparent holes!)
@@ -155,8 +156,8 @@ export async function compositeToDataUrl(
     ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
   }
 
-  const mimeType = format === 'jpg' ? 'image/jpeg' : 'image/webp';
-  return canvas.toDataURL(mimeType, format === 'jpg' ? 0.88 : 0.9);
+  const mimeType = format === 'jpg' ? 'image/jpeg' : 'image/png';
+  return canvas.toDataURL(mimeType, format === 'jpg' ? 0.88 : 1.0);
 }
 // compositeAndDownload
 // ─────────────────────────────────────────────────────────────────────────────

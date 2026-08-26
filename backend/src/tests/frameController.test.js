@@ -7,6 +7,7 @@ const { getFrames, getFrameById } = require('../controllers/frameController');
 
 function createResponse() {
   return {
+    setHeader: jest.fn(),
     status: jest.fn().mockReturnThis(),
     json: jest.fn(),
   };

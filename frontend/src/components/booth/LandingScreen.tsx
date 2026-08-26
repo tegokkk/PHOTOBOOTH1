@@ -1,24 +1,17 @@
 "use client";
 
 import { useAppStore } from "@/store/useAppStore";
-import { useAuthStore } from "@/store/useAuthStore";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export function LandingScreen() {
-  const { setCurrentStep } = useAppStore();
-  const { user } = useAuthStore();
-  const router = useRouter();
+  const { resetSession, setCurrentStep } = useAppStore();
   const [isExiting, setIsExiting] = useState(false);
 
   const handleStart = () => {
     setIsExiting(true);
     setTimeout(() => {
-      // Always advance step to frame-selection so after login they don't land back here
+      resetSession();
       setCurrentStep("frame-selection");
-      if (!user) {
-        router.push("/login");
-      }
     }, 300);
   };
 

@@ -114,8 +114,8 @@ export function useCamera() {
     }
     ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
     
-    // Return base64 image data
-    return canvas.toDataURL('image/png');
+    // JPEG keeps the iPad memory footprint manageable during multi-shot sessions.
+    return canvas.toDataURL('image/jpeg', 0.92);
   }, [facingMode]);
 
   // Sync stream to video element

@@ -2,20 +2,27 @@ const { PrismaClient } = require('@prisma/client');
 const fs = require('fs');
 const path = require('path');
 const prisma = new PrismaClient();
+const supabase = require('../lib/supabase');
 
 async function cleanupPhotos() {
   console.log('Starting photo cleanup task...');
 
-  // Find photos deleted more than 30 days ago
+  // Keep deleted photos for 30 days, while guest photos are temporary by design.
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const guestRetentionHours = Math.max(
+    Number(process.env.GUEST_PHOTO_RETENTION_HOURS || 168),
+    1
+  );
+  const guestCutoff = new Date(Date.now() - guestRetentionHours * 60 * 60 * 1000);
 
   try {
     const photosToDelete = await prisma.photo.findMany({
       where: {
-        deletedAt: {
-          lte: thirtyDaysAgo
-        }
+        OR: [
+          { deletedAt: { lte: thirtyDaysAgo } },
+          { userId: null, deletedAt: null, createdAt: { lte: guestCutoff } },
+        ],
       }
     });
 
@@ -25,14 +32,21 @@ async function cleanupPhotos() {
     for (const photo of photosToDelete) {
       if (photo.compositeImageUrl) {
         // compositeImageUrl looks like /api/media/photo_uuid.jpg
-        const fileName = photo.compositeImageUrl.split('/').pop();
+        const fileName = photo.compositeImageUrl.split('/').pop()?.split('?')[0];
+        if (!fileName) throw new Error('Invalid media path during cleanup');
+
+        if (supabase) {
+          const { error } = await supabase.storage.from('photos').remove([fileName]);
+          if (error) throw new Error(`Supabase cleanup failed: ${error.message}`);
+        }
+
         const uploadsDir = path.resolve(process.env.UPLOAD_DIR || path.join(__dirname, '../../uploads'));
         const filePath = path.resolve(uploadsDir, fileName);
         if (!filePath.startsWith(`${uploadsDir}${path.sep}`)) {
           throw new Error('Invalid media path during cleanup');
         }
 
-        if (fs.existsSync(filePath)) {
+        if (!supabase && fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
         }
       }

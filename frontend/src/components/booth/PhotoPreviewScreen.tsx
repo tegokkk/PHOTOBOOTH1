@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { useUIStore } from "@/store/useUIStore";
 import { FrameSelector } from "@/components/frame/FrameSelector";
 import { EditPanel } from "@/components/editor/EditPanel";
 import { ExportDialog } from "@/components/export/ExportDialog";
+import { PrintPreviewDialog } from "@/components/print/PrintPreviewDialog";
 import { compositeAndDownload, compositeToDataUrl } from "@/lib/compositor";
-import { getFrameMeta, getFramePreviewUrl } from "@/lib/frameMeta";
+import { getFrameMetaFromFrame, getFramePreviewUrl } from "@/lib/frameMeta";
 import { useAuthStore } from "@/store/useAuthStore";
 import { API_URL } from "@/lib/api";
 
@@ -16,28 +17,38 @@ export function PhotoPreviewScreen() {
     capturedPhotos, clearPhotos,
     selectedFrameId, frames,
     brightness, contrast, saturation,
-    setCurrentStep, resetEdits,
+    setCurrentStep, resetEdits, resetSession,
   } = useAppStore();
 
   const { token } = useAuthStore();
   const { showToast } = useUIStore();
   const [isExportOpen, setIsExportOpen] = useState(false);
+  const [isPrintOpen, setIsPrintOpen] = useState(false);
   const [isCompositing, setIsCompositing] = useState(false);
-  
-  // We'll store the final data URL here only when the user clicks Export.
+  const isCompositingRef = useRef(false);
   const [finalCompositeUrl, setFinalCompositeUrl] = useState<string | null>(null);
+  const [uploadedPhoto, setUploadedPhoto] = useState<{
+    key: string;
+    id: string;
+    guestAccessToken?: string;
+  } | null>(null);
 
   const currentFrame = frames.find((f) => f.id === selectedFrameId) || null;
   const previewFrameUrl = currentFrame ? getFramePreviewUrl(currentFrame) : "";
-  const frameMeta = previewFrameUrl ? getFrameMeta(previewFrameUrl) : null;
+  const frameMeta = getFrameMetaFromFrame(currentFrame);
+  const outputKey = `${selectedFrameId || "none"}:${brightness}:${contrast}:${saturation}:${capturedPhotos.length}`;
 
   const handleRetake = () => {
+    setUploadedPhoto(null);
+    setFinalCompositeUrl(null);
     clearPhotos();
     resetEdits();
     setCurrentStep("camera");
   };
 
   const handleExportClick = async () => {
+    if (isCompositingRef.current) return;
+    isCompositingRef.current = true;
     setIsCompositing(true);
     try {
       const dataUrl = await compositeToDataUrl(
@@ -49,6 +60,26 @@ export function PhotoPreviewScreen() {
       console.error("Composite error:", err);
       showToast("Gagal memproses foto", "error");
     } finally {
+      isCompositingRef.current = false;
+      setIsCompositing(false);
+    }
+  };
+
+  const handlePrintClick = async () => {
+    if (isCompositingRef.current) return;
+    isCompositingRef.current = true;
+    setIsCompositing(true);
+    try {
+      const dataUrl = await compositeToDataUrl(
+        capturedPhotos, currentFrame, brightness, contrast, saturation, "jpg"
+      );
+      setFinalCompositeUrl(dataUrl);
+      setIsPrintOpen(true);
+    } catch (err) {
+      console.error("Print composite error:", err);
+      showToast("Gagal menyiapkan foto untuk dicetak", "error");
+    } finally {
+      isCompositingRef.current = false;
       setIsCompositing(false);
     }
   };
@@ -61,8 +92,10 @@ export function PhotoPreviewScreen() {
     );
   };
 
-  const handleCreateShareLink = async (): Promise<string | undefined> => {
+  const ensurePhotoUploaded = async () => {
     if (capturedPhotos.length === 0) return undefined;
+
+    if (uploadedPhoto?.key === outputKey) return uploadedPhoto;
 
     const dataUrl = await compositeToDataUrl(
       capturedPhotos, currentFrame, brightness, contrast, saturation, "jpg"
@@ -81,15 +114,33 @@ export function PhotoPreviewScreen() {
     });
     const photoData = await photoResponse.json();
     if (!photoResponse.ok || !photoData.success || !photoData.data?.id) {
-      throw new Error(photoData.message || "Gagal menyimpan foto di cloud.");
+      if (photoResponse.status === 413) {
+        throw new Error("Ukuran foto terlalu besar untuk disimpan online.");
+      }
+      const requestId = photoData.requestId ? ` (kode: ${photoData.requestId})` : "";
+      throw new Error(`${photoData.message || "Gagal menyimpan foto di cloud."}${requestId}`);
     }
 
-    const shareBody: { photoId: string; accessToken?: string } = {
-      photoId: photoData.data.id,
+    const result = {
+      key: outputKey,
+      id: photoData.data.id as string,
+      guestAccessToken: photoData.data.guestAccessToken as string | undefined,
     };
-    if (photoData.data.guestAccessToken) {
-      shareBody.accessToken = photoData.data.guestAccessToken;
-    }
+    setUploadedPhoto(result);
+    return result;
+  };
+
+  const handleCreateShareLink = async (): Promise<string | undefined> => {
+    const photo = await ensurePhotoUploaded();
+    if (!photo) return undefined;
+
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    const shareBody: { photoId: string; accessToken?: string } = {
+      photoId: photo.id,
+    };
+    if (photo.guestAccessToken) shareBody.accessToken = photo.guestAccessToken;
 
     const shareResponse = await fetch(`${API_URL}/api/share`, {
       method: "POST",
@@ -98,10 +149,19 @@ export function PhotoPreviewScreen() {
     });
     const shareData = await shareResponse.json();
     if (!shareResponse.ok || !shareData.success || !shareData.data?.token) {
-      throw new Error(shareData.message || "Gagal membuat tautan.");
+      const requestId = shareData.requestId ? ` (kode: ${shareData.requestId})` : "";
+      throw new Error(`${shareData.message || "Gagal membuat tautan."}${requestId}`);
     }
 
     return shareData.data.token;
+  };
+
+  const handleNewSession = () => {
+    setIsExportOpen(false);
+    setIsPrintOpen(false);
+    setFinalCompositeUrl(null);
+    setUploadedPhoto(null);
+    resetSession();
   };
 
   // If no photos yet, show an error state
@@ -182,6 +242,7 @@ export function PhotoPreviewScreen() {
                       top: `${slot.y * 100}%`,
                       width: `${slot.width * 100}%`,
                       height: `${slot.height * 100}%`,
+                      zIndex: slot.zIndex ?? 0,
                     }}
                   >
                     <img
@@ -189,7 +250,10 @@ export function PhotoPreviewScreen() {
                       alt={`Foto ${i + 1}`}
                       decoding="async"
                       className="w-full h-full object-cover origin-center"
-                      style={{ filter: filterStyle }}
+                      style={{
+                        filter: filterStyle,
+                        transform: slot.rotation ? `rotate(${slot.rotation}deg)` : undefined,
+                      }}
                     />
                   </div>
                 ))
@@ -247,9 +311,9 @@ export function PhotoPreviewScreen() {
           </button>
 
           <button
-            onClick={handleExportClick}
+            onClick={handlePrintClick}
             disabled={isCompositing}
-            className="flex-1 md:flex-none min-w-[180px] px-6 py-4 bg-blueprint-blue text-paper-white
+            className="flex-1 md:flex-none min-w-[180px] px-6 py-4 bg-curtain-red text-paper-white
               font-interactive-btn text-interactive-btn border-2 border-ink-black sketch-border hard-shadow
               hover:scale-[1.02] active:scale-95 transition-all duration-150 flex items-center justify-center gap-2
               disabled:opacity-50 disabled:cursor-wait"
@@ -257,9 +321,31 @@ export function PhotoPreviewScreen() {
             {isCompositing ? (
               <div className="w-5 h-5 border-2 border-paper-white border-t-transparent rounded-full animate-spin" />
             ) : (
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>download</span>
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>print</span>
             )}
-            {isCompositing ? "Memproses..." : "Simpan & Bagikan"}
+            {isCompositing ? "Memproses..." : "Cetak Foto"}
+          </button>
+
+          <button
+            onClick={handleExportClick}
+            disabled={isCompositing}
+            className="flex-1 md:flex-none min-w-[180px] px-6 py-4 bg-blueprint-blue text-paper-white
+              font-interactive-btn text-interactive-btn border-2 border-ink-black sketch-border hard-shadow
+              hover:scale-[1.02] active:scale-95 transition-all duration-150 flex items-center justify-center gap-2
+              disabled:opacity-50 disabled:cursor-wait"
+          >
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>qr_code_2</span>
+            QR / Download
+          </button>
+
+          <button
+            onClick={handleNewSession}
+            className="flex-1 md:flex-none min-w-[130px] px-5 py-4 bg-paper-white text-ink-black
+              font-interactive-btn text-interactive-btn border-2 border-ink-black sketch-border hard-shadow
+              hover:bg-surface-container-low active:scale-95 transition-all duration-150 flex items-center justify-center gap-2"
+          >
+            <span className="material-symbols-outlined">restart_alt</span>
+            Sesi Baru
           </button>
         </div>
       </section>
@@ -291,6 +377,16 @@ export function PhotoPreviewScreen() {
           frameName={currentFrame?.name || "Tanpa Frame"}
           onDownloadLocal={handleDownloadLocal}
           onCreateShareLink={handleCreateShareLink}
+        />
+      )}
+
+      {isPrintOpen && finalCompositeUrl && (
+        <PrintPreviewDialog
+          isOpen={isPrintOpen}
+          compositeDataUrl={finalCompositeUrl}
+          frameName={currentFrame?.name || "Tanpa Frame"}
+          onClose={() => setIsPrintOpen(false)}
+          onNewSession={handleNewSession}
         />
       )}
     </main>

@@ -53,7 +53,8 @@ export default function LoginPage() {
           router.push("/");
         }
       } else {
-        showToast(resData.message || "Email atau password salah", "error");
+        const requestId = resData.requestId ? ` (kode: ${resData.requestId})` : "";
+        showToast(`${resData.message || "Email atau password salah"}${requestId}`, "error");
       }
     } catch (error) {
       console.error("Login request failed:", error);

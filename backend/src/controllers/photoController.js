@@ -14,11 +14,14 @@ const uploadPhoto = async (req, res) => {
 
     res.status(201).json({ success: true, data: newPhoto });
   } catch (error) {
+    if (error.message.includes('File too large')) {
+      return res.status(413).json({ success: false, message: error.message, requestId: req.requestId });
+    }
     if (error.message.includes('Invalid') || error.message.includes('too large') || error.message.includes('required')) {
-      return res.status(400).json({ success: false, message: error.message });
+      return res.status(400).json({ success: false, message: error.message, requestId: req.requestId });
     }
     console.error('Failed to upload photo:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error', requestId: req.requestId });
   }
 };
 

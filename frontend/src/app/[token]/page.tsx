@@ -5,9 +5,7 @@ import { toApiUrl } from "@/lib/media";
 import { Metadata } from "next";
 
 interface SharePageProps {
-  params: {
-    token: string;
-  };
+  params: Promise<{ token: string }>;
 }
 
 // Fetch photo data from backend
@@ -30,7 +28,8 @@ async function getSharedPhoto(token: string, purpose?: "prefetch") {
 
 // Generate dynamic metadata for social media sharing
 export async function generateMetadata({ params }: SharePageProps): Promise<Metadata> {
-  const photo = await getSharedPhoto(params.token, "prefetch");
+  const { token } = await params;
+  const photo = await getSharedPhoto(token, "prefetch");
   
   if (!photo) {
     return {
@@ -58,7 +57,8 @@ export async function generateMetadata({ params }: SharePageProps): Promise<Meta
 }
 
 export default async function SharedPhotoPage({ params }: SharePageProps) {
-  const photo = await getSharedPhoto(params.token);
+  const { token } = await params;
+  const photo = await getSharedPhoto(token);
 
   if (!photo) {
     notFound();

@@ -31,8 +31,8 @@ Frontend menggunakan Next.js dan React. Backend menyediakan REST API berbasis Ex
 | --- | --- |
 | Kamera | Permission kamera browser, pergantian kamera, mirror preview, countdown 3 detik, single shot dan multi-shot |
 | Kreativitas | Frame dengan slot foto, compositing di browser, filter brightness, contrast, dan saturation |
-| Output | Unduh PNG/JPG, preview hasil, QR code, dan tautan berbagi yang kedaluwarsa otomatis setelah 7 hari |
-| Akun | Register, login JWT, profil, galeri pribadi, restore foto dari trash, dan logout |
+| Output | Cetak melalui dialog printer sistem atau print bridge opsional, unduh PNG/JPG, preview hasil, QR code, dan tautan berbagi yang kedaluwarsa otomatis setelah 7 hari |
+| Akun | Login JWT dan galeri pribadi untuk kebutuhan internal/operator; tidak diperlukan oleh pelanggan booth |
 | Administrasi | Endpoint metrics khusus admin dan audit log untuk aktivitas akun |
 | Privasi | Media tidak disajikan sebagai folder publik, akses melalui authorization, share token, atau guest access token |
 | Reliability | Rate limiting API, validasi magic bytes, batas ukuran dan dimensi gambar, request ID, health check, dan readiness check |
@@ -49,10 +49,10 @@ flowchart LR
     F -- Belum --> D
     F -- Sudah --> G[Review dan edit]
     G --> H[Compositing di browser]
-    H --> I[Unduh lokal]
-    H --> J[Simpan ke API]
-    J --> K[Buat tautan berbagi]
-    K --> L[Bagikan atau buka galeri]
+    H --> I[Preview cetak]
+    I --> J[Cetak via browser / print bridge]
+    H --> K[QR / download opsional]
+    K --> L[Simpan ke API sekali lalu buat tautan]
 ```
 
 ### Detail workflow foto
@@ -62,9 +62,17 @@ flowchart LR
 3. Browser meminta akses kamera. Foto diambil setelah countdown dan disimpan sementara di state aplikasi.
 4. Compositor menyusun foto ke slot frame dan menerapkan filter visual di sisi browser.
 5. Hasil dapat diunduh langsung tanpa mengunggah file.
-6. Saat pengguna memilih berbagi, frontend mengirim composite image ke `POST /api/photos`.
-7. Backend memvalidasi format, ukuran, dimensi, dan isi file sebelum menyimpannya.
-8. `POST /api/share` menghasilkan tautan berbagi dengan masa berlaku tujuh hari.
+6. Saat pengguna memilih cetak, browser membuka dialog printer; jika `NEXT_PUBLIC_PRINT_BRIDGE_URL` diisi, pekerjaan dikirim ke bridge lokal.
+7. Saat pengguna memilih QR, frontend mengirim composite image satu kali ke `POST /api/photos`.
+8. Backend memvalidasi format, ukuran, dimensi, dan isi file sebelum menyimpannya.
+9. `POST /api/share` menghasilkan tautan berbagi dengan masa berlaku tujuh hari.
+
+### Mode usaha
+
+- Pelanggan menyelesaikan sesi sebagai guest tanpa login.
+- Pembayaran dilakukan manual kepada operator dan tidak dicatat di sistem.
+- Galeri, login, dan penghapusan foto tetap tersedia hanya melalui URL internal untuk operator; tidak ditampilkan di navigasi kiosk.
+- Foto guest yang tersimpan online dibersihkan otomatis sesuai `GUEST_PHOTO_RETENTION_HOURS` (default 168 jam).
 
 ## Arsitektur Sistem
 
@@ -223,6 +231,8 @@ Buat `frontend/.env`:
 
 ```env
 NEXT_PUBLIC_API_URL="http://localhost:5000"
+# Optional: POST endpoint for a local print bridge. Leave blank for browser/system print.
+NEXT_PUBLIC_PRINT_BRIDGE_URL=""
 ```
 
 Jalankan frontend:
@@ -240,6 +250,7 @@ Buka [http://localhost:3000](http://localhost:3000). Backend dapat diperiksa mel
 | `backend` | `npm run dev` | Menjalankan API dengan nodemon |
 | `backend` | `npm start` | Menjalankan API mode biasa |
 | `backend` | `npm test -- --runInBand` | Menjalankan test backend |
+| `backend` | `npm run photos:cleanup` | Menghapus foto guest sesuai retention dan foto trash yang sudah lewat masa simpan |
 | `backend` | `npx prisma generate` | Menghasilkan Prisma Client |
 | `backend` | `npx prisma migrate dev` | Membuat dan menerapkan migration lokal |
 | `backend` | `npx prisma migrate deploy` | Menerapkan migration pada environment deploy |
@@ -316,8 +327,9 @@ Backend memiliki konfigurasi Vercel pada `backend/vercel.json`. Untuk deployment
 1. Sediakan PostgreSQL production dan jalankan `npx prisma migrate deploy`.
 2. Set `DATABASE_URL`, `JWT_SECRET`, `FRONTEND_URL`, dan `NODE_ENV=production` pada backend.
 3. Pilih Supabase Storage atau filesystem persisten untuk media. Filesystem ephemeral tidak cocok untuk production.
-4. Set `NEXT_PUBLIC_API_URL` pada frontend ke URL backend production.
-5. Jalankan CI dan pastikan endpoint `/health` serta `/ready` merespons sesuai harapan.
+4. Set `NEXT_PUBLIC_API_URL` pada frontend ke URL backend production. Biarkan `NEXT_PUBLIC_PRINT_BRIDGE_URL` kosong jika memakai dialog printer iPad.
+5. Set `GUEST_PHOTO_RETENTION_HOURS` lalu jadwalkan `npm run photos:cleanup` sebagai cron/Task Scheduler.
+6. Jalankan CI dan pastikan endpoint `/health` serta `/ready` merespons sesuai harapan.
 
 Dokumen teknis tambahan tersedia di [ARCHITECTURE.md](./ARCHITECTURE.md) dan [DEPLOY_READINESS_PLAN_0_14.md](./DEPLOY_READINESS_PLAN_0_14.md).
 

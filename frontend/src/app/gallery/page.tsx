@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useUIStore } from "@/store/useUIStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { API_URL } from "@/lib/api";
@@ -26,6 +26,8 @@ export default function GalleryPage() {
 
   const [selectedPhoto, setSelectedPhoto] = useState<PhotoRecord | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const deletingIdRef = useRef<string | null>(null);
   
   const { showToast } = useUIStore();
   const { user, token } = useAuthStore();
@@ -58,7 +60,15 @@ export default function GalleryPage() {
       if (token) headers["Authorization"] = `Bearer ${token}`;
       
       const res = await fetch(url.toString(), { headers });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+
+      if (res.status === 401 || res.status === 403) {
+        useAuthStore.getState().logout();
+        showToast("Sesi login sudah kedaluwarsa. Silakan login kembali.", "error");
+        router.push("/login");
+        return;
+      }
+      if (!res.ok) throw new Error(data.message || "Gagal memuat galeri foto.");
       
       if (data.success) {
         setPhotos(prev => reset ? data.data : [...prev, ...data.data]);
@@ -71,7 +81,7 @@ export default function GalleryPage() {
       setIsLoading(false);
       setIsLoadingMore(false);
     }
-  }, [user, token, activeTab, nextCursor, showToast]);
+  }, [user, token, activeTab, nextCursor, router, showToast]);
 
   // Initial load when tab or user changes
   useEffect(() => {
@@ -79,7 +89,7 @@ export default function GalleryPage() {
       void fetchPhotos(true);
     }, 0);
     return () => window.clearTimeout(task);
-  }, [activeTab, user]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeTab, user, token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -93,7 +103,9 @@ export default function GalleryPage() {
   }, [selectedPhoto, deleteConfirmId]);
 
   const handleDelete = async (id: string) => {
-    if (!id) return;
+    if (!id || deletingIdRef.current) return;
+    deletingIdRef.current = id;
+    setDeletingId(id);
     try {
       const headers: Record<string, string> = {};
       if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -102,7 +114,17 @@ export default function GalleryPage() {
         method: "DELETE",
         headers,
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401 || res.status === 403) {
+        useAuthStore.getState().logout();
+        setDeleteConfirmId(null);
+        showToast("Sesi login sudah kedaluwarsa. Silakan login kembali.", "error");
+        router.push("/login");
+        return;
+      }
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Gagal menghapus foto.");
+      }
       if (data.success) {
         // Remove from local state instantly
         setPhotos((prev) => prev.filter((p) => p.id !== id));
@@ -113,6 +135,9 @@ export default function GalleryPage() {
     } catch {
       showToast("Gagal menghapus foto.", "error");
       setDeleteConfirmId(null);
+    } finally {
+      deletingIdRef.current = null;
+      setDeletingId(null);
     }
   };
 
@@ -126,7 +151,16 @@ export default function GalleryPage() {
         method: "POST",
         headers,
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401 || res.status === 403) {
+        useAuthStore.getState().logout();
+        showToast("Sesi login sudah kedaluwarsa. Silakan login kembali.", "error");
+        router.push("/login");
+        return;
+      }
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Gagal memulihkan foto.");
+      }
       if (data.success) {
         // Remove from trash list locally
         setPhotos((prev) => prev.filter((p) => p.id !== id));
@@ -288,9 +322,10 @@ export default function GalleryPage() {
               </button>
               <button
                 onClick={() => handleDelete(deleteConfirmId)}
+                disabled={deletingId === deleteConfirmId}
                 className="flex-1 py-3 bg-curtain-red text-paper-white font-label-caps text-label-caps border-2 border-ink-black sketch-border hard-shadow hover:scale-[1.02] active:scale-95 transition-all"
               >
-                Hapus
+                {deletingId === deleteConfirmId ? "Menghapus..." : "Hapus"}
               </button>
             </div>
           </div>

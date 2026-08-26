@@ -104,6 +104,13 @@ const login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Account is disabled or deleted' });
     }
 
+    // Some legacy/admin records may not have a password hash. Treat them as
+    // invalid credentials instead of passing undefined into bcrypt.
+    if (!user.passwordHash) {
+      await logAudit(user.id, 'LOGIN_FAILED', 'Password is not configured', req.ip);
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+
     // Check password
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
@@ -138,7 +145,7 @@ const login = async (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error', requestId: req.requestId });
   }
 };
 

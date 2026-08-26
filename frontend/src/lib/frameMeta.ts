@@ -5,6 +5,8 @@ export interface PhotoSlot {
   y: number;
   width: number;
   height: number;
+  rotation?: number;
+  zIndex?: number;
 }
 
 export interface FrameMeta {
@@ -21,31 +23,43 @@ export function getFrameMasterUrl(frame: FrameData): string {
   return frame.masterImageUrl || getFramePreviewUrl(frame);
 }
 
+function getResourceBasename(resource: string): string {
+  const withoutQuery = resource.split(/[?#]/, 1)[0];
+  const basename = withoutQuery.split('/').pop() || '';
+  try {
+    return decodeURIComponent(basename);
+  } catch {
+    return basename;
+  }
+}
+
+function frameMatchesImage(frame: FrameData, imageUrl: string): boolean {
+  const requested = getResourceBasename(imageUrl);
+  return [frame.imageUrl, frame.previewImageUrl, frame.masterImageUrl]
+    .filter((url): url is string => Boolean(url))
+    .some((url) => getResourceBasename(url) === requested);
+}
+
+export function getFrameMetaFromFrame(frame: FrameData | null): FrameMeta | null {
+  if (!frame) return null;
+
+  return {
+    imageUrlBasename: getResourceBasename(getFramePreviewUrl(frame)),
+    photoCount: frame.slots?.length || 1,
+    slots: frame.slots || [],
+  };
+}
+
 /**
  * Mengambil metadata slot berdasarkan frame imageUrl.
  * Data slots kini berasal dari database via API (tersimpan di zustand store).
  */
 export function getFrameMeta(imageUrl: string): FrameMeta | null {
   if (!imageUrl) return null;
-  const parts = imageUrl.split('/');
-  const basename = parts[parts.length - 1];
-  const decoded = decodeURIComponent(basename);
 
   const frames = useAppStore.getState().frames;
-  // Cari berdasarkan basename atau full url
-  const frame = frames.find(f => {
-    const fParts = f.imageUrl.split('/');
-    const fBasename = decodeURIComponent(fParts[fParts.length - 1]);
-    return fBasename === decoded;
-  });
-
-  if (!frame) return null;
-
-  return {
-    imageUrlBasename: decoded,
-    photoCount: frame.slots ? frame.slots.length : 1,
-    slots: frame.slots || []
-  };
+  const frame = frames.find((candidate) => frameMatchesImage(candidate, imageUrl));
+  return getFrameMetaFromFrame(frame || null);
 }
 
 /**

@@ -8,6 +8,8 @@ export interface FrameSlotData {
   y: number;
   width: number;
   height: number;
+  rotation?: number;
+  zIndex?: number;
 }
 
 export interface FrameData {
@@ -17,6 +19,8 @@ export interface FrameData {
   imageUrl: string;
   previewImageUrl?: string | null;
   masterImageUrl?: string | null;
+  width?: number | null;
+  height?: number | null;
   cssPlaceholder: string;
   slots: FrameSlotData[];
 }
@@ -47,6 +51,7 @@ interface AppState {
   advancePhotoIndex: () => void;
   setPhotoIndex: (index: number) => void;
   resetPhotoSession: () => void;
+  resetSession: () => void;
 
   // ── Frame data ───────────────────────────────────────────
   selectedFrameId: string | null;
@@ -112,6 +117,17 @@ export const useAppStore = create<AppState>()(
       }),
       setPhotoIndex: (index: number) => set({ currentPhotoIndex: index }),
       resetPhotoSession: () => set({ currentPhotoIndex: 0 }),
+      resetSession: () => set({
+        currentStep: 'landing',
+        capturedPhotos: [],
+        capturedPhotoMirrors: [],
+        capturedImage: null,
+        currentPhotoIndex: 0,
+        totalPhotosNeeded: 1,
+        brightness: 100,
+        contrast: 100,
+        saturation: 100,
+      }),
 
       // ── Frame data ─────────────────────────────────────────
       selectedFrameId: null,
