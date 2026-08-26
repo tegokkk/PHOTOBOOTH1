@@ -11,30 +11,6 @@ const MOCK_FRAMES = [
     slots: []
   },
   {
-    name: 'Retro Friends',
-    category: 'Vintage',
-    imageUrl: '/frames/Black and White Retro Friends Photo Strip Bookmark.webp',
-    cssPlaceholder: 'border-8 border-black border-double bg-transparent',
-    slots: [
-      { x: 0.0939, y: 0.0368, width: 0.8123, height: 0.1947 },
-      { x: 0.0939, y: 0.2521, width: 0.8123, height: 0.1945 },
-      { x: 0.0939, y: 0.4677, width: 0.8123, height: 0.1945 },
-      { x: 0.0939, y: 0.6836, width: 0.8123, height: 0.1945 }
-    ]
-  },
-
-  {
-    name: 'Pizza Booth',
-    category: 'Aesthetic',
-    imageUrl: '/frames/Orange and White Playful Pizza Photo Booth Bookmark.webp',
-    cssPlaceholder: 'border-8 border-orange-500 border-double bg-transparent',
-    slots: [
-      { x: 0.2587, y: 0.0288, width: 0.7109, height: 0.237 },
-      { x: 0.2587, y: 0.2921, width: 0.7109, height: 0.237 },
-      { x: 0.2587, y: 0.5554, width: 0.7109, height: 0.237 }
-    ]
-  },
-  {
     name: 'Beige Friends',
     category: 'Aesthetic',
     imageUrl: '/frames/Beige and Colorful Playful Friends Photo Booth Bookmark.webp',
