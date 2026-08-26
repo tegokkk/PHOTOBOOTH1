@@ -1,12 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const useFrameAssetColumns = process.env.FRAME_ASSET_COLUMNS_ENABLED === 'true';
-const RETIRED_FRAME_NAMES = [
-  'Playful Fashion',
-  'Modern Fashion',
-  'Green Scrapbook',
-  'Pink Home Decor',
-];
 
 const MOCK_FRAMES = [
   {
@@ -28,17 +22,7 @@ const MOCK_FRAMES = [
       { x: 0.0939, y: 0.6836, width: 0.8123, height: 0.1945 }
     ]
   },
-  {
-    name: 'Playful Fashion',
-    category: 'Party',
-    imageUrl: '/frames/Blue and Red Playful Fashion Photo Strip Bookmark (1) (1).webp',
-    cssPlaceholder: 'border-4 border-pink-500 bg-transparent',
-    slots: [
-      { x: 0.1701, y: 0.1275, width: 0.6597, height: 0.2076 },
-      { x: 0.1701, y: 0.3632, width: 0.6597, height: 0.2078 },
-      { x: 0.1701, y: 0.5991, width: 0.6597, height: 0.2076 }
-    ]
-  },
+
   {
     name: 'Pizza Booth',
     category: 'Aesthetic',
@@ -60,18 +44,7 @@ const MOCK_FRAMES = [
       { x: 0.1056, y: 0.3886, width: 0.7952, height: 0.3252 }
     ]
   },
-  {
-    name: 'Modern Fashion',
-    category: 'Vintage',
-    imageUrl: '/frames/Black and White Modern Fashion Photo Strip Collage Bookmark.webp',
-    cssPlaceholder: 'border-4 border-gray-500 border-dotted bg-transparent',
-    slots: [
-      { x: 0.1589, y: 0.066, width: 0.6821, height: 0.17 },
-      { x: 0.1589, y: 0.2549, width: 0.6821, height: 0.17 },
-      { x: 0.1589, y: 0.4439, width: 0.6821, height: 0.1698 },
-      { x: 0.1589, y: 0.6331, width: 0.6821, height: 0.1698 }
-    ]
-  },
+
   {
     name: 'Modern Friends',
     category: 'Party',
@@ -132,15 +105,7 @@ const MOCK_FRAMES = [
       { x: 0.1211, y: 0.5872, width: 0.7573, height: 0.1941 }
     ]
   },
-  {
-    name: 'Green Scrapbook',
-    category: 'Minimalist',
-    imageUrl: '/frames/Green Neutral Minimalist Simple Scrapbook Photo Frame Instagram Post (1).png',
-    cssPlaceholder: 'border-4 border-green-300 bg-transparent',
-    slots: [
-      { x: 0.2421, y: 0.2766, width: 0.5159, height: 0.4802 }
-    ]
-  },
+
   {
     name: 'Pink Illustrated Friendship',
     category: 'Cute',
@@ -152,16 +117,7 @@ const MOCK_FRAMES = [
       { x: 0.0805, y: 0.6071, width: 0.8352, height: 0.2786 }
     ]
   },
-  {
-    name: 'Pink Home Decor',
-    category: 'Cute',
-    imageUrl: '/frames/Pink and Blue Illustrated Home Decor Photo Strip Bookmark.png',
-    cssPlaceholder: 'border-4 border-pink-400 bg-transparent',
-    slots: [
-      { x: 0.1275, y: 0.1534, width: 0.7205, height: 0.2299 },
-      { x: 0.0784, y: 0.4871, width: 0.8336, height: 0.2672 }
-    ]
-  },
+
   {
     name: 'Pink Strike A Pose',
     category: 'Cute',
@@ -215,13 +171,8 @@ const MOCK_FRAMES = [
 async function main() {
   console.log('Start seeding...');
 
-  await prisma.frame.updateMany({
-    where: { name: { in: RETIRED_FRAME_NAMES } },
-    data: { isActive: false, deletedAt: new Date() },
-  });
 
   for (const frame of MOCK_FRAMES) {
-    if (RETIRED_FRAME_NAMES.includes(frame.name)) continue;
     let targetFrame = await prisma.frame.findFirst({
       where: { name: frame.name }
     });
