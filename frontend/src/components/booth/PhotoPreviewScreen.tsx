@@ -12,9 +12,16 @@ import { getFrameMetaFromFrame, getFramePreviewUrl } from "@/lib/frameMeta";
 import { useAuthStore } from "@/store/useAuthStore";
 import { API_URL } from "@/lib/api";
 
+function createIdempotencyKey(): string {
+  if (typeof crypto === "undefined") throw new Error("Browser tidak mendukung pembuatan ID sesi aman.");
+  if (crypto.randomUUID) return crypto.randomUUID();
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
 export function PhotoPreviewScreen() {
   const {
-    capturedPhotos, clearPhotos,
+    capturedPhotos, clearPhotos, resetPhotoSession,
     selectedFrameId, frames,
     brightness, contrast, saturation,
     setCurrentStep, resetEdits, resetSession,
@@ -32,6 +39,7 @@ export function PhotoPreviewScreen() {
     id: string;
     guestAccessToken?: string;
   } | null>(null);
+  const uploadKeysRef = useRef(new Map<string, string>());
 
   const currentFrame = frames.find((f) => f.id === selectedFrameId) || null;
   const previewFrameUrl = currentFrame ? getFramePreviewUrl(currentFrame) : "";
@@ -40,6 +48,7 @@ export function PhotoPreviewScreen() {
 
   const handleRetake = () => {
     setUploadedPhoto(null);
+    uploadKeysRef.current.clear();
     setFinalCompositeUrl(null);
     clearPhotos();
     resetEdits();
@@ -63,6 +72,16 @@ export function PhotoPreviewScreen() {
       isCompositingRef.current = false;
       setIsCompositing(false);
     }
+  };
+
+  const handleChangeFrame = () => {
+    setUploadedPhoto(null);
+    uploadKeysRef.current.clear();
+    setFinalCompositeUrl(null);
+    clearPhotos();
+    resetPhotoSession();
+    resetEdits();
+    setCurrentStep("frame-selection");
   };
 
   const handlePrintClick = async () => {
@@ -136,6 +155,12 @@ export function PhotoPreviewScreen() {
 
     const headers: Record<string, string> = { "Content-Type": "application/json" };
     if (token) headers.Authorization = `Bearer ${token}`;
+    let idempotencyKey = uploadKeysRef.current.get(outputKey);
+    if (!idempotencyKey) {
+      idempotencyKey = createIdempotencyKey();
+      uploadKeysRef.current.set(outputKey, idempotencyKey);
+    }
+    headers["Idempotency-Key"] = idempotencyKey;
 
     const shareBody: { photoId: string; accessToken?: string } = {
       photoId: photo.id,
@@ -161,6 +186,7 @@ export function PhotoPreviewScreen() {
     setIsPrintOpen(false);
     setFinalCompositeUrl(null);
     setUploadedPhoto(null);
+    uploadKeysRef.current.clear();
     resetSession();
   };
 
@@ -301,7 +327,7 @@ export function PhotoPreviewScreen() {
           </button>
 
           <button
-            onClick={() => setCurrentStep("frame-selection")}
+            onClick={handleChangeFrame}
             className="flex-1 md:flex-none min-w-[130px] px-5 py-4 bg-paper-white text-ink-black
               font-interactive-btn text-interactive-btn border-2 border-ink-black sketch-border hard-shadow
               hover:bg-surface-container-low active:scale-95 transition-all duration-150 flex items-center justify-center gap-2"

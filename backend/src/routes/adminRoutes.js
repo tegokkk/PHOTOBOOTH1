@@ -5,5 +5,6 @@ const { verifyAdmin } = require('../middleware/authMiddleware');
 
 // Endpoint untuk metrics khusus admin
 router.get('/metrics', verifyAdmin, adminController.getMetrics);
+router.get('/photos', verifyAdmin, adminController.getRecentPhotos);
 
 module.exports = router;

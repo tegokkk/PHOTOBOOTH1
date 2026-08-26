@@ -8,7 +8,11 @@ import { LandingScreen } from "@/components/booth/LandingScreen";
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function Home() {
-  const { currentStep } = useAppStore();
+  const { currentStep, isSessionOpen } = useAppStore();
+
+  if (currentStep !== "landing" && !isSessionOpen) {
+    return <LandingScreen />;
+  }
 
   const renderStep = () => {
     switch (currentStep) {

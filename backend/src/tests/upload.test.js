@@ -1,6 +1,6 @@
 jest.mock('../lib/prisma', () => ({
   frame: { findUnique: jest.fn() },
-  photo: { create: jest.fn() },
+  photo: { findUnique: jest.fn(), create: jest.fn() },
 }));
 
 const fs = require('fs');
@@ -83,6 +83,27 @@ describe('Upload Validation', () => {
       const createdFile = fs.readdirSync(uploadDir).find((file) => file.startsWith('photo_'));
       expect(createdFile).toBeDefined();
       fs.rmSync(uploadDir, { recursive: true, force: true });
+    });
+
+    it('should return the existing anonymous photo for a repeated idempotency key', async () => {
+      prisma.photo.create.mockClear();
+      const existingPhoto = {
+        id: 'photo-existing',
+        userId: null,
+        compositeImageUrl: '/api/media/photo_existing.jpg',
+      };
+      prisma.photo.findUnique.mockResolvedValue(existingPhoto);
+
+      const photo = await processAndSavePhoto({
+        compositeImageBase64: validPngBase64,
+        idempotencyKey: 'session-upload-key',
+      });
+
+      expect(photo).toEqual(expect.objectContaining({
+        id: 'photo-existing',
+        guestAccessToken: 'session-upload-key',
+      }));
+      expect(prisma.photo.create).not.toHaveBeenCalled();
     });
   });
 });

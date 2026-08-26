@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/Button";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Format email tidak valid" }),
-  password: z.string().min(6, { message: "Password minimal 6 karakter" }),
+  password: z.string().min(8, { message: "Password minimal 8 karakter" }).regex(/[a-zA-Z]/, { message: "Password harus memiliki huruf" }).regex(/\d/, { message: "Password harus memiliki angka" }),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;

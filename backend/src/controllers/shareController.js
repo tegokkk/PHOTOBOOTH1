@@ -37,6 +37,20 @@ const createShareLink = async (req, res) => {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
+    const existingShareLink = await prisma.shareLink.findFirst({
+      where: {
+        photoId,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (existingShareLink) {
+      return res.status(200).json({
+        success: true,
+        data: { token: existingShareLink.token, expiresAt: existingShareLink.expiresAt },
+      });
+    }
+
     // Transaction for creation and increment
     const [shareLink] = await prisma.$transaction([
       prisma.shareLink.create({

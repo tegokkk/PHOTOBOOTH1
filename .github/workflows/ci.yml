@@ -9,8 +9,24 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/photobooth_test
     permissions:
       contents: read
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: photobooth_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d photobooth_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     
     steps:
     - uses: actions/checkout@v3
@@ -19,6 +35,10 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: '20'
+
+    - name: Configure CI runtime secret
+      shell: bash
+      run: echo "JWT_SECRET=ci-$(date +%s)-riri-test-secret" >> "$GITHUB_ENV"
         
     - name: Backend - Install dependencies
       working-directory: ./backend
@@ -32,14 +52,8 @@ jobs:
       working-directory: ./backend
       run: npx prisma validate
 
-    - name: Backend - Prepare CI Database
-      working-directory: ./backend
-      run: touch prisma/ci.db
-
     - name: Backend - Apply Migrations
       working-directory: ./backend
-      env:
-        DATABASE_URL: file:./ci.db
       run: npx prisma migrate deploy
 
     - name: Backend - Run Tests

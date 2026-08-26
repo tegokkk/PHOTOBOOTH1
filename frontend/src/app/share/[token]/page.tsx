@@ -3,6 +3,7 @@ import Link from "next/link";
 import { API_URL } from "@/lib/api";
 import { toApiUrl } from "@/lib/media";
 import { Metadata } from "next";
+import { ShareDownloadButton } from "@/components/share/ShareDownloadButton";
 
 interface SharePageProps {
   params: Promise<{ token: string }>;
@@ -73,10 +74,7 @@ export default async function SharedPhotoPage({ params }: SharePageProps) {
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-            <a href={imageUrl} download target="_blank" rel="noopener noreferrer" className="w-full px-4 py-4 bg-blueprint-blue text-paper-white font-interactive-btn border-2 border-ink-black sketch-border hard-shadow hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>download</span>
-              Unduh Gambar
-            </a>
+            <ShareDownloadButton imageUrl={imageUrl} filename={`ririi-${photo.frame?.name || "photobooth"}.jpg`} />
             <Link href="/" className="w-full px-4 py-4 bg-paper-white text-ink-black font-interactive-btn border-2 border-ink-black sketch-border hard-shadow hover:bg-surface-container-low active:scale-[0.98] transition-all flex items-center justify-center gap-2">
               <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>add_a_photo</span>
               Buat Foto Sendiri

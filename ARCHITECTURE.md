@@ -30,6 +30,9 @@ This document outlines the production architecture for the Photobooth applicatio
   * `UPLOAD_DIR` (Absolute path for persistent volume)
   * `NODE_ENV=production`
   * `GUEST_PHOTO_RETENTION_HOURS` (default 168 hours / 7 days)
+  * `ALLOW_PUBLIC_REGISTRATION` (`false` by default in production)
+
+The kiosk flow confirms manual payment locally and does not create a payment record. Printing is handled by the browser dialog or the optional local print bridge documented in [`docs/PRINT_BRIDGE.md`](docs/PRINT_BRIDGE.md). Online photo upload is protected against retry duplication by the `idempotency_key` migration.
 
 ## 5. Reverse Proxy & TLS
 * The backend will run behind a reverse proxy (Nginx or Caddy) which terminates TLS (SSL) using Let's Encrypt.

@@ -7,6 +7,9 @@ const uploadPhoto = async (req, res) => {
     const newPhoto = await photoService.processAndSavePhoto({
       frameId,
       compositeImageBase64,
+      idempotencyKey: typeof req.header('Idempotency-Key') === 'string'
+        ? req.header('Idempotency-Key').trim().slice(0, 128)
+        : null,
       userId: req.user ? req.user.id : null,
       userAgent: req.headers['user-agent'],
       ip: req.ip
@@ -16,6 +19,9 @@ const uploadPhoto = async (req, res) => {
   } catch (error) {
     if (error.message.includes('File too large')) {
       return res.status(413).json({ success: false, message: error.message, requestId: req.requestId });
+    }
+    if (error.message.includes('Idempotency key')) {
+      return res.status(409).json({ success: false, message: error.message, requestId: req.requestId });
     }
     if (error.message.includes('Invalid') || error.message.includes('too large') || error.message.includes('required')) {
       return res.status(400).json({ success: false, message: error.message, requestId: req.requestId });

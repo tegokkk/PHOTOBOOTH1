@@ -15,13 +15,26 @@ async function cleanupPhotos() {
     1
   );
   const guestCutoff = new Date(Date.now() - guestRetentionHours * 60 * 60 * 1000);
+  const now = new Date();
 
   try {
     const photosToDelete = await prisma.photo.findMany({
       where: {
         OR: [
           { deletedAt: { lte: thirtyDaysAgo } },
-          { userId: null, deletedAt: null, createdAt: { lte: guestCutoff } },
+          {
+            userId: null,
+            deletedAt: null,
+            createdAt: { lte: guestCutoff },
+            shareLinks: {
+              none: {
+                OR: [
+                  { expiresAt: null },
+                  { expiresAt: { gt: now } },
+                ],
+              },
+            },
+          },
         ],
       }
     });

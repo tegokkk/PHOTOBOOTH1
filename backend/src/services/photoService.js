@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_IMAGE_DIMENSION = 8000;
 const MAX_IMAGE_PIXELS = 40000000;
+let idempotencyColumnAvailable = null;
 
 function checkMagicBytes(buffer) {
   if (buffer.length < 4) return false;
@@ -90,9 +91,29 @@ function hasValidGuestAccess(photo, accessToken) {
   return providedHash.length === storedHash.length && crypto.timingSafeEqual(providedHash, storedHash);
 }
 
-const processAndSavePhoto = async ({ frameId, compositeImageBase64, userId, userAgent, ip }) => {
+const processAndSavePhoto = async ({ frameId, compositeImageBase64, idempotencyKey, userId, userAgent, ip }) => {
   if (!compositeImageBase64) {
     throw new Error('Image data is required');
+  }
+
+  if (idempotencyKey && idempotencyColumnAvailable !== false && typeof prisma.photo.findUnique === 'function') {
+    try {
+      const existingPhoto = await prisma.photo.findUnique({ where: { idempotencyKey } });
+      idempotencyColumnAvailable = true;
+      if (existingPhoto) {
+        const sameOwner = (existingPhoto.userId || null) === (userId || null);
+        if (!sameOwner) throw new Error('Idempotency key belongs to another photo owner');
+        return userId ? existingPhoto : { ...existingPhoto, guestAccessToken: idempotencyKey };
+      }
+    } catch (error) {
+      // Allow a rolling deploy to finish before the additive migration reaches the DB.
+      // Once migrated, this flag stays true and duplicate uploads are prevented.
+      if (error?.code === 'P2022' || /idempotency.?key|column.*does not exist|unknown argument/i.test(error?.message || '')) {
+        idempotencyColumnAvailable = false;
+      } else {
+        throw error;
+      }
+    }
   }
 
   if (frameId) {
@@ -100,7 +121,7 @@ const processAndSavePhoto = async ({ frameId, compositeImageBase64, userId, user
     if (!frame) {
       throw new Error('Invalid frame: Frame not found');
     }
-    if (!frame.isActive) {
+    if (!frame.isActive || frame.deletedAt) {
       throw new Error('Invalid frame: Frame is not active');
     }
   }
@@ -151,7 +172,7 @@ const processAndSavePhoto = async ({ frameId, compositeImageBase64, userId, user
   const fileName = `photo_${crypto.randomUUID()}.${ext}`;
   const uploadsDir = process.env.UPLOAD_DIR || path.join(__dirname, '../../uploads');
   const filePath = path.join(uploadsDir, fileName);
-  const guestAccessToken = userId ? null : crypto.randomBytes(32).toString('hex');
+  const guestAccessToken = userId ? null : (idempotencyKey || crypto.randomBytes(32).toString('hex'));
 
   const supabase = require('../lib/supabase');
   let fileWritten = false;
@@ -180,10 +201,10 @@ const processAndSavePhoto = async ({ frameId, compositeImageBase64, userId, user
 
     // Use /api/media/ path instead of static /uploads/
     const imageUrl = `/api/media/${fileName}`;
-    const metadata = JSON.stringify({ userAgent, ip, originalMime: mimeType });
+    // Keep the photo record free of unnecessary device/network identifiers.
+    const metadata = JSON.stringify({ originalMime: mimeType });
 
-    const newPhoto = await prisma.photo.create({
-      data: {
+    const photoData = {
         userId: userId || null,
         frameId: frameId || null,
         originalImageUrl: '',
@@ -194,8 +215,9 @@ const processAndSavePhoto = async ({ frameId, compositeImageBase64, userId, user
         metadata: metadata,
         guestAccessTokenHash: guestAccessToken ? hashAccessToken(guestAccessToken) : null,
         isPublic: false,
-      }
-    });
+        ...(idempotencyKey && idempotencyColumnAvailable !== false ? { idempotencyKey } : {}),
+      };
+    const newPhoto = await prisma.photo.create({ data: photoData });
 
     return guestAccessToken ? { ...newPhoto, guestAccessToken } : newPhoto;
   } catch (error) {
@@ -241,6 +263,25 @@ const getPhotosList = async (userId, limit, cursor, status) => {
   }
 
   return { photos, pagination: { hasNextPage, nextCursor } };
+};
+
+const getAdminPhotosList = async (limit = 50) => {
+  const take = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 100);
+  return prisma.photo.findMany({
+    where: { deletedAt: null },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      compositeImageUrl: true,
+      width: true,
+      height: true,
+      createdAt: true,
+      frame: {
+        select: { id: true, name: true, category: true },
+      },
+    },
+    take,
+  });
 };
 
 const getSinglePhoto = async (id, userId, isAdmin, guestAccessToken) => {
@@ -309,6 +350,7 @@ const permanentDeletePhoto = async (id, userId, isAdmin) => {
 module.exports = {
   processAndSavePhoto,
   getPhotosList,
+  getAdminPhotosList,
   getSinglePhoto,
   trashPhoto,
   restorePhotoFromTrash,

@@ -1,4 +1,5 @@
 const prisma = require('../lib/prisma');
+const photoService = require('../services/photoService');
 
 const getMetrics = async (req, res) => {
   try {
@@ -44,6 +45,17 @@ const getMetrics = async (req, res) => {
   }
 };
 
+const getRecentPhotos = async (req, res) => {
+  try {
+    const photos = await photoService.getAdminPhotosList(req.query.limit);
+    res.status(200).json({ success: true, data: photos });
+  } catch (error) {
+    console.error('Failed to fetch admin photos:', error);
+    res.status(500).json({ success: false, message: 'Server error', requestId: req.requestId });
+  }
+};
+
 module.exports = {
-  getMetrics
+  getMetrics,
+  getRecentPhotos
 };

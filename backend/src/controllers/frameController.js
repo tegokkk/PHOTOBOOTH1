@@ -33,7 +33,8 @@ const getFrames = async (req, res) => {
   try {
     const frames = await prisma.frame.findMany({
       where: {
-        isActive: true
+        isActive: true,
+        deletedAt: null,
       },
       ...frameRelationsQuery,
       orderBy: {
@@ -63,6 +64,13 @@ const getFrameById = async (req, res) => {
     });
 
     if (!frame) {
+      return res.status(404).json({
+        success: false,
+        message: 'Frame not found'
+      });
+    }
+
+    if (frame.isActive === false || frame.deletedAt) {
       return res.status(404).json({
         success: false,
         message: 'Frame not found'

@@ -31,6 +31,9 @@ interface AppState {
   // ── Step / flow ─────────────────────────────────────────
   currentStep: AppStep;
   setCurrentStep: (step: AppStep) => void;
+  isSessionOpen: boolean;
+  openSession: () => void;
+  closeSession: () => void;
 
   // ── Captured photos ───────────────────────────────────────
   // Array: one dataUrl per slot (multi-slot frames) or one element
@@ -76,6 +79,9 @@ export const useAppStore = create<AppState>()(
       // ── Step / flow ───────────────────────────────────────
       currentStep: 'landing',
       setCurrentStep: (step) => set({ currentStep: step }),
+      isSessionOpen: false,
+      openSession: () => set({ isSessionOpen: true, currentStep: 'frame-selection' }),
+      closeSession: () => set({ isSessionOpen: false, currentStep: 'landing' }),
 
       // ── Captured photos ─────────────────────────────────────
       capturedPhotos: [],
@@ -119,6 +125,7 @@ export const useAppStore = create<AppState>()(
       resetPhotoSession: () => set({ currentPhotoIndex: 0 }),
       resetSession: () => set({
         currentStep: 'landing',
+        isSessionOpen: false,
         selectedFrameId: null,
         capturedPhotos: [],
         capturedPhotoMirrors: [],

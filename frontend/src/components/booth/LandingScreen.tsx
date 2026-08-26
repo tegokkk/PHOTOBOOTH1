@@ -4,14 +4,20 @@ import { useAppStore } from "@/store/useAppStore";
 import { useState } from "react";
 
 export function LandingScreen() {
-  const { resetSession, setCurrentStep } = useAppStore();
+  const { resetSession, openSession } = useAppStore();
   const [isExiting, setIsExiting] = useState(false);
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
 
   const handleStart = () => {
+    setIsPaymentDialogOpen(true);
+  };
+
+  const handleConfirmPayment = () => {
+    setIsPaymentDialogOpen(false);
     setIsExiting(true);
     setTimeout(() => {
       resetSession();
-      setCurrentStep("frame-selection");
+      openSession();
     }, 300);
   };
 
@@ -50,7 +56,7 @@ export function LandingScreen() {
         </div>
 
         <p className="font-body-md text-body-md text-on-surface-variant max-w-lg mb-12">
-          Tangkap momen seru kamu dengan gaya brutalist! Pilih frame favoritmu, ambil foto, dan simpan atau bagikan ke teman-teman.
+          Tangkap momen seru kamu dengan gaya brutalist! Setelah pembayaran diterima operator, pilih frame, ambil foto, lalu cetak atau bagikan.
         </p>
 
         {/* Action Button */}
@@ -85,6 +91,50 @@ export function LandingScreen() {
             <span className="material-symbols-outlined text-ink-black/20 text-4xl">cruelty_free</span>
         </div>
       </div>
+
+      {isPaymentDialogOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-ink-black/50 backdrop-blur-sm z-[70]"
+            onClick={() => setIsPaymentDialogOpen(false)}
+            aria-hidden="true"
+          />
+          <div
+            className="fixed inset-x-4 bottom-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 z-[70] w-auto md:w-full md:max-w-md bg-paper-white border-2 border-ink-black sketch-border hard-shadow-lg p-6"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="payment-confirmation-title"
+          >
+            <div className="flex items-start gap-3">
+              <span className="material-symbols-outlined text-curtain-red text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+                payments
+              </span>
+              <div>
+                <h2 id="payment-confirmation-title" className="font-headline-lg-mobile text-headline-lg-mobile text-ink-black">
+                  Konfirmasi Pembayaran
+                </h2>
+                <p className="font-body-md text-body-md text-on-surface-variant mt-2">
+                  Pastikan pembayaran manual sudah diterima sebelum membuka sesi foto. Pembayaran tidak disimpan di sistem.
+                </p>
+              </div>
+            </div>
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                onClick={() => setIsPaymentDialogOpen(false)}
+                className="py-4 bg-paper-white text-ink-black font-interactive-btn border-2 border-ink-black sketch-border hard-shadow"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleConfirmPayment}
+                className="py-4 bg-curtain-red text-paper-white font-interactive-btn border-2 border-ink-black sketch-border hard-shadow"
+              >
+                Pembayaran Diterima
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
     </main>
   );

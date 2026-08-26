@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useCamera } from "@/hooks/useCamera";
 import { useAppStore } from "@/store/useAppStore";
 import { useUIStore } from "@/store/useUIStore";
-import { getFrameMeta, getFramePreviewUrl } from "@/lib/frameMeta";
+import { getFrameMetaFromFrame, getFramePreviewUrl } from "@/lib/frameMeta";
 import { CameraOverlays } from "./camera/CameraOverlays";
 import { CameraControls } from "./camera/CameraControls";
 
@@ -27,7 +27,7 @@ export function CameraScreen() {
 
   const currentFrame = frames.find((f) => f.id === selectedFrameId) || null;
   const previewFrameUrl = currentFrame ? getFramePreviewUrl(currentFrame) : "";
-  const frameMeta = previewFrameUrl ? getFrameMeta(previewFrameUrl) : null;
+  const frameMeta = getFrameMetaFromFrame(currentFrame);
   const photoCount = frameMeta?.photoCount ?? 1;
 
   // Init photo session on mount
@@ -125,6 +125,8 @@ export function CameraScreen() {
             }
             if (countdownRef.current) clearInterval(countdownRef.current);
             stopCamera();
+            clearPhotos();
+            resetPhotoSession();
             setCurrentStep("frame-selection");
           }}
           className="ml-auto flex items-center gap-1 font-label-caps text-label-caps text-on-surface-variant hover:text-curtain-red transition-colors text-sm"

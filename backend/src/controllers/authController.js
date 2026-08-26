@@ -22,6 +22,10 @@ const logAudit = async (userId, action, details, ipAddress) => {
 
 const register = async (req, res) => {
   try {
+    if (process.env.NODE_ENV === 'production' && process.env.ALLOW_PUBLIC_REGISTRATION !== 'true') {
+      return res.status(404).json({ success: false, message: 'Pendaftaran publik dinonaktifkan' });
+    }
+
     let { email, password, fullName } = req.body;
 
     if (!email || !password) {

@@ -184,6 +184,7 @@ UPLOAD_DIR="./uploads"
 FRAME_STORAGE_BUCKET="frames"
 FRAME_MASTER_DIR="../FRAME/masters"
 FRAME_ASSET_COLUMNS_ENABLED="false"
+ALLOW_PUBLIC_REGISTRATION="false"
 ```
 
 Untuk memakai Supabase Storage, tambahkan konfigurasi berikut ke `backend/.env`:
@@ -279,6 +280,9 @@ Semua route API memakai prefix `/api` dan rate limiting umum. Route yang memerlu
 | `DELETE` | `/api/share/:token` | Owner/admin | Mencabut tautan berbagi |
 | `GET` | `/api/media/:filename` | Protected | Menyajikan media setelah authorization |
 | `GET` | `/api/admin/metrics` | Admin JWT | Mengambil metrics administrasi |
+| `GET` | `/api/admin/photos` | Admin JWT | Mengambil foto terbaru untuk pengecekan dan cetak ulang |
+
+Upload foto memakai header `Idempotency-Key` agar retry jaringan tidak membuat record atau file foto ganda. Detail kontrak printer tersedia di [docs/PRINT_BRIDGE.md](./docs/PRINT_BRIDGE.md).
 
 ## Workflow Development dan CI
 
@@ -308,6 +312,13 @@ Sebelum rilis, jalankan release gate lokal dari PowerShell:
 .\scripts\validate-release.ps1
 ```
 
+Jika database runtime memakai Supabase transaction pooler (`:6543`), sediakan direct database URL (`:5432`) untuk pengecekan migration:
+
+```powershell
+$env:PHOTOBOOTH_MIGRATION_DATABASE_URL = "postgresql://USER:PASSWORD@DIRECT_HOST:5432/DATABASE?schema=public"
+.\scripts\validate-release.ps1
+```
+
 Script tersebut memeriksa hygiene repository, asset frame, potensi secret, test, Prisma, audit, lint, dan production build.
 
 ## Keamanan dan Privasi
@@ -319,16 +330,18 @@ Script tersebut memeriksa hygiene repository, asset frame, potensi secret, test,
 - Upload hanya menerima PNG atau JPEG dengan validasi magic bytes, batas 5 MB, dimensi maksimum 8.000 px, dan maksimum 40 juta pixel.
 - File foto tidak disajikan sebagai static public directory. Akses media diperiksa melalui owner, admin, foto public, share token, atau guest access token.
 - Share link memiliki masa berlaku default tujuh hari dan dapat dicabut oleh pemilik atau admin.
+- Foto guest yang kedaluwarsa tidak dihapus jika masih memiliki share link yang aktif.
+- Pendaftaran publik production nonaktif secara default; aktifkan hanya jika memang diperlukan dengan `ALLOW_PUBLIC_REGISTRATION=true`.
 
 ## Deployment
 
 Backend memiliki konfigurasi Vercel pada `backend/vercel.json`. Untuk deployment production:
 
-1. Sediakan PostgreSQL production dan jalankan `npx prisma migrate deploy`.
+1. Sediakan PostgreSQL production dan jalankan `npx prisma migrate deploy` menggunakan direct database connection (bukan transaction pooler). Setelah migration selesai, arahkan runtime ke pooler dengan `PRISMA_PGBOUNCER=true` bila diperlukan.
 2. Set `DATABASE_URL`, `JWT_SECRET`, `FRONTEND_URL`, dan `NODE_ENV=production` pada backend.
 3. Jika `DATABASE_URL` memakai transaction pooler, set `PRISMA_PGBOUNCER=true`. Runtime production otomatis memakai mode kompatibel untuk mencegah konflik prepared statement.
 4. Pilih Supabase Storage atau filesystem persisten untuk media. Filesystem ephemeral tidak cocok untuk production.
-5. Set `NEXT_PUBLIC_API_URL` pada frontend ke URL backend production. Biarkan `NEXT_PUBLIC_PRINT_BRIDGE_URL` kosong jika memakai dialog printer iPad.
+5. Set `NEXT_PUBLIC_API_URL` pada frontend ke URL backend production. Set `NEXT_PUBLIC_PRINT_BRIDGE_URL` ke endpoint bridge lokal jika printer dikendalikan komputer/mini-PC booth; detail payload ada di [docs/PRINT_BRIDGE.md](./docs/PRINT_BRIDGE.md).
 6. Set `GUEST_PHOTO_RETENTION_HOURS` lalu jadwalkan `npm run photos:cleanup` sebagai cron/Task Scheduler.
 7. Jalankan CI dan pastikan endpoint `/health` serta `/ready` merespons sesuai harapan.
 

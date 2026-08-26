@@ -24,7 +24,7 @@ export function ExportDialog({
   const { showToast } = useUIStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const isProcessingRef = useRef(false);
-  const [shareLinkToken, setShareLinkToken] = useState<string | null>(null);
+  const [shareLink, setShareLink] = useState<{ token: string; expiresAt?: string | null } | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -56,7 +56,7 @@ export function ExportDialog({
     try {
       const token = await onCreateShareLink();
       if (!token) throw new Error("Gagal membuat tautan.");
-      setShareLinkToken(token);
+      setShareLink({ token });
       showToast("Tautan bagikan berhasil dibuat!", "success");
     } catch (err: unknown) {
       console.error(err);
@@ -68,8 +68,8 @@ export function ExportDialog({
     }
   };
 
-  const fullShareUrl = shareLinkToken
-    ? `${window.location.origin}/share/${encodeURIComponent(shareLinkToken)}`
+  const fullShareUrl = shareLink
+    ? `${window.location.origin}/share/${encodeURIComponent(shareLink.token)}`
     : "";
 
   const handleWebShare = async () => {
@@ -116,12 +116,15 @@ export function ExportDialog({
         {/* Content */}
         <div className="p-6 space-y-6">
           {/* If a share link exists, show QR Code instead of Preview */}
-          {shareLinkToken ? (
+          {shareLink ? (
             <div className="flex flex-col items-center gap-4 bg-surface-container-lowest p-6 sketch-border border-2 border-ink-black text-center">
               <h3 className="font-label-caps text-label-caps text-ink-black text-lg">Pindai untuk Mengunduh</h3>
               <div className="bg-white p-4 border-2 border-ink-black hard-shadow-sm">
                 <QRCodeSVG value={fullShareUrl} size={150} />
               </div>
+              <p className="text-xs text-on-surface-variant">
+                Tautan berlaku 7 hari. Simpan atau bagikan sebelum masa berlaku habis.
+              </p>
               
               <div className="flex flex-col gap-2 w-full mt-2">
                 <button

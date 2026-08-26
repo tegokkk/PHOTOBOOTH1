@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 export interface User {
   id: string;
@@ -26,6 +26,8 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'photobooth-auth',
+      // Admin/operator sessions must not survive closing the kiosk browser.
+      storage: createJSONStorage(() => sessionStorage),
     }
   )
 );

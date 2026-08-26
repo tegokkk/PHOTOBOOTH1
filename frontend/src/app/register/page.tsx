@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/Button";
 const registerSchema = z.object({
   fullName: z.string().min(2, { message: "Nama lengkap minimal 2 karakter" }),
   email: z.string().email({ message: "Format email tidak valid" }),
-  password: z.string().min(6, { message: "Password minimal 6 karakter" }).max(72, { message: "Password maksimal 72 karakter" }),
+  password: z.string().min(8, { message: "Password minimal 8 karakter" }).max(72, { message: "Password maksimal 72 karakter" }).regex(/[a-zA-Z]/, { message: "Password harus memiliki huruf" }).regex(/\d/, { message: "Password harus memiliki angka" }),
   confirmPassword: z.string()
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Konfirmasi password tidak cocok",

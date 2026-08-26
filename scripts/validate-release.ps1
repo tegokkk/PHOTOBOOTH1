@@ -55,7 +55,8 @@ $secretPatterns = @(
 )
 $secretMatches = foreach ($sourceFile in $trackedSourceFiles) {
     foreach ($secretPattern in $secretPatterns) {
-        Select-String -LiteralPath $sourceFile -Pattern $secretPattern -AllMatches -ErrorAction SilentlyContinue
+        Select-String -LiteralPath $sourceFile -Pattern $secretPattern -AllMatches -ErrorAction SilentlyContinue |
+            Where-Object { $_.Line -notmatch 'gunakan_string_acak_minimal_32_karakter|generate_a_secure_random_string_with_at_least_32_characters' }
     }
 }
 if ($secretMatches) {
@@ -73,7 +74,23 @@ Write-Host "[3/9] Prisma validation"
 Invoke-Checked $backendRoot "npx.cmd" @("prisma", "validate")
 
 Write-Host "[4/9] Prisma migration status"
-Invoke-Checked $backendRoot "npx.cmd" @("prisma", "migrate", "status")
+$migrationDatabaseUrl = $env:PHOTOBOOTH_MIGRATION_DATABASE_URL
+$backendEnvPath = Join-Path $backendRoot ".env"
+$poolerConfigured = (Test-Path -LiteralPath $backendEnvPath) -and (Select-String -LiteralPath $backendEnvPath -Pattern ":6543" -Quiet)
+if ($migrationDatabaseUrl) {
+    $previousDatabaseUrl = $env:DATABASE_URL
+    try {
+        $env:DATABASE_URL = $migrationDatabaseUrl
+        Invoke-Checked $backendRoot "npx.cmd" @("prisma", "migrate", "status")
+    }
+    finally {
+        $env:DATABASE_URL = $previousDatabaseUrl
+    }
+} elseif ($poolerConfigured) {
+    Write-Warning "Migration status dilewati karena backend/.env memakai transaction pooler. Set PHOTOBOOTH_MIGRATION_DATABASE_URL ke direct PostgreSQL URL untuk memeriksanya."
+} else {
+    Invoke-Checked $backendRoot "npx.cmd" @("prisma", "migrate", "status")
+}
 
 Write-Host "[5/9] Backend dependency audit"
 Invoke-Checked $backendRoot "npm.cmd" @(

@@ -45,6 +45,7 @@ model Photo {
   fileSize          Int?      @map("file_size")
   metadata          String?   // JSON string
   guestAccessTokenHash String? @map("guest_access_token_hash")
+  idempotencyKey      String? @unique @map("idempotency_key")
   source            String?
   isPublic          Boolean   @default(false) @map("is_public")
   downloadCount     Int       @default(0) @map("download_count")

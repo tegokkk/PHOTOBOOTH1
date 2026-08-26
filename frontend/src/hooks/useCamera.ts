@@ -120,6 +120,33 @@ export function useCamera() {
 
   // Sync stream to video element
   useEffect(() => {
+    const handleDeviceChange = () => {
+      void checkDevices();
+      const activeTrack = streamRef.current?.getVideoTracks()[0];
+      if (!activeTrack || activeTrack.readyState === 'ended') {
+        setHasPermission(false);
+        setError('Kamera terputus. Hubungkan kembali kamera lalu tekan Coba Lagi.');
+      }
+    };
+
+    navigator.mediaDevices?.addEventListener('devicechange', handleDeviceChange);
+    return () => navigator.mediaDevices?.removeEventListener('devicechange', handleDeviceChange);
+  }, [checkDevices]);
+
+  // Keep the UI recoverable when Safari or the hardware ends the active track.
+  useEffect(() => {
+    const track = stream?.getVideoTracks()[0];
+    if (!track) return;
+
+    const handleTrackEnded = () => {
+      setHasPermission(false);
+      setError('Kamera terputus. Hubungkan kembali kamera lalu tekan Coba Lagi.');
+    };
+    track.addEventListener('ended', handleTrackEnded);
+    return () => track.removeEventListener('ended', handleTrackEnded);
+  }, [stream]);
+
+  useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
       videoRef.current.play().catch(err => {

@@ -6,6 +6,7 @@ import { useUIStore } from "@/store/useUIStore";
 import { API_URL } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { AdminPhoto, AdminPhotoQueue } from "@/components/admin/AdminPhotoQueue";
 
 interface AdminMetrics {
   totalUsers: number;
@@ -20,6 +21,7 @@ export default function AdminDashboardPage() {
   const router = useRouter();
   const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [photos, setPhotos] = useState<AdminPhoto[]>([]);
 
   useEffect(() => {
     // Basic protection: Must be logged in & must be admin
@@ -40,14 +42,19 @@ export default function AdminDashboardPage() {
         const headers: Record<string, string> = {};
         if (token) headers["Authorization"] = `Bearer ${token}`;
 
-        const res = await fetch(`${API_URL}/api/admin/metrics`, { headers });
-        const data = await res.json();
+        const [metricsResponse, photosResponse] = await Promise.all([
+          fetch(`${API_URL}/api/admin/metrics`, { headers }),
+          fetch(`${API_URL}/api/admin/photos?limit=50`, { headers }),
+        ]);
+        const data = await metricsResponse.json();
+        const photosData = await photosResponse.json();
 
         if (data.success) {
           setMetrics(data.data);
         } else {
           showToast(data.message || "Gagal memuat metrik.", "error");
         }
+        if (photosData.success && Array.isArray(photosData.data)) setPhotos(photosData.data);
       } catch {
         showToast("Terjadi kesalahan saat menghubungi server.", "error");
       } finally {
@@ -130,6 +137,8 @@ export default function AdminDashboardPage() {
           </Button>
         </div>
       </div>
+
+      {token && <AdminPhotoQueue photos={photos} token={token} />}
     </main>
   );
 }
