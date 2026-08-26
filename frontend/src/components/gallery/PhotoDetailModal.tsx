@@ -54,10 +54,10 @@ export function PhotoDetailModal({
   return (
     <>
       <div
-        className="fixed inset-0 bg-ink-black/60 backdrop-blur-sm z-50"
+        className="fixed inset-0 bg-ink-black/60 backdrop-blur-sm z-[60]"
         onClick={onClose}
       />
-      <div className="fixed inset-4 md:inset-12 lg:inset-24 z-50 bg-paper-white sketch-border shadow-[8px_8px_0_0_#0F0F0F] flex flex-col overflow-hidden">
+      <div className="fixed inset-4 md:inset-12 lg:inset-24 z-[60] bg-paper-white sketch-border shadow-[8px_8px_0_0_#0F0F0F] flex flex-col overflow-hidden">
         <div
           ref={dialogRef}
           role="dialog"
@@ -67,7 +67,7 @@ export function PhotoDetailModal({
           className="contents"
         >
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b-2 border-ink-black">
+        <div className="flex items-center justify-between px-4 py-3 border-b-2 border-ink-black shrink-0">
           <div>
             <h3 id="photo-detail-title" className="font-headline-lg-mobile text-headline-lg-mobile text-ink-black flex items-center gap-2">
               {activeTab === "trash" && (
@@ -90,7 +90,7 @@ export function PhotoDetailModal({
         </div>
 
         {/* Photo */}
-        <div className="flex-1 overflow-hidden flex items-center justify-center bg-surface-container-highest p-4">
+        <div className="flex-1 overflow-hidden flex items-center justify-center bg-surface-container-highest p-4 min-h-0">
           {imageSrc ? (
             <img
               src={imageSrc}
@@ -106,7 +106,7 @@ export function PhotoDetailModal({
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 px-4 py-4 border-t-2 border-ink-black">
+        <div className="flex gap-3 px-4 py-4 border-t-2 border-ink-black shrink-0">
           {activeTab === "active" ? (
             <>
               <button
