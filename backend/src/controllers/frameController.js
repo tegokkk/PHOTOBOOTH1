@@ -1,6 +1,12 @@
 const prisma = require('../lib/prisma');
 
 const frameAssetColumnsEnabled = process.env.FRAME_ASSET_COLUMNS_ENABLED === 'true';
+const retiredFrameNames = [
+  'Playful Fashion',
+  'Modern Fashion',
+  'Green Scrapbook',
+  'Pink Home Decor',
+];
 
 const frameSelect = {
   id: true,
@@ -35,6 +41,7 @@ const getFrames = async (req, res) => {
       where: {
         isActive: true,
         deletedAt: null,
+        name: { notIn: retiredFrameNames },
       },
       ...frameRelationsQuery,
       orderBy: {
@@ -70,7 +77,7 @@ const getFrameById = async (req, res) => {
       });
     }
 
-    if (frame.isActive === false || frame.deletedAt) {
+    if (frame.isActive === false || frame.deletedAt || retiredFrameNames.includes(frame.name)) {
       return res.status(404).json({
         success: false,
         message: 'Frame not found'

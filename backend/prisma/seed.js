@@ -1,6 +1,12 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const useFrameAssetColumns = process.env.FRAME_ASSET_COLUMNS_ENABLED === 'true';
+const RETIRED_FRAME_NAMES = [
+  'Playful Fashion',
+  'Modern Fashion',
+  'Green Scrapbook',
+  'Pink Home Decor',
+];
 
 const MOCK_FRAMES = [
   {
@@ -209,7 +215,13 @@ const MOCK_FRAMES = [
 async function main() {
   console.log('Start seeding...');
 
+  await prisma.frame.updateMany({
+    where: { name: { in: RETIRED_FRAME_NAMES } },
+    data: { isActive: false, deletedAt: new Date() },
+  });
+
   for (const frame of MOCK_FRAMES) {
+    if (RETIRED_FRAME_NAMES.includes(frame.name)) continue;
     let targetFrame = await prisma.frame.findFirst({
       where: { name: frame.name }
     });
@@ -223,6 +235,7 @@ async function main() {
           ...(useFrameAssetColumns ? { previewImageUrl: frame.imageUrl || null } : {}),
           cssPlaceholder: frame.cssPlaceholder,
           isActive: true,
+          deletedAt: null,
         }
       });
       console.log(`Updated frame with id: ${targetFrame.id}`);
@@ -238,6 +251,7 @@ async function main() {
           } : {}),
           cssPlaceholder: frame.cssPlaceholder,
           isActive: true,
+          deletedAt: null,
         }
       });
       console.log(`Created frame with id: ${targetFrame.id}`);
