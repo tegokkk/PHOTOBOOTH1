@@ -52,7 +52,7 @@ flowchart LR
     H --> I[Preview cetak]
     I --> J[Cetak via browser / print bridge]
     H --> K[QR / download opsional]
-    K --> L[Simpan ke API sekali lalu buat tautan]
+    K --> L[Simpan ke API sekali lalu buat tautan `/share/<token>`]
 ```
 
 ### Detail workflow foto

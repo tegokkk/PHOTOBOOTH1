@@ -68,7 +68,9 @@ export function ExportDialog({
     }
   };
 
-  const fullShareUrl = shareLinkToken ? `${window.location.origin}/${shareLinkToken}` : "";
+  const fullShareUrl = shareLinkToken
+    ? `${window.location.origin}/share/${encodeURIComponent(shareLinkToken)}`
+    : "";
 
   const handleWebShare = async () => {
     if (!fullShareUrl) return;
