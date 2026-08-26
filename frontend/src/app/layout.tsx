@@ -3,7 +3,6 @@ import "./globals.css";
 import { ToastContainer } from "@/components/ui/Toast";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import TopAppBar from "@/components/ui/TopAppBar";
-import SideNavBar from "@/components/ui/SideNavBar";
 import { GlobalDebounce } from "@/components/ui/GlobalDebounce";
 import { SessionTimeout } from "@/components/booth/SessionTimeout";
 import { AuthBootstrap } from "@/components/auth/AuthBootstrap";
@@ -34,11 +33,8 @@ export default function RootLayout({
         {/* TopAppBar */}
         <TopAppBar />
 
-        {/* SideNavBar (Desktop Only) */}
-        <SideNavBar />
-
         {/* Main Content Area */}
-        <div className="flex-grow flex flex-col md:ml-64 relative z-10 w-full md:w-[calc(100%-16rem)] overflow-x-hidden">
+        <div className="flex-grow flex flex-col relative z-10 w-full overflow-x-hidden">
           <ErrorBoundary>
             {children}
           </ErrorBoundary>
