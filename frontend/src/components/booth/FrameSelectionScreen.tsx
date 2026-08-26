@@ -3,11 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { getFramePreviewUrl, getPhotoCount } from "@/lib/frameMeta";
+import { FramePreviewDialog } from "@/components/frame/FramePreviewDialog";
 
 export function FrameSelectionScreen() {
   const { frames, isLoadingFrames, fetchFrames, selectedFrameId, setSelectedFrameId, setCurrentStep } =
     useAppStore();
   const [activeCategory, setActiveCategory] = useState("Semua");
+  const [previewFrameId, setPreviewFrameId] = useState<string | null>(null);
 
   const categories = useMemo(
     () => ["Semua", ...Array.from(new Set(frames.map((frame) => frame.category).filter(Boolean))).sort()],
@@ -26,16 +28,22 @@ export function FrameSelectionScreen() {
     [effectiveCategory, frames]
   );
 
-  const selectedFrame = useMemo(
-    () => frames.find((f) => f.id === selectedFrameId),
-    [frames, selectedFrameId]
+  const previewFrame = useMemo(
+    () => frames.find((frame) => frame.id === previewFrameId),
+    [frames, previewFrameId]
   );
 
+  const handleFrameClick = (frameId: string) => {
+    setSelectedFrameId(frameId);
+    setPreviewFrameId(frameId);
+  };
+
   return (
-    <main className="flex-grow flex flex-col md:flex-row relative z-10 w-full max-w-[1600px] mx-auto p-4 md:p-gutter gap-6 md:gap-gutter pb-[100px] md:pb-gutter pt-6">
+    <>
+    <main className="flex-grow flex flex-col relative z-10 w-full max-w-[1600px] mx-auto p-4 md:p-gutter pb-[100px] md:pb-gutter pt-6">
 
       {/* ── Left Column: Gallery ─────────────────────────── */}
-      <section className="w-full md:w-8/12 flex flex-col gap-4">
+      <section className="w-full flex flex-col gap-4">
 
         {/* Step Indicator */}
         <div className="flex items-center gap-3 mb-2">
@@ -89,7 +97,7 @@ export function FrameSelectionScreen() {
               return (
                 <button
                   key={frame.id}
-                  onClick={() => setSelectedFrameId(frame.id)}
+                  onClick={() => handleFrameClick(frame.id)}
                   aria-pressed={isSelected}
                   aria-label={`Pilih frame ${frame.name}`}
                   className={`
@@ -166,81 +174,17 @@ export function FrameSelectionScreen() {
         )}
       </section>
 
-      {/* ── Right Column: Preview & CTA ─────────────────── */}
-      <section className="w-full md:w-4/12 flex flex-col gap-4">
-        <div className="bg-surface-container-lowest sketch-border hard-shadow p-4 md:p-6 sticky top-8">
-          <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-ink-black border-b-2 border-ink-black pb-2 mb-4">
-            Preview Frame
-          </h2>
-
-          {selectedFrame ? (
-            <>
-              {/* Frame Preview Card */}
-              <div
-                className="relative aspect-[3/4] bg-surface-container sketch-border overflow-hidden mb-4 hard-shadow"
-                style={selectedFrame.width && selectedFrame.height ? { aspectRatio: `${selectedFrame.width} / ${selectedFrame.height}` } : undefined}
-              >
-                {getFramePreviewUrl(selectedFrame) ? (
-                  <img
-                    src={getFramePreviewUrl(selectedFrame)}
-                    alt={selectedFrame.name}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ) : selectedFrame.cssPlaceholder !== "border-0" ? (
-                  <div className={`absolute inset-0 ${selectedFrame.cssPlaceholder}`} />
-                ) : (
-                  <div className="absolute inset-0 bg-surface-container-highest flex items-center justify-center">
-                    <span className="material-symbols-outlined text-5xl text-on-surface-variant">
-                      crop_free
-                    </span>
-                    <p className="font-label-caps text-label-caps text-on-surface-variant mt-2">Tanpa Frame</p>
-                  </div>
-                )}
-              </div>
-              <div className="mb-4">
-                <p className="font-label-caps text-label-caps text-ink-black">{selectedFrame.name}</p>
-                <p className="font-body-md text-body-md text-on-surface-variant text-sm">{selectedFrame.category}</p>
-              </div>
-            </>
-          ) : (
-            <div className="aspect-[3/4] bg-surface-container flex flex-col items-center justify-center mb-4 sketch-border">
-              <span className="material-symbols-outlined text-5xl text-on-surface-variant">
-                filter_frames
-              </span>
-              <p className="font-label-caps text-label-caps text-on-surface-variant mt-2">
-                Klik frame untuk melihat preview
-              </p>
-            </div>
-          )}
-
-          <button
-            onClick={() => setCurrentStep("camera")}
-            disabled={!selectedFrameId}
-            className="
-              w-full py-4 px-6 bg-curtain-red text-paper-white
-              font-interactive-btn text-interactive-btn
-              border-2 border-ink-black sketch-border hard-shadow
-              hover:scale-[1.02] active:scale-95
-              transition-all duration-150
-              disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
-              flex items-center justify-center gap-2
-            "
-            aria-label="Lanjut ke kamera"
-          >
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
-              photo_camera
-            </span>
-            Mulai Sesi Foto →
-          </button>
-          {!selectedFrameId && (
-            <p className="font-label-caps text-[11px] text-on-surface-variant text-center mt-2">
-              Pilih frame terlebih dahulu
-            </p>
-          )}
-        </div>
-      </section>
     </main>
+    {previewFrame && (
+      <FramePreviewDialog
+        frame={previewFrame}
+        onClose={() => setPreviewFrameId(null)}
+        onContinue={() => {
+          setPreviewFrameId(null);
+          setCurrentStep("camera");
+        }}
+      />
+    )}
+    </>
   );
 }
