@@ -165,6 +165,60 @@ const MOCK_FRAMES = [
       { x: 0.1061, y: 0.3145, width: 0.7872, height: 0.1684 },
       { x: 0.1056, y: 0.5476, width: 0.7877, height: 0.1684 }
     ]
+  },
+  {
+    name: 'Slay Collage',
+    category: 'Party',
+    imageUrl: '/frames/Slay Collage.png',
+    cssPlaceholder: 'border-0 bg-transparent',
+    slots: [
+      { x: 0.2153, y: 0.2559, width: 0.2813, height: 0.1777 },
+      { x: 0.5104, y: 0.2100, width: 0.2726, height: 0.1768 },
+      { x: 0.2274, y: 0.4492, width: 0.2813, height: 0.1768 },
+      { x: 0.5330, y: 0.4033, width: 0.2378, height: 0.1768 },
+      { x: 0.2378, y: 0.6426, width: 0.2813, height: 0.1768 },
+      { x: 0.5434, y: 0.5967, width: 0.2170, height: 0.1768 }
+    ]
+  },
+  {
+    name: 'Jejak Kebersamaan',
+    category: 'Vintage',
+    imageUrl: '/frames/Jejak Kebersamaan.png',
+    cssPlaceholder: 'border-0 bg-transparent',
+    slots: [
+      { x: 0.0293, y: 0.3389, width: 0.9428, height: 0.2764 },
+      { x: 0.3563, y: 0.6494, width: 0.2859, height: 0.1152 },
+      { x: 0.0293, y: 0.7793, width: 0.3050, height: 0.1855 },
+      { x: 0.6672, y: 0.7793, width: 0.3035, height: 0.1855 }
+    ]
+  },
+  {
+    name: 'OMG Checkerboard',
+    category: 'Cute',
+    imageUrl: '/frames/OMG Checkerboard.png',
+    cssPlaceholder: 'border-0 bg-transparent',
+    slots: [
+      { x: 0.0806, y: 0.0977, width: 0.3123, height: 0.2207 },
+      { x: 0.5587, y: 0.0889, width: 0.3944, height: 0.2432 },
+      { x: 0.0806, y: 0.3809, width: 0.3123, height: 0.2207 },
+      { x: 0.5587, y: 0.3770, width: 0.3944, height: 0.2432 },
+      { x: 0.0806, y: 0.6660, width: 0.3123, height: 0.2207 },
+      { x: 0.5587, y: 0.6660, width: 0.3944, height: 0.2393 }
+    ]
+  },
+  {
+    name: 'Cinema Premiere',
+    category: 'Vintage',
+    imageUrl: '/frames/Cinema Premiere.png',
+    cssPlaceholder: 'border-0 bg-transparent',
+    slots: [
+      { x: 0.1158, y: 0.2549, width: 0.3152, height: 0.1602 },
+      { x: 0.5704, y: 0.2549, width: 0.3152, height: 0.1602 },
+      { x: 0.1158, y: 0.4785, width: 0.3152, height: 0.1602 },
+      { x: 0.5704, y: 0.4785, width: 0.3152, height: 0.1602 },
+      { x: 0.1158, y: 0.7012, width: 0.3152, height: 0.1602 },
+      { x: 0.5704, y: 0.7012, width: 0.3152, height: 0.1602 }
+    ]
   }
 ];
 
