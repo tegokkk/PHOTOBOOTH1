@@ -174,12 +174,12 @@ const MOCK_FRAMES = [
     imageUrl: '/frames/Cinema Premiere.png',
     cssPlaceholder: 'border-0 bg-transparent',
     slots: [
-      { x: 0.1158, y: 0.2549, width: 0.3152, height: 0.1602 },
-      { x: 0.5704, y: 0.2549, width: 0.3152, height: 0.1602 },
-      { x: 0.1158, y: 0.4785, width: 0.3152, height: 0.1602 },
-      { x: 0.5704, y: 0.4785, width: 0.3152, height: 0.1602 },
-      { x: 0.1158, y: 0.7012, width: 0.3152, height: 0.1602 },
-      { x: 0.5704, y: 0.7012, width: 0.3152, height: 0.1602 }
+      { x: 0.0958, y: 0.2449, width: 0.3552, height: 0.1802 },
+      { x: 0.5504, y: 0.2449, width: 0.3552, height: 0.1802 },
+      { x: 0.0958, y: 0.4685, width: 0.3552, height: 0.1802 },
+      { x: 0.5504, y: 0.4685, width: 0.3552, height: 0.1802 },
+      { x: 0.0958, y: 0.6912, width: 0.3552, height: 0.1802 },
+      { x: 0.5504, y: 0.6912, width: 0.3552, height: 0.1802 }
     ]
   }
 ];
