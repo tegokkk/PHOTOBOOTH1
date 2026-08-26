@@ -6,6 +6,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { API_URL } from "@/lib/api";
 import { downloadMedia } from "@/lib/media";
 import { useRouter } from "next/navigation";
+import { createPortal } from "react-dom";
 
 import { PhotoRecord } from "@/types/gallery";
 import { PhotoGrid } from "@/components/gallery/PhotoGrid";
@@ -265,10 +266,10 @@ export default function GalleryPage() {
       )}
 
       {/* Delete Confirmation Modal */}
-      {deleteConfirmId && (
+      {deleteConfirmId && typeof document !== "undefined" && createPortal(
         <>
-          <div className="fixed inset-0 bg-ink-black/60 backdrop-blur-sm z-[60]" onClick={() => setDeleteConfirmId(null)} />
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[60] bg-paper-white sketch-border shadow-[8px_8px_0_0_#0F0F0F] flex flex-col overflow-hidden w-11/12 max-w-sm">
+          <div className="fixed inset-0 bg-ink-black/60 backdrop-blur-sm z-[100]" style={{ zIndex: 9999 }} onClick={() => setDeleteConfirmId(null)} />
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] bg-paper-white sketch-border shadow-[8px_8px_0_0_#0F0F0F] flex flex-col overflow-hidden w-11/12 max-w-sm" style={{ zIndex: 10000 }}>
             <div className="p-6">
               <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-ink-black mb-2 flex items-center gap-2">
                 <span className="material-symbols-outlined text-curtain-red text-2xl">warning</span>
@@ -293,7 +294,8 @@ export default function GalleryPage() {
               </button>
             </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
     </main>
   );

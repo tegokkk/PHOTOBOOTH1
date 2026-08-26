@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { PhotoRecord } from "@/types/gallery";
 import { fetchMediaObjectUrl } from "@/lib/media";
 
@@ -51,13 +52,19 @@ export function PhotoDetailModal({
     dialogRef.current?.focus();
   }, []);
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <>
       <div
-        className="fixed inset-0 bg-ink-black/60 backdrop-blur-sm z-[60]"
+        className="fixed inset-0 bg-ink-black/60 backdrop-blur-sm z-[100]"
+        style={{ zIndex: 9999 }}
         onClick={onClose}
       />
-      <div className="fixed inset-4 md:inset-12 lg:inset-24 z-[60] bg-paper-white sketch-border shadow-[8px_8px_0_0_#0F0F0F] flex flex-col overflow-hidden">
+      <div 
+        className="fixed inset-4 md:inset-12 lg:inset-24 z-[100] bg-paper-white sketch-border shadow-[8px_8px_0_0_#0F0F0F] flex flex-col overflow-hidden"
+        style={{ zIndex: 10000 }}
+      >
         <div
           ref={dialogRef}
           role="dialog"
@@ -150,6 +157,7 @@ export function PhotoDetailModal({
         </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }
