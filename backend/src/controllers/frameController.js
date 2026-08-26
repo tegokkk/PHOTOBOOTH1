@@ -49,7 +49,8 @@ const getFrames = async (req, res) => {
       }
     });
 
-    res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=31536000');
+    // Frame catalog changes operationally; never let a CDN keep retired frames for a year.
+    res.setHeader('Cache-Control', 'no-store, max-age=0');
     res.status(200).json({
       success: true,
       data: frames

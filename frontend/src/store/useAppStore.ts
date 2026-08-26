@@ -27,6 +27,14 @@ export interface FrameData {
 
 export type AppStep = 'landing' | 'frame-selection' | 'camera' | 'preview';
 
+// Defense-in-depth for a stale API/CDN response during frame catalog updates.
+const RETIRED_FRAME_NAMES = new Set([
+  'Playful Fashion',
+  'Modern Fashion',
+  'Green Scrapbook',
+  'Pink Home Decor',
+]);
+
 interface AppState {
   // ── Step / flow ─────────────────────────────────────────
   currentStep: AppStep;
@@ -165,7 +173,7 @@ export const useAppStore = create<AppState>()(
           const data = await res.json();
           if (data.success && Array.isArray(data.data)) {
             set((state) => ({
-              frames: data.data,
+              frames: data.data.filter((frame: FrameData) => !RETIRED_FRAME_NAMES.has(frame.name)),
               isLoadingFrames: false,
               selectedFrameId: state.selectedFrameId,
             }));
