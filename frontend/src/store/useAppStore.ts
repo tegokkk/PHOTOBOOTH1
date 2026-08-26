@@ -119,6 +119,7 @@ export const useAppStore = create<AppState>()(
       resetPhotoSession: () => set({ currentPhotoIndex: 0 }),
       resetSession: () => set({
         currentStep: 'landing',
+        selectedFrameId: null,
         capturedPhotos: [],
         capturedPhotoMirrors: [],
         capturedImage: null,
@@ -159,9 +160,7 @@ export const useAppStore = create<AppState>()(
             set((state) => ({
               frames: data.data,
               isLoadingFrames: false,
-              selectedFrameId:
-                state.selectedFrameId ||
-                (data.data.length > 0 ? data.data[0].id : null),
+              selectedFrameId: state.selectedFrameId,
             }));
           } else {
             set({ frames: [], isLoadingFrames: false });

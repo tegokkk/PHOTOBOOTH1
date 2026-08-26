@@ -210,7 +210,7 @@ export function FrameSelectionScreen() {
                 filter_frames
               </span>
               <p className="font-label-caps text-label-caps text-on-surface-variant mt-2">
-                Belum ada frame dipilih
+                Klik frame untuk melihat preview
               </p>
             </div>
           )}
