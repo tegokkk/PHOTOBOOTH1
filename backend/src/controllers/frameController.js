@@ -1,12 +1,14 @@
 const prisma = require('../lib/prisma');
 
-const frameAssetColumnsEnabled = process.env.FRAME_ASSET_COLUMNS_ENABLED === 'true';
-
 const frameSelect = {
   id: true,
   name: true,
   category: true,
   imageUrl: true,
+  // Preview assets keep the catalog fast; master assets are used for the
+  // final composite/export. These columns are now part of the deployed schema.
+  previewImageUrl: true,
+  masterImageUrl: true,
   cssPlaceholder: true,
   width: true,
   height: true,
@@ -21,11 +23,6 @@ const frameSelect = {
     orderBy: { zIndex: 'asc' },
   },
 };
-
-if (frameAssetColumnsEnabled) {
-  frameSelect.previewImageUrl = true;
-  frameSelect.masterImageUrl = true;
-}
 
 const frameRelationsQuery = { select: frameSelect };
 
