@@ -11,13 +11,8 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 if (process.env.NODE_ENV === 'production') {
-  const requiredProductionEnv = ['DATABASE_URL', 'JWT_SECRET', 'FRONTEND_URL'];
-  const missing = requiredProductionEnv.filter((key) => !process.env[key]);
-  if (missing.length > 0) {
-    throw new Error(`Missing production environment variables: ${missing.join(', ')}`);
-  }
-  if (process.env.JWT_SECRET.length < 32) {
-    throw new Error('JWT_SECRET must be at least 32 characters in production');
+  if (!process.env.DATABASE_URL) {
+    throw new Error('Missing production environment variable: DATABASE_URL');
   }
 }
 
