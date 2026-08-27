@@ -287,7 +287,7 @@ export function PhotoPreviewScreen() {
                         src={capturedPhotos[Math.min(i, capturedPhotos.length - 1)]}
                         alt={`Foto ${i + 1}`}
                         decoding="async"
-                        className="w-full h-full object-cover origin-center filter drop-shadow-md"
+                        className="w-full h-full object-contain origin-center filter drop-shadow-md"
                         style={{
                           filter: filterStyle,
                           transform: slot.rotation ? `rotate(${slot.rotation}deg)` : undefined,
@@ -303,7 +303,7 @@ export function PhotoPreviewScreen() {
                           src={photo}
                           alt={`Foto ${i + 1}`}
                           decoding="async"
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain"
                           style={{ filter: filterStyle }}
                         />
                       </div>

@@ -17,8 +17,9 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 }
 
 /**
- * Draw a photo into a rectangular slot using object-fit: cover semantics.
- * Captured photos are drawn in their natural orientation.
+ * Draw a photo into a rectangular slot using object-fit: contain semantics.
+ * This keeps the complete camera field of view instead of zooming/cropping it
+ * to fill a frame slot with a different aspect ratio.
  */
 function drawPhotoIntoSlot(
   ctx: CanvasRenderingContext2D,
@@ -32,7 +33,7 @@ function drawPhotoIntoSlot(
 ) {
   const { brightness, contrast, saturation } = filters;
 
-  // object-fit: cover
+  // object-fit: contain
   const photoRatio = photo.width / photo.height;
   const slotRatio = slotW / slotH;
   let drawW = slotW;
@@ -41,11 +42,11 @@ function drawPhotoIntoSlot(
   let drawY = slotY;
 
   if (photoRatio > slotRatio) {
-    drawW = slotH * photoRatio;
-    drawX = slotX - (drawW - slotW) / 2;
-  } else {
     drawH = slotW / photoRatio;
-    drawY = slotY - (drawH - slotH) / 2;
+    drawY = slotY + (slotH - drawH) / 2;
+  } else {
+    drawW = slotH * photoRatio;
+    drawX = slotX + (slotW - drawW) / 2;
   }
 
   // Rotate and clip in the same local slot coordinates used by the preview.
