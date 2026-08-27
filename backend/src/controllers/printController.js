@@ -1,13 +1,20 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../lib/prisma');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-// Setup uploads directory for print jobs
-const printUploadsDir = path.join(__dirname, '../../uploads/print');
-if (!fs.existsSync(printUploadsDir)) {
-  fs.mkdirSync(printUploadsDir, { recursive: true });
+// Vercel's deployment filesystem is read-only. Keep serverless print files in
+// its writable temporary directory and only create the directory on demand.
+const printUploadsDir = process.env.PRINT_UPLOAD_DIR || (
+  process.env.VERCEL
+    ? path.join('/tmp', 'photobooth-print')
+    : path.join(process.env.UPLOAD_DIR || path.join(__dirname, '../../uploads'), 'print')
+);
+
+function ensurePrintUploadsDir() {
+  if (!fs.existsSync(printUploadsDir)) {
+    fs.mkdirSync(printUploadsDir, { recursive: true });
+  }
 }
 
 exports.createPrintJob = async (req, res, next) => {
@@ -23,6 +30,7 @@ exports.createPrintJob = async (req, res, next) => {
     let jobId = id || crypto.randomUUID();
     
     if (imageDataUrl && imageDataUrl.startsWith('data:image')) {
+      ensurePrintUploadsDir();
       const base64Data = imageDataUrl.replace(/^data:image\/\w+;base64,/, "");
       const ext = imageDataUrl.split(';')[0].split('/')[1] || 'png';
       const filename = `${jobId}.${ext}`;
