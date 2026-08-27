@@ -10,10 +10,11 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-if (process.env.NODE_ENV === 'production') {
-  if (!process.env.DATABASE_URL) {
-    throw new Error('Missing production environment variable: DATABASE_URL');
-  }
+if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) {
+  // Keep liveness and CORS responses available so the deployment reports a
+  // useful configuration error instead of crashing the entire serverless
+  // function during module initialization.
+  console.error('Missing production environment variable: DATABASE_URL');
 }
 
 if (process.env.TRUST_PROXY) {
@@ -23,7 +24,7 @@ if (process.env.TRUST_PROXY) {
 // Middleware
 const configuredOrigins = (process.env.FRONTEND_URL || 'http://localhost:3000')
   .split(',')
-  .map((origin) => origin.trim())
+  .map((origin) => origin.trim().replace(/\/+$/, ''))
   .filter(Boolean);
 const developmentOrigins = process.env.NODE_ENV === 'production'
   ? []
@@ -77,6 +78,18 @@ app.use((req, res, next) => {
 });
 // Static uploads route removed for privacy. Media served via /api/media
 app.use('/api/', apiLimiter); // apply to all API routes
+app.use('/api/', (req, res, next) => {
+  if (process.env.DATABASE_URL) return next();
+
+  res.status(503).json({
+    success: false,
+    message: 'Database belum dikonfigurasi pada server.',
+    requestId: req.requestId,
+  });
+});
+
+// Avoid a noisy serverless 500 when a browser probes the backend favicon.
+app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 
 // Routes
