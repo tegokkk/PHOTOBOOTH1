@@ -1,0 +1,51 @@
+<svg width="1600" height="700" viewBox="0 0 1600 700" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">RIRI Photobooth</title>
+  <desc id="desc">A modern web photobooth kiosk for capturing, framing, printing, and sharing memories.</desc>
+
+  <rect width="1600" height="700" fill="#F7F3EE"/>
+  <rect x="34" y="34" width="1532" height="632" rx="12" fill="#F7F3EE" stroke="#151515" stroke-width="6"/>
+  <rect x="34" y="34" width="1532" height="70" rx="10" fill="#151515"/>
+  <path d="M34 94H1566" stroke="#151515" stroke-width="6"/>
+
+  <circle cx="74" cy="69" r="10" fill="#F7F3EE"/>
+  <circle cx="108" cy="69" r="10" fill="#DFFF00"/>
+  <circle cx="142" cy="69" r="10" fill="#FF3B3B"/>
+  <text x="181" y="76" fill="#F7F3EE" font-family="Courier New, monospace" font-size="21" font-weight="700" letter-spacing="4">RIRI / PHOTOBOOTH</text>
+  <text x="1270" y="76" fill="#DFFF00" font-family="Courier New, monospace" font-size="17" font-weight="700" letter-spacing="2">KIOSK_READY</text>
+
+  <rect x="86" y="151" width="720" height="432" rx="10" fill="#FFFFFF" stroke="#151515" stroke-width="6"/>
+  <rect x="108" y="174" width="190" height="36" fill="#DFFF00" stroke="#151515" stroke-width="4"/>
+  <text x="125" y="198" fill="#151515" font-family="Courier New, monospace" font-size="16" font-weight="700" letter-spacing="2">WEB PHOTOBOOTH</text>
+
+  <text x="108" y="303" fill="#151515" font-family="Arial, Helvetica, sans-serif" font-size="70" font-weight="900" letter-spacing="-3">ABADIKAN</text>
+  <text x="108" y="374" fill="#6320EE" font-family="Arial, Helvetica, sans-serif" font-size="70" font-weight="900" letter-spacing="-3">MOMEN.</text>
+  <text x="111" y="420" fill="#474747" font-family="Courier New, monospace" font-size="20" font-weight="700">CAPTURE  •  CUSTOMIZE  •  SHARE</text>
+  <text x="111" y="462" fill="#474747" font-family="Arial, Helvetica, sans-serif" font-size="19">A fast, friendly kiosk experience built for events,</text>
+  <text x="111" y="489" fill="#474747" font-family="Arial, Helvetica, sans-serif" font-size="19">weddings, pop-ups, and everyday celebrations.</text>
+
+  <rect x="108" y="520" width="294" height="40" fill="#FF3B3B" stroke="#151515" stroke-width="4"/>
+  <text x="133" y="547" fill="#FFFFFF" font-family="Courier New, monospace" font-size="16" font-weight="700" letter-spacing="1">START A SESSION  →</text>
+
+  <rect x="864" y="151" width="616" height="432" rx="10" fill="#6320EE" stroke="#151515" stroke-width="6"/>
+  <rect x="899" y="188" width="546" height="294" fill="#26212F" stroke="#151515" stroke-width="6"/>
+  <path d="M899 188L955 151H1390L1445 188" fill="#DFFF00" stroke="#151515" stroke-width="6"/>
+  <path d="M899 482L955 520H1390L1445 482" fill="#FF3B3B" stroke="#151515" stroke-width="6"/>
+
+  <rect x="935" y="221" width="205" height="225" fill="#F7F3EE" stroke="#151515" stroke-width="5" transform="rotate(-5 935 221)"/>
+  <rect x="955" y="242" width="165" height="135" fill="#FFFFFF" stroke="#151515" stroke-width="5" stroke-dasharray="10 7" transform="rotate(-5 955 242)"/>
+  <circle cx="1033" cy="309" r="35" fill="#DFFF00" stroke="#151515" stroke-width="5"/>
+  <circle cx="1033" cy="309" r="13" fill="#151515"/>
+  <circle cx="1086" cy="258" r="8" fill="#FF3B3B" stroke="#151515" stroke-width="3"/>
+  <rect x="985" y="400" width="100" height="22" fill="#FFC900" stroke="#151515" stroke-width="3" transform="rotate(-5 985 400)"/>
+
+  <rect x="1190" y="230" width="206" height="58" fill="#151515" stroke="#FFFFFF" stroke-width="3"/>
+  <text x="1212" y="266" fill="#DFFF00" font-family="Courier New, monospace" font-size="18" font-weight="700">FRAME_ENGINE</text>
+  <rect x="1190" y="310" width="206" height="58" fill="#FFFFFF" stroke="#151515" stroke-width="3"/>
+  <text x="1212" y="346" fill="#151515" font-family="Courier New, monospace" font-size="18" font-weight="700">LOCAL_PRINT</text>
+  <rect x="1190" y="390" width="206" height="58" fill="#DFFF00" stroke="#151515" stroke-width="3"/>
+  <text x="1212" y="426" fill="#151515" font-family="Courier New, monospace" font-size="18" font-weight="700">QR_SHARE</text>
+
+  <path d="M842 139V595" stroke="#151515" stroke-width="3" stroke-dasharray="9 12"/>
+  <text x="92" y="627" fill="#6320EE" font-family="Courier New, monospace" font-size="15" font-weight="700" letter-spacing="2">LIGHT NEO-BRUTALISM  /  NEXT.JS  /  EXPRESS  /  POSTGRESQL</text>
+  <text x="1446" y="627" text-anchor="end" fill="#151515" font-family="Courier New, monospace" font-size="15" font-weight="700" letter-spacing="2">V1.0</text>
+</svg>
