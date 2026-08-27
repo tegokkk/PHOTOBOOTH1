@@ -249,48 +249,6 @@ async function main() {
     }
   }
 
-  // Create the admin only when the operator provides a one-time password.
-  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
-  if (!adminPassword) {
-    console.warn('SEED_ADMIN_PASSWORD is not set; skipping admin seed.');
-    return;
-  }
-  if (adminPassword.length < 8 || adminPassword.length > 72 || !/\d/.test(adminPassword) || !/[a-zA-Z]/.test(adminPassword)) {
-    throw new Error('SEED_ADMIN_PASSWORD must be 8-72 characters and contain both letters and numbers');
-  }
-
-  const adminEmail = 'admin@riri.com';
-  let adminUser = await prisma.user.findUnique({
-    where: { email: adminEmail }
-  });
-
-  if (!adminUser) {
-    const bcrypt = require('bcryptjs');
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(adminPassword, salt);
-
-    adminUser = await prisma.user.create({
-      data: {
-        email: adminEmail,
-        fullName: 'System Admin',
-        passwordHash: passwordHash,
-        isAdmin: true,
-      }
-    });
-    console.log(`Created default admin user: ${adminEmail}`);
-  } else if (adminPassword) {
-    const bcrypt = require('bcryptjs');
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(adminPassword, salt);
-    await prisma.user.update({
-      where: { id: adminUser.id },
-      data: { passwordHash, isActive: true, deletedAt: null }
-    });
-    console.log(`Reset admin password for ${adminEmail}`);
-  } else {
-    console.log(`Admin user ${adminEmail} already exists`);
-  }
-
   console.log('Seeding finished.');
 }
 

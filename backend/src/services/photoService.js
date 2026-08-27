@@ -91,7 +91,7 @@ function hasValidGuestAccess(photo, accessToken) {
   return providedHash.length === storedHash.length && crypto.timingSafeEqual(providedHash, storedHash);
 }
 
-const processAndSavePhoto = async ({ frameId, compositeImageBase64, idempotencyKey, userId, userAgent, ip }) => {
+const processAndSavePhoto = async ({ frameId, compositeImageBase64, idempotencyKey, userAgent, ip }) => {
   if (!compositeImageBase64) {
     throw new Error('Image data is required');
   }
@@ -101,9 +101,7 @@ const processAndSavePhoto = async ({ frameId, compositeImageBase64, idempotencyK
       const existingPhoto = await prisma.photo.findUnique({ where: { idempotencyKey } });
       idempotencyColumnAvailable = true;
       if (existingPhoto) {
-        const sameOwner = (existingPhoto.userId || null) === (userId || null);
-        if (!sameOwner) throw new Error('Idempotency key belongs to another photo owner');
-        return userId ? existingPhoto : { ...existingPhoto, guestAccessToken: idempotencyKey };
+        return { ...existingPhoto, guestAccessToken: idempotencyKey };
       }
     } catch (error) {
       // Allow a rolling deploy to finish before the additive migration reaches the DB.
@@ -172,7 +170,7 @@ const processAndSavePhoto = async ({ frameId, compositeImageBase64, idempotencyK
   const fileName = `photo_${crypto.randomUUID()}.${ext}`;
   const uploadsDir = process.env.UPLOAD_DIR || path.join(__dirname, '../../uploads');
   const filePath = path.join(uploadsDir, fileName);
-  const guestAccessToken = userId ? null : (idempotencyKey || crypto.randomBytes(32).toString('hex'));
+  const guestAccessToken = idempotencyKey || crypto.randomBytes(32).toString('hex');
 
   const supabase = require('../lib/supabase');
   let fileWritten = false;
@@ -205,7 +203,6 @@ const processAndSavePhoto = async ({ frameId, compositeImageBase64, idempotencyK
     const metadata = JSON.stringify({ originalMime: mimeType });
 
     const photoData = {
-        userId: userId || null,
         frameId: frameId || null,
         originalImageUrl: '',
         compositeImageUrl: imageUrl,
@@ -230,10 +227,10 @@ const processAndSavePhoto = async ({ frameId, compositeImageBase64, idempotencyK
   }
 };
 
-const getPhotosList = async (userId, limit, cursor, status) => {
+const getPhotosList = async (limit, cursor, status) => {
   const take = Math.min(parseInt(limit, 10) || 20, 50);
 
-  let where = { userId };
+  let where = {};
   if (status === 'trash') {
     where.deletedAt = { not: null };
   } else {
@@ -284,15 +281,14 @@ const getAdminPhotosList = async (limit = 50) => {
   });
 };
 
-const getSinglePhoto = async (id, userId, isAdmin, guestAccessToken) => {
+const getSinglePhoto = async (id, guestAccessToken) => {
   const photo = await prisma.photo.findUnique({
     where: { id },
     include: { frame: true }
   });
 
   if (!photo) throw new Error('Photo not found');
-  const isOwner = photo.userId && photo.userId === userId;
-  const hasAccess = photo.isPublic || isOwner || isAdmin || hasValidGuestAccess(photo, guestAccessToken);
+  const hasAccess = photo.isPublic || hasValidGuestAccess(photo, guestAccessToken);
   if (!hasAccess) {
     throw new Error('Forbidden');
   }
@@ -300,10 +296,9 @@ const getSinglePhoto = async (id, userId, isAdmin, guestAccessToken) => {
   return photo;
 };
 
-const trashPhoto = async (id, userId) => {
+const trashPhoto = async (id) => {
   const photo = await prisma.photo.findUnique({ where: { id } });
   if (!photo) throw new Error('Photo not found');
-  if (photo.userId !== userId) throw new Error('Forbidden: You can only delete your own photos');
 
   await prisma.photo.update({
     where: { id },
@@ -311,10 +306,9 @@ const trashPhoto = async (id, userId) => {
   });
 };
 
-const restorePhotoFromTrash = async (id, userId) => {
+const restorePhotoFromTrash = async (id) => {
   const photo = await prisma.photo.findUnique({ where: { id } });
   if (!photo) throw new Error('Photo not found');
-  if (photo.userId !== userId) throw new Error('Forbidden: You can only restore your own photos');
 
   await prisma.photo.update({
     where: { id },
@@ -322,10 +316,9 @@ const restorePhotoFromTrash = async (id, userId) => {
   });
 };
 
-const permanentDeletePhoto = async (id, userId, isAdmin) => {
+const permanentDeletePhoto = async (id) => {
   const photo = await prisma.photo.findUnique({ where: { id } });
   if (!photo) throw new Error('Photo not found');
-  if (photo.userId !== userId && !isAdmin) throw new Error('Forbidden: You can only permanently delete your own photos');
 
   if (photo.compositeImageUrl) {
     const fileName = photo.compositeImageUrl.split('/').pop();

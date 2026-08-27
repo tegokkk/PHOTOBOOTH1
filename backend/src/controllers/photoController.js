@@ -10,7 +10,6 @@ const uploadPhoto = async (req, res) => {
       idempotencyKey: typeof req.header('Idempotency-Key') === 'string'
         ? req.header('Idempotency-Key').trim().slice(0, 128)
         : null,
-      userId: req.user ? req.user.id : null,
       userAgent: req.headers['user-agent'],
       ip: req.ip
     });
@@ -33,14 +32,9 @@ const uploadPhoto = async (req, res) => {
 
 const getPhotos = async (req, res) => {
   try {
-    const userId = req.user ? req.user.id : null;
-    if (!userId) {
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
-    }
-
     const { cursor, limit, status } = req.query;
     
-    const result = await photoService.getPhotosList(userId, limit, cursor, status);
+    const result = await photoService.getPhotosList(limit, cursor, status);
 
     res.status(200).json({ 
       success: true, 
@@ -55,11 +49,9 @@ const getPhotos = async (req, res) => {
 const getPhotoById = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user ? req.user.id : null;
-    const isAdmin = req.user ? req.user.isAdmin : false;
     const guestAccessToken = typeof req.query.accessToken === 'string' ? req.query.accessToken : null;
 
-    const photo = await photoService.getSinglePhoto(id, userId, isAdmin, guestAccessToken);
+    const photo = await photoService.getSinglePhoto(id, guestAccessToken);
     res.status(200).json({ success: true, data: photo });
   } catch (error) {
     if (error.message === 'Photo not found') return res.status(404).json({ success: false, message: error.message });
@@ -71,7 +63,7 @@ const getPhotoById = async (req, res) => {
 const deletePhoto = async (req, res) => {
   try {
     const { id } = req.params;
-    await photoService.trashPhoto(id, req.user.id);
+    await photoService.trashPhoto(id);
     res.status(200).json({ success: true, message: 'Photo moved to trash' });
   } catch (error) {
     if (error.message === 'Photo not found') return res.status(404).json({ success: false, message: error.message });
@@ -83,7 +75,7 @@ const deletePhoto = async (req, res) => {
 const restorePhoto = async (req, res) => {
   try {
     const { id } = req.params;
-    await photoService.restorePhotoFromTrash(id, req.user.id);
+    await photoService.restorePhotoFromTrash(id);
     res.status(200).json({ success: true, message: 'Photo restored' });
   } catch (error) {
     if (error.message === 'Photo not found') return res.status(404).json({ success: false, message: error.message });
@@ -95,10 +87,7 @@ const restorePhoto = async (req, res) => {
 const permanentDeletePhoto = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user ? req.user.id : null;
-    const isAdmin = req.user ? req.user.isAdmin : false;
-
-    await photoService.permanentDeletePhoto(id, userId, isAdmin);
+    await photoService.permanentDeletePhoto(id);
     res.status(200).json({ success: true, message: 'Photo permanently deleted' });
   } catch (error) {
     if (error.message === 'Photo not found') return res.status(404).json({ success: false, message: error.message });

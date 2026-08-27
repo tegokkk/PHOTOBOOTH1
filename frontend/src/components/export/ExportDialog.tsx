@@ -24,18 +24,30 @@ export function ExportDialog({
   const { showToast } = useUIStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const isProcessingRef = useRef(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const [shareLink, setShareLink] = useState<{ token: string; expiresAt?: string | null } | null>(null);
 
   useEffect(() => {
+    if (!isOpen) return;
+
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
         onClose();
       }
     };
-    if (isOpen) {
-      window.addEventListener("keydown", handleKeyDown);
-    }
-    return () => window.removeEventListener("keydown", handleKeyDown);
+
+    window.addEventListener("keydown", handleKeyDown);
+    dialogRef.current?.focus();
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previouslyFocused?.focus();
+    };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
@@ -95,54 +107,61 @@ export function ExportDialog({
 
   return (
     <>
-      <div className="fixed inset-0 bg-ink-black/40 backdrop-blur-sm z-50" onClick={onClose} aria-hidden="true" />
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-ink-black/80 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
       <div
-        className="fixed inset-x-4 bottom-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2
-          z-50 w-full md:max-w-lg bg-paper-white border-2 border-ink-black sketch-border
-          shadow-[6px_6px_0_0_#0F0F0F] md:shadow-[8px_8px_0_0_#0F0F0F]
-          flex flex-col max-h-[90vh] overflow-y-auto"
+        ref={dialogRef}
+        className="relative z-10 w-full max-w-lg bg-stark-white border-border-thick border-ink-black pixel-corners hard-shadow-lg
+          flex flex-col max-h-[calc(100vh-2rem)] overflow-y-auto"
         role="dialog"
+        aria-modal="true"
+        aria-labelledby="share-dialog-title"
+        tabIndex={-1}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b-2 border-ink-black sticky top-0 bg-paper-white z-10">
-          <div>
-            <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-ink-black">QR & Download</h2>
-            <p className="font-body-md text-body-md text-on-surface-variant text-sm">Frame: <strong>{frameName}</strong></p>
+        <div className="pixel-corners-inner"></div>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b-border-thick border-ink-black sticky top-0 bg-ink-black text-stark-white z-10">
+          <div className="flex flex-col">
+            <h2 id="share-dialog-title" className="font-tech-mono font-bold text-lg uppercase tracking-widest text-neon-yellow">SHARE_SYS</h2>
+            <p className="font-tech-mono text-[10px] text-on-surface-variant uppercase">TARGET_FRAME: {frameName}</p>
           </div>
-          <button onClick={onClose} className="w-10 h-10 flex items-center justify-center border-2 border-ink-black hover:bg-surface-container-high transition-colors">
-            <span className="material-symbols-outlined">close</span>
+          <button onClick={onClose} aria-label="Tutup dialog bagikan" className="w-10 h-10 flex items-center justify-center border-2 border-stark-white bg-error-red text-stark-white hover:bg-error-red/80 transition-colors jiggle-active">
+            <span className="material-symbols-outlined font-bold">close</span>
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-8 bg-stark-white">
           {/* If a share link exists, show QR Code instead of Preview */}
           {shareLink ? (
-            <div className="flex flex-col items-center gap-4 bg-surface-container-lowest p-6 sketch-border border-2 border-ink-black text-center">
-              <h3 className="font-label-caps text-label-caps text-ink-black text-lg">Pindai untuk Mengunduh</h3>
-              <div className="bg-white p-4 border-2 border-ink-black hard-shadow-sm">
-                <QRCodeSVG value={fullShareUrl} size={150} />
+            <div className="flex flex-col items-center gap-4 bg-surface-container-highest p-6 border-border-thick border-ink-black text-center pixel-corners">
+              <div className="pixel-corners-inner"></div>
+              <h3 className="font-tech-mono text-neon-yellow text-lg uppercase font-bold">SCAN_TO_DOWNLOAD</h3>
+              <div className="bg-stark-white p-4 border-border-thick border-ink-black hard-shadow-sm">
+                <QRCodeSVG value={fullShareUrl} size={180} />
               </div>
-              <p className="text-xs text-on-surface-variant">
-                Tautan berlaku 7 hari. Simpan atau bagikan sebelum masa berlaku habis.
+              <p className="font-tech-mono text-[10px] text-on-surface-variant uppercase">
+                LINK EXPIRES IN 7 DAYS. SAVE IMMEDIATELY.
               </p>
               
-              <div className="flex flex-col gap-2 w-full mt-2">
+              <div className="flex flex-col gap-3 w-full mt-4">
                 <button
                   onClick={handleWebShare}
-                  className="w-full px-4 py-3 bg-blueprint-blue text-paper-white font-interactive-btn border-2 border-ink-black sketch-border hard-shadow hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2"
+                  className="w-full px-4 py-4 bg-neon-yellow text-ink-black font-tech-mono font-bold border-border-thick border-ink-black hard-shadow-sm hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2 uppercase"
                 >
                   <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>share</span>
-                  Bagikan Tautan
+                  SHARE_LINK
                 </button>
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(fullShareUrl);
-                    showToast("Link disalin!", "success");
+                    showToast("Link copied!", "success");
                   }}
-                  className="w-full px-4 py-3 bg-paper-white text-ink-black font-interactive-btn border-2 border-ink-black sketch-border hard-shadow hover:bg-surface-container-low active:scale-95 transition-all flex items-center justify-center gap-2"
+                  className="w-full px-4 py-4 bg-stark-white text-ink-black font-tech-mono font-bold border-border-thick border-ink-black hard-shadow-sm hover:bg-surface-container-low active:scale-95 transition-all flex items-center justify-center gap-2 uppercase"
                 >
                   <span className="material-symbols-outlined">content_copy</span>
-                  Salin Tautan
+                  COPY_LINK
                 </button>
               </div>
             </div>
@@ -150,71 +169,63 @@ export function ExportDialog({
             <>
               {/* Normal Preview & Actions */}
               {compositeDataUrl && (
-                <div className="relative w-full max-h-48 overflow-hidden sketch-border hard-shadow flex items-center justify-center bg-surface-container-highest">
-                  <img src={compositeDataUrl} alt="Preview foto" decoding="async" className="w-full h-full object-contain" />
+                <div className="relative w-full max-h-48 overflow-hidden border-border-thick border-ink-black hard-shadow flex items-center justify-center bg-surface-container-highest pixel-corners p-2">
+                  <div className="pixel-corners-inner"></div>
+                  <img src={compositeDataUrl} alt="Preview foto" decoding="async" className="w-full h-full object-contain relative z-10" />
                 </div>
               )}
 
               {/* Action Buttons */}
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div>
-                  <h3 className="font-label-caps text-label-caps text-ink-black border-b border-outline-variant pb-2 mb-3">
-                    SIMPAN LOKAL (TANPA INTERNET)
+                  <h3 className="font-tech-mono text-ink-black border-b-2 border-ink-black pb-2 mb-4 font-bold uppercase tracking-widest text-sm">
+                    LOCAL_STORAGE
                   </h3>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-4">
                     <button
                       onClick={() => handleDownloadLocal("png")}
                       disabled={isProcessing}
-                      className="px-3 py-3 bg-paper-white text-ink-black border-2 border-ink-black sketch-border-thin hover:bg-surface-container-high active:scale-95 transition-all flex flex-col items-center gap-1 font-label-caps text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 py-4 bg-stark-white text-ink-black border-border-thick border-ink-black hard-shadow hover:bg-surface-container-high active:scale-95 transition-all flex flex-col items-center justify-center gap-2 font-tech-mono font-bold text-[10px] disabled:opacity-50 disabled:cursor-not-allowed uppercase"
                     >
-                      <span className="material-symbols-outlined text-xl">image</span>
-                      PNG (High Res)
+                      <span className="material-symbols-outlined text-2xl">image</span>
+                      PNG (HI-RES)
                     </button>
                     <button
                       onClick={() => handleDownloadLocal("jpg")}
                       disabled={isProcessing}
-                      className="px-3 py-3 bg-paper-white text-ink-black border-2 border-ink-black sketch-border-thin hover:bg-surface-container-high active:scale-95 transition-all flex flex-col items-center gap-1 font-label-caps text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 py-4 bg-stark-white text-ink-black border-border-thick border-ink-black hard-shadow hover:bg-surface-container-high active:scale-95 transition-all flex flex-col items-center justify-center gap-2 font-tech-mono font-bold text-[10px] disabled:opacity-50 disabled:cursor-not-allowed uppercase"
                     >
-                      <span className="material-symbols-outlined text-xl">photo</span>
-                      JPG (Kecil)
+                      <span className="material-symbols-outlined text-2xl">photo</span>
+                      JPG (COMPRESSED)
                     </button>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-label-caps text-label-caps text-ink-black border-b border-outline-variant pb-2 mb-3">
-                    SIMPAN ONLINE & BAGIKAN
+                  <h3 className="font-tech-mono text-ink-black border-b-2 border-ink-black pb-2 mb-4 font-bold uppercase tracking-widest text-sm">
+                    CLOUD_NETWORK
                   </h3>
                   <button
                     onClick={handleCreateShareLink}
                     disabled={isProcessing}
-                    className="w-full px-4 py-4 bg-blueprint-blue text-paper-white font-interactive-btn text-interactive-btn border-2 border-ink-black sketch-border hard-shadow hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-wait flex items-center justify-center gap-3"
+                    className="w-full px-4 py-4 bg-cyber-purple text-neon-yellow font-tech-mono font-bold border-border-thick border-ink-black hard-shadow hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-wait flex items-center justify-center gap-3 uppercase text-sm"
                   >
                     {isProcessing ? (
-                      <div className="w-5 h-5 border-2 border-paper-white border-t-transparent rounded-full animate-spin" />
+                      <div className="w-5 h-5 border-2 border-neon-yellow border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>cloud_upload</span>
                     )}
-                    {isProcessing ? "Menyimpan ke Cloud..." : "Buat Tautan (QR Code)"}
+                    {isProcessing ? "UPLOADING..." : "GENERATE QR LINK"}
                   </button>
-                  <p className="text-xs text-on-surface-variant text-center mt-2">
-                    Foto akan disimpan ke awan dan Anda bisa membagikannya lewat QR/WhatsApp.
+                  <p className="font-tech-mono text-[10px] text-on-surface-variant text-center mt-3 uppercase">
+                    UPLOADS TO CLOUD SECURE SERVER FOR SHARING.
                   </p>
                 </div>
               </div>
             </>
           )}
         </div>
-
-        {/* Footer */}
-        <div className="px-6 py-4 border-t-2 border-ink-black bg-surface-container-lowest sticky bottom-0">
-          <button
-            onClick={onClose}
-            className="w-full py-3 bg-paper-white text-ink-black border-2 border-ink-black font-label-caps text-label-caps hover:bg-surface-container-high transition-colors"
-          >
-            Tutup
-          </button>
-        </div>
+      </div>
       </div>
     </>
   );

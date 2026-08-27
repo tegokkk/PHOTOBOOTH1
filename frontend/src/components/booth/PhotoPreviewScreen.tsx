@@ -3,7 +3,6 @@
 import { useRef, useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { useUIStore } from "@/store/useUIStore";
-import { FrameSelector } from "@/components/frame/FrameSelector";
 import { EditPanel } from "@/components/editor/EditPanel";
 import { ExportDialog } from "@/components/export/ExportDialog";
 import { PrintPreviewDialog } from "@/components/print/PrintPreviewDialog";
@@ -21,7 +20,7 @@ function createIdempotencyKey(): string {
 
 export function PhotoPreviewScreen() {
   const {
-    capturedPhotos, clearPhotos, resetPhotoSession,
+    capturedPhotos, clearPhotos,
     selectedFrameId, frames,
     brightness, contrast, saturation,
     setCurrentStep, resetEdits, resetSession,
@@ -40,6 +39,7 @@ export function PhotoPreviewScreen() {
     guestAccessToken?: string;
   } | null>(null);
   const uploadKeysRef = useRef(new Map<string, string>());
+  const photoUploadKeysRef = useRef(new Map<string, string>());
 
   const currentFrame = frames.find((f) => f.id === selectedFrameId) || null;
   const previewFrameUrl = currentFrame ? getFramePreviewUrl(currentFrame) : "";
@@ -49,6 +49,7 @@ export function PhotoPreviewScreen() {
   const handleRetake = () => {
     setUploadedPhoto(null);
     uploadKeysRef.current.clear();
+    photoUploadKeysRef.current.clear();
     setFinalCompositeUrl(null);
     clearPhotos();
     resetEdits();
@@ -72,16 +73,6 @@ export function PhotoPreviewScreen() {
       isCompositingRef.current = false;
       setIsCompositing(false);
     }
-  };
-
-  const handleChangeFrame = () => {
-    setUploadedPhoto(null);
-    uploadKeysRef.current.clear();
-    setFinalCompositeUrl(null);
-    clearPhotos();
-    resetPhotoSession();
-    resetEdits();
-    setCurrentStep("frame-selection");
   };
 
   const handlePrintClick = async () => {
@@ -122,6 +113,12 @@ export function PhotoPreviewScreen() {
 
     const headers: Record<string, string> = { "Content-Type": "application/json" };
     if (token) headers.Authorization = `Bearer ${token}`;
+    let photoIdempotencyKey = photoUploadKeysRef.current.get(outputKey);
+    if (!photoIdempotencyKey) {
+      photoIdempotencyKey = createIdempotencyKey();
+      photoUploadKeysRef.current.set(outputKey, photoIdempotencyKey);
+    }
+    headers["Idempotency-Key"] = photoIdempotencyKey;
 
     const photoResponse = await fetch(`${API_URL}/api/photos`, {
       method: "POST",
@@ -187,20 +184,23 @@ export function PhotoPreviewScreen() {
     setFinalCompositeUrl(null);
     setUploadedPhoto(null);
     uploadKeysRef.current.clear();
+    photoUploadKeysRef.current.clear();
     resetSession();
   };
 
   // If no photos yet, show an error state
   if (capturedPhotos.length === 0) {
     return (
-      <main className="flex-grow flex flex-col items-center justify-center gap-4">
-        <span className="material-symbols-outlined text-5xl text-on-surface-variant">photo_camera</span>
-        <p className="font-body-md text-body-md text-on-surface-variant">Belum ada foto diambil.</p>
+      <main className="flex-grow flex flex-col items-center justify-center gap-4 bg-cyber-purple w-full h-full p-8 text-center">
+        <span className="material-symbols-outlined text-5xl text-error-red">photo_camera</span>
+        <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-stark-white uppercase">
+          SYS_ERR: NO_PHOTOS
+        </h2>
         <button
           onClick={() => setCurrentStep("camera")}
-          className="px-6 py-3 bg-curtain-red text-paper-white font-interactive-btn text-interactive-btn border-2 border-ink-black sketch-border hard-shadow"
+          className="mt-4 px-6 py-3 bg-neon-yellow text-ink-black font-tech-mono font-bold border-border-thick border-ink-black hard-shadow jiggle-active"
         >
-          Kembali ke Kamera
+          RETURN TO CAMERA
         </button>
       </main>
     );
@@ -210,189 +210,198 @@ export function PhotoPreviewScreen() {
   const filterStyle = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
 
   return (
-    <main className="flex-grow flex flex-col md:flex-row relative z-10 w-full max-w-[1600px] mx-auto p-4 md:p-gutter gap-6 md:gap-gutter pb-[100px] md:pb-gutter pt-6">
-
-      {/* ── Left: Composite Preview ──────────────────────────── */}
-      <section className="w-full md:w-8/12 flex flex-col items-center">
-
-        {/* Step Indicator */}
-        <div className="flex items-center gap-3 mb-6 self-start w-full">
-          <span className="bg-curtain-red text-paper-white font-label-caps text-label-caps px-3 py-1 sketch-border hard-shadow text-xs">
-            LANGKAH 3 / 3
-          </span>
-          <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-ink-black italic">
-            Review & Simpan
-          </h1>
+    <div className="flex-1 flex flex-col w-full min-h-screen bg-cyber-purple relative overflow-x-hidden">
+      
+      {/* TopAppBar inside the view */}
+      <header className="flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 w-full z-50 bg-background border-b-border-thick border-ink-black sticky top-0">
+        <div className="flex items-center gap-4">
+          <h1 className="font-headline-md text-headline-md text-primary tracking-tighter">CYBER-BOOTH_V1.0</h1>
+          <div className="hidden md:flex h-6 border-l-2 border-outline-variant mx-2"></div>
+          <span className="hidden md:block font-tech-mono text-tech-mono uppercase text-neon-yellow font-bold">LANGKAH 3 • HASIL FOTO</span>
         </div>
+        <div className="flex items-center gap-4 text-neon-yellow">
+          <span className="material-symbols-outlined text-[24px]">wifi_tethering</span>
+          <span className="material-symbols-outlined text-[24px]">timer</span>
+        </div>
+      </header>
 
-        {/* Multi-photo strip indicator */}
-        {capturedPhotos.length > 1 && (
-          <div className="self-start mb-3 flex items-center gap-2 px-3 py-1 bg-surface-container sketch-border-thin">
-            <span className="material-symbols-outlined text-sm text-curtain-red" style={{ fontVariationSettings: "'FILL' 1" }}>photo_library</span>
-            <span className="font-label-caps text-label-caps text-ink-black text-xs">
-              {capturedPhotos.length} foto diambil • Frame: {currentFrame?.name || "Tanpa Frame"}
-            </span>
+      {/* Mobile Step Indicator */}
+      <div className="md:hidden bg-ink-black p-2 border-b-border-thick border-ink-black flex justify-center z-40 relative">
+        <span className="font-tech-mono text-tech-mono uppercase text-neon-yellow font-bold">LANGKAH 3 • HASIL FOTO</span>
+      </div>
+
+      <main className="flex-grow p-margin-mobile md:p-margin-desktop flex flex-col items-center gap-6 relative pb-8">
+        {/* Background pattern */}
+        <div className="absolute inset-0 pointer-events-none opacity-10" style={{ backgroundImage: "radial-gradient(#6320ee 1px, transparent 1px)", backgroundSize: "20px 20px" }}></div>
+        
+        {/* Window Module for Photo */}
+        <div className="w-full max-w-3xl bg-stark-white border-border-thick border-ink-black hard-shadow-lg flex flex-col relative z-10 pixel-corners">
+          <div className="pixel-corners-inner"></div>
+          
+          {/* OS Window Header */}
+          <div className="h-8 bg-ink-black flex items-center justify-start px-4 gap-2 border-b-border-thick border-ink-black">
+            <div className="w-3 h-3 bg-stark-white"></div>
+            <div className="w-3 h-3 bg-neon-yellow"></div>
+            <div className="w-3 h-3 bg-error-red"></div>
+            <span className="ml-2 text-stark-white font-tech-mono text-xs uppercase tracking-widest">HASIL FOTO</span>
           </div>
-        )}
 
-        {/* ── DOM Based Preview ──────────────────────── */}
-        <div className="relative w-full max-w-2xl bg-paper-white sketch-border hard-shadow-lg p-3 pb-12 md:p-5 md:pb-16">
-          {/* Tape corners */}
-          <div className="absolute top-0 left-4 w-12 h-6 bg-yellow-200/80 z-20 rotate-1" style={{ clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)" }} />
-          <div className="absolute bottom-0 right-4 w-12 h-6 bg-yellow-200/80 z-20 -rotate-2" style={{ clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)" }} />
-
-          {/* Photo area */}
-          <div className="relative w-full overflow-hidden bg-white flex items-center justify-center">
+          <div className="p-4 md:p-8 flex flex-col items-center">
             
-            {/* The Frame Image dictates the container's aspect ratio! */}
-            {previewFrameUrl ? (
-              <img
-                src={previewFrameUrl}
-                alt="Frame Overlay"
-                decoding="async"
-                className="relative w-full h-auto object-contain pointer-events-none z-10 block"
-              />
-            ) : (
-               <div className="w-full" style={{ paddingBottom: '75%' }} />
-            )}
+            {/* The frame asset defines the preview ratio so every frame stays fully visible. */}
+            <div className="relative w-fit max-w-full bg-ink-black border-border-thick border-ink-black p-2 flex items-center justify-center">
+              
+              {/* Pixel art corner accents */}
+              <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-neon-yellow -translate-x-2 -translate-y-2 z-30"></div>
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-neon-yellow translate-x-2 translate-y-2 z-30"></div>
 
-            {/* 1. Draw raw photos strictly placed according to frameMeta slots (Layer 1) */}
-            <div className="absolute inset-0 z-0">
-              {frameMeta && frameMeta.slots.length > 0 ? (
-                frameMeta.slots.map((slot, i) => (
-                  <div
-                    key={i}
-                    className="absolute overflow-hidden"
-                    style={{
-                      left: `${slot.x * 100}%`,
-                      top: `${slot.y * 100}%`,
-                      width: `${slot.width * 100}%`,
-                      height: `${slot.height * 100}%`,
-                      zIndex: slot.zIndex ?? 0,
-                    }}
-                  >
-                    <img
-                      src={capturedPhotos[Math.min(i, capturedPhotos.length - 1)]}
-                      alt={`Foto ${i + 1}`}
-                      decoding="async"
-                      className="w-full h-full object-cover origin-center"
+              {/* Invisible image keeps all slot coordinates aligned to the real frame. */}
+              {previewFrameUrl ? (
+                  <img
+                    src={previewFrameUrl}
+                    alt=""
+                    decoding="async"
+                    className="relative block w-auto h-auto max-w-full max-h-[min(68vh,760px)] object-contain opacity-0 pointer-events-none"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <div className="w-[min(92vw,720px)] aspect-[4/3]" />
+                )}
+
+              {/* Draw raw photos strictly within the frame slots. */}
+              <div className="absolute inset-0 z-0 overflow-hidden">
+                {frameMeta && frameMeta.slots.length > 0 ? (
+                  frameMeta.slots.map((slot, i) => (
+                    <div
+                      key={i}
+                      className="absolute overflow-hidden"
                       style={{
-                        filter: filterStyle,
-                        transform: slot.rotation ? `rotate(${slot.rotation}deg)` : undefined,
+                        left: `${slot.x * 100}%`,
+                        top: `${slot.y * 100}%`,
+                        width: `${slot.width * 100}%`,
+                        height: `${slot.height * 100}%`,
+                        zIndex: slot.zIndex ?? 0,
                       }}
-                    />
-                  </div>
-                ))
-              ) : (
-                /* Fallback if no frameMeta slots exist */
-                <div className={`absolute inset-0 flex ${capturedPhotos.length > 1 ? 'flex-col' : ''} gap-0`}>
-                  {capturedPhotos.map((photo, i) => (
-                    <div key={i} className="flex-1 overflow-hidden">
+                    >
                       <img
-                        src={photo}
+                        src={capturedPhotos[Math.min(i, capturedPhotos.length - 1)]}
                         alt={`Foto ${i + 1}`}
                         decoding="async"
-                        className="w-full h-full object-cover"
-                        style={{ filter: filterStyle }}
+                        className="w-full h-full object-cover origin-center filter drop-shadow-md"
+                        style={{
+                          filter: filterStyle,
+                          transform: slot.rotation ? `rotate(${slot.rotation}deg)` : undefined,
+                        }}
                       />
                     </div>
-                  ))}
-                </div>
-              )}
+                  ))
+                ) : (
+                  <div className={`absolute inset-0 flex ${capturedPhotos.length > 1 ? 'flex-col' : ''} gap-0`}>
+                    {capturedPhotos.map((photo, i) => (
+                      <div key={i} className="flex-1 overflow-hidden">
+                        <img
+                          src={photo}
+                          alt={`Foto ${i + 1}`}
+                          decoding="async"
+                          className="w-full h-full object-cover"
+                          style={{ filter: filterStyle }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Frame stays above the captured photos and uses the exact same bounds. */}
+              {previewFrameUrl && (
+                  <img
+                    src={previewFrameUrl}
+                    alt="Frame Overlay"
+                    decoding="async"
+                    className="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 block"
+                  />
+                )}
             </div>
+
+            {/* Metadata */}
+            <div className="mt-6 flex items-center justify-between w-full border-t-border-thick border-ink-black pt-4">
+              <div className="flex flex-col">
+                <span className="font-tech-mono text-ink-black font-bold text-sm uppercase">
+                  {currentFrame?.name || "SYS_FRAME"}
+                </span>
+                <span className="font-label-caps text-on-surface-variant text-[10px] uppercase">
+                  {capturedPhotos.length} FOTO
+                </span>
+              </div>
+              <span className="font-tech-mono text-[10px] text-ink-black bg-neon-yellow px-2 py-1 border border-ink-black">
+                READY
+              </span>
+            </div>
+
+          </div>
+        </div>
+
+        {/* Controls and actions stay below the photo so the kiosk flow remains centered. */}
+        <div className="w-full max-w-3xl flex flex-col gap-6 relative z-10">
+          
+          <div className="order-2 bg-surface-container-highest border-border-thick border-ink-black hard-shadow p-6 pixel-corners">
+            <div className="pixel-corners-inner"></div>
+            <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-ink-black uppercase tracking-tighter mb-4 flex items-center gap-2 border-b-2 border-ink-black pb-2">
+              <span className="material-symbols-outlined text-cyber-purple">tune</span>
+              EDIT FOTO
+            </h2>
+            <EditPanel />
           </div>
 
-          {/* Metadata */}
-          <div className="mt-3 flex items-center gap-2">
-            <span className="material-symbols-outlined text-sm text-on-surface-variant">filter_frames</span>
-            <span className="font-label-caps text-label-caps text-on-surface-variant text-xs">
-              {currentFrame?.name || "Tanpa Frame"}{currentFrame ? ` · ${currentFrame.category}` : ""}
-            </span>
-            <span className="ml-auto font-label-caps text-[10px] text-on-surface-variant italic">
-              {new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}
-            </span>
+          <div className="order-1 bg-stark-white border-border-thick border-ink-black hard-shadow p-6 pixel-corners flex flex-col gap-4">
+            <div className="pixel-corners-inner"></div>
+            <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-ink-black uppercase tracking-tighter mb-2">
+              PILIH AKSI
+            </h2>
+            
+            <button
+              onClick={handlePrintClick}
+              disabled={isCompositing}
+              className="w-full py-4 bg-neon-yellow text-ink-black border-border-thick border-ink-black font-label-caps text-label-caps hard-shadow jiggle-active flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {isCompositing ? (
+                <div className="w-5 h-5 border-2 border-ink-black border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>print</span>
+              )}
+              {isCompositing ? "MEMPROSES..." : "CETAK FOTO"}
+            </button>
+            
+            <button
+              onClick={handleExportClick}
+              disabled={isCompositing}
+              className="w-full py-4 bg-stark-white text-ink-black border-border-thick border-ink-black font-label-caps text-label-caps hard-shadow jiggle-active flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>qr_code_2</span>
+              BAGIKAN / UNDUH
+            </button>
+
+            <div className="grid grid-cols-2 gap-4 mt-2">
+              <button
+                onClick={handleRetake}
+                className="py-3 bg-cyber-purple text-stark-white border-border-thick border-ink-black font-label-caps text-label-caps hard-shadow-sm jiggle-active flex items-center justify-center gap-1 text-[10px]"
+              >
+                <span className="material-symbols-outlined text-sm">undo</span>
+                AMBIL ULANG
+              </button>
+              <button
+                onClick={handleNewSession}
+                className="py-3 bg-error-red text-stark-white border-border-thick border-ink-black font-label-caps text-label-caps hard-shadow-sm jiggle-active flex items-center justify-center gap-1 text-[10px]"
+              >
+                <span className="material-symbols-outlined text-sm">power_settings_new</span>
+                AKHIRI SESI
+              </button>
+            </div>
+            
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="mt-6 flex flex-wrap justify-center gap-3 w-full max-w-2xl relative">
-          <button
-            onClick={handleRetake}
-            className="flex-1 md:flex-none min-w-[130px] px-5 py-4 bg-paper-white text-ink-black
-              font-interactive-btn text-interactive-btn border-2 border-ink-black sketch-border hard-shadow
-              hover:bg-surface-container-low active:scale-95 transition-all duration-150 flex items-center justify-center gap-2"
-          >
-            <span className="material-symbols-outlined">replay</span>
-            Foto Ulang
-          </button>
-
-          <button
-            onClick={handleChangeFrame}
-            className="flex-1 md:flex-none min-w-[130px] px-5 py-4 bg-paper-white text-ink-black
-              font-interactive-btn text-interactive-btn border-2 border-ink-black sketch-border hard-shadow
-              hover:bg-surface-container-low active:scale-95 transition-all duration-150 flex items-center justify-center gap-2"
-          >
-            <span className="material-symbols-outlined">filter_frames</span>
-            Ganti Frame
-          </button>
-
-          <button
-            onClick={handlePrintClick}
-            disabled={isCompositing}
-            className="flex-1 md:flex-none min-w-[180px] px-6 py-4 bg-curtain-red text-paper-white
-              font-interactive-btn text-interactive-btn border-2 border-ink-black sketch-border hard-shadow
-              hover:scale-[1.02] active:scale-95 transition-all duration-150 flex items-center justify-center gap-2
-              disabled:opacity-50 disabled:cursor-wait"
-          >
-            {isCompositing ? (
-              <div className="w-5 h-5 border-2 border-paper-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>print</span>
-            )}
-            {isCompositing ? "Memproses..." : "Cetak Foto"}
-          </button>
-
-          <button
-            onClick={handleExportClick}
-            disabled={isCompositing}
-            className="flex-1 md:flex-none min-w-[180px] px-6 py-4 bg-blueprint-blue text-paper-white
-              font-interactive-btn text-interactive-btn border-2 border-ink-black sketch-border hard-shadow
-              hover:scale-[1.02] active:scale-95 transition-all duration-150 flex items-center justify-center gap-2
-              disabled:opacity-50 disabled:cursor-wait"
-          >
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>qr_code_2</span>
-            QR / Download
-          </button>
-
-          <button
-            onClick={handleNewSession}
-            className="flex-1 md:flex-none min-w-[130px] px-5 py-4 bg-paper-white text-ink-black
-              font-interactive-btn text-interactive-btn border-2 border-ink-black sketch-border hard-shadow
-              hover:bg-surface-container-low active:scale-95 transition-all duration-150 flex items-center justify-center gap-2"
-          >
-            <span className="material-symbols-outlined">restart_alt</span>
-            Sesi Baru
-          </button>
-        </div>
-      </section>
-
-      {/* ── Right: Quick Switch + Edit ─────────────────── */}
-      <section className="w-full md:w-4/12 flex flex-col gap-4 mt-2 md:mt-0">
-        <div className="bg-surface-container-lowest sketch-border hard-shadow p-4 md:p-6">
-          <div className="flex items-center justify-between border-b-2 border-ink-black pb-2 mb-4">
-            <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-ink-black">Quick Switch</h2>
-            <span className="material-symbols-outlined text-curtain-red" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
-          </div>
-          <p className="font-body-md text-body-md text-on-surface-variant mb-4 text-sm">
-            Coba frame lain tanpa foto ulang.
-          </p>
-          <FrameSelector />
-        </div>
-
-        <div className="bg-surface-container-lowest sketch-border hard-shadow p-4 md:p-6">
-          <EditPanel />
-        </div>
-      </section>
+      </main>
 
       {/* Export Dialog */}
       {isExportOpen && finalCompositeUrl && (
@@ -415,6 +424,6 @@ export function PhotoPreviewScreen() {
           onNewSession={handleNewSession}
         />
       )}
-    </main>
+    </div>
   );
 }

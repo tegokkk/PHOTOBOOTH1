@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const photoController = require('../controllers/photoController');
-const { optionalAuth, authMiddleware } = require('../middleware/authMiddleware');
 const rateLimit = require('express-rate-limit');
 
 const uploadLimiter = rateLimit({
@@ -11,21 +10,23 @@ const uploadLimiter = rateLimit({
 });
 
 // @route   POST /api/photos
-router.post('/', uploadLimiter, optionalAuth, photoController.uploadPhoto);
+router.post('/', uploadLimiter, photoController.uploadPhoto);
 
 // @route   GET /api/photos
-router.get('/', authMiddleware, photoController.getPhotos);
+
+// @route   GET /api/photos
+router.get('/', photoController.getPhotos);
 
 // @route   GET /api/photos/:id
-router.get('/:id', optionalAuth, photoController.getPhotoById);
+router.get('/:id', photoController.getPhotoById);
 
 // @route   DELETE /api/photos/:id
-router.delete('/:id', authMiddleware, photoController.deletePhoto);
+router.delete('/:id', photoController.deletePhoto);
 
 // @route   POST /api/photos/:id/restore
-router.post('/:id/restore', authMiddleware, photoController.restorePhoto);
+router.post('/:id/restore', photoController.restorePhoto);
 
 // @route   DELETE /api/photos/:id/permanent
-router.delete('/:id/permanent', authMiddleware, photoController.permanentDeletePhoto);
+router.delete('/:id/permanent', photoController.permanentDeletePhoto);
 
 module.exports = router;

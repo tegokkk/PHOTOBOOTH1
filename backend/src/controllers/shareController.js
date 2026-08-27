@@ -20,13 +20,8 @@ const createShareLink = async (req, res) => {
       return res.status(410).json({ success: false, message: 'Cannot share a deleted photo' });
     }
 
-    // Ownership check
-    const userId = req.user ? req.user.id : null;
-    const isAdmin = req.user ? req.user.isAdmin : false;
-    
     const guestAccess = accessToken || req.header('X-Photo-Access-Token');
-    const isOwner = photo.userId && photo.userId === userId;
-    if (!isOwner && !isAdmin && !hasValidGuestAccess(photo, guestAccess)) {
+    if (!hasValidGuestAccess(photo, guestAccess)) {
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
 
@@ -56,7 +51,6 @@ const createShareLink = async (req, res) => {
       prisma.shareLink.create({
         data: {
           photoId,
-          createdById: userId,
           token,
           expiresAt,
         },
@@ -140,8 +134,6 @@ const getSharedPhoto = async (req, res) => {
 const revokeShareLink = async (req, res) => {
   try {
     const { token } = req.params;
-    const userId = req.user ? req.user.id : null;
-    const isAdmin = req.user ? req.user.isAdmin : false;
     const guestAccessToken = req.body?.accessToken || req.header('X-Photo-Access-Token');
 
     const shareLink = await prisma.shareLink.findUnique({
@@ -154,8 +146,7 @@ const revokeShareLink = async (req, res) => {
     }
 
     // Only owner of the photo or admin can revoke
-    const isOwner = shareLink.photo.userId && shareLink.photo.userId === userId;
-    if (!isOwner && !isAdmin && !hasValidGuestAccess(shareLink.photo, guestAccessToken)) {
+    if (!hasValidGuestAccess(shareLink.photo, guestAccessToken)) {
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
 

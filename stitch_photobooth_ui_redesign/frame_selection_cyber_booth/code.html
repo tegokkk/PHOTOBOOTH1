@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Frame Selection - CYBER-BOOTH_V1.0</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&amp;family=Bricolage+Grotesque:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#2f3131",
+                        "surface-container": "#211e29",
+                        "secondary-container": "#d2f000",
+                        "primary-fixed-dim": "#cdbdff",
+                        "on-primary-fixed-variant": "#5000d0",
+                        "on-secondary-container": "#5d6b00",
+                        "primary": "#cdbdff",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "surface-container-low": "#1d1a25",
+                        "inverse-primary": "#692bf4",
+                        "inverse-on-surface": "#322f3a",
+                        "on-primary": "#370095",
+                        "surface-bright": "#3b3743",
+                        "surface-container-highest": "#36333f",
+                        "error-container": "#93000a",
+                        "on-primary-fixed": "#20005f",
+                        "primary-container": "#6320ee",
+                        "on-surface-variant": "#cbc3d9",
+                        "on-secondary-fixed": "#191e00",
+                        "inverse-surface": "#e7e0ef",
+                        "cyber-purple": "#6320EE",
+                        "primary-fixed": "#e8deff",
+                        "on-primary-container": "#d6c8ff",
+                        "outline-variant": "#494456",
+                        "on-secondary": "#2c3400",
+                        "surface-container-high": "#2b2834",
+                        "secondary-fixed": "#d2f000",
+                        "background": "#14121c",
+                        "surface-tint": "#cdbdff",
+                        "surface-container-lowest": "#0f0d17",
+                        "surface": "#14121c",
+                        "tertiary-container": "#575959",
+                        "on-surface": "#e7e0ef",
+                        "on-tertiary-container": "#cfd0d0",
+                        "on-background": "#e7e0ef",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "on-secondary-fixed-variant": "#414c00",
+                        "ink-black": "#0F0F0F",
+                        "on-error": "#690005",
+                        "neon-yellow": "#DFFF00",
+                        "outline": "#948ea2",
+                        "stark-white": "#FFFFFF",
+                        "error-red": "#FF3131",
+                        "on-error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#b8d300",
+                        "error": "#ffb4ab",
+                        "tertiary-fixed": "#e2e2e2",
+                        "tertiary": "#c6c6c7",
+                        "secondary": "#ffffff",
+                        "surface-dim": "#14121c",
+                        "surface-variant": "#36333f",
+                        "tertiary-fixed-dim": "#c6c6c7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "40px",
+                        "gutter": "16px",
+                        "margin-mobile": "20px",
+                        "border-thin": "1px",
+                        "unit": "4px",
+                        "border-thick": "3px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Courier Prime"],
+                        "body-md": ["Courier Prime"],
+                        "headline-lg": ["Bricolage Grotesque"],
+                        "headline-md": ["Bricolage Grotesque"],
+                        "headline-lg-mobile": ["Bricolage Grotesque"],
+                        "tech-mono": ["Courier Prime"],
+                        "headline-xl": ["Bricolage Grotesque"],
+                        "label-caps": ["Courier Prime"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-md": ["24px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "1.1", "fontWeight": "800" }],
+                        "tech-mono": ["14px", { "lineHeight": "1.2", "fontWeight": "400" }],
+                        "headline-xl": ["80px", { "lineHeight": "1.0", "letterSpacing": "-0.04em", "fontWeight": "800" }],
+                        "label-caps": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "700" }]
+                    },
+                    "boxShadow": {
+                        "hard": "4px 4px 0px 0px rgba(15, 15, 15, 1)",
+                        "hard-active": "0px 0px 0px 0px rgba(15, 15, 15, 1)"
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .hard-shadow {
+            box-shadow: 4px 4px 0px 0px #0F0F0F;
+        }
+        .jiggle-active:active {
+            transform: translate(4px, 4px);
+            box-shadow: none;
+        }
+        /* Custom scrollbar for terminal vibe */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #14121c; 
+            border-left: 3px solid #0F0F0F;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #DFFF00; 
+            border: 3px solid #0F0F0F;
+        }
+    </style>
+</head>
+<body class="bg-cyber-purple text-on-background min-h-screen flex flex-col md:flex-row overflow-x-hidden">
+<!-- SideNavBar (Desktop Only) -->
+<nav class="hidden md:flex fixed left-0 top-0 h-screen flex-col items-center py-8 z-40 bg-stark-white dark:bg-surface-container w-24 border-r-3 border-ink-black shadow-[4px_0_0_0_#0F0F0F]">
+<div class="mb-8 flex flex-col items-center">
+<div class="w-12 h-12 border-3 border-ink-black bg-cyber-purple mb-2 relative overflow-hidden" data-alt="Cyberpunk avatar placeholder, low poly wireframe head in neon green and purple on black background, brutalist glitch art style, highly detailed technical illustration." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD5dluSSXfBkXrqcSJ7Pol2k_M83UNRIL8KCzWi4UuUzjyBt7k7dQ7wO6V958-cnNmOH-XRsPOOVTitmiqQN5EbrLdchkaCbAl3A0Ag3qdO6G_CQee4gotd_LjLHPen9hMpsLWKmXOfLKv6dBr8y9ynuYZ2hyexrQdMnjLDUxWfrgA16d1rVwjVLLPMY5zrOHi5gDa794Y46f1MGafDE0NgdLBzSz-_uBsdAsHzTXlMOdZ38h_4C1Hkrw'); background-size: cover; background-position: center;">
+<div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIi8+PC9zdmc+')] opacity-20"></div>
+</div>
+<span class="font-label-caps text-label-caps text-ink-black dark:text-stark-white text-center">NODE_01</span>
+</div>
+<div class="flex-1 flex flex-col gap-6 w-full items-center">
+<!-- Filters -->
+<button class="w-16 h-16 flex flex-col items-center justify-center gap-1 border-3 border-transparent text-on-surface-variant hover:text-ink-black hover:bg-primary-container hover:text-on-primary-container transition-colors group">
+<span class="material-symbols-outlined text-[24px]">filter_b_and_w</span>
+<span class="font-label-caps text-[10px]">Filters</span>
+</button>
+<!-- Frames (Active) -->
+<button class="w-16 h-16 flex flex-col items-center justify-center gap-1 bg-neon-yellow text-ink-black border-3 border-ink-black hard-shadow jiggle-active transform scale-95">
+<span class="material-symbols-outlined text-[24px] font-bold">grid_view</span>
+<span class="font-label-caps text-[10px] font-bold">Frames</span>
+</button>
+<!-- Help -->
+<button class="w-16 h-16 flex flex-col items-center justify-center gap-1 border-3 border-transparent text-on-surface-variant hover:text-ink-black hover:bg-primary-container hover:text-on-primary-container transition-colors group">
+<span class="material-symbols-outlined text-[24px]">help_center</span>
+<span class="font-label-caps text-[10px]">Help</span>
+</button>
+</div>
+<button class="mt-auto px-2 py-4 border-3 border-ink-black bg-stark-white text-ink-black hard-shadow jiggle-active hover:bg-neon-yellow transition-colors font-label-caps">
+            FINISH
+        </button>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col md:ml-24">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 w-full z-50 bg-background dark:bg-background border-b-3 border-ink-black sticky top-0">
+<div class="flex items-center gap-4">
+<h1 class="font-headline-md text-headline-md text-primary dark:text-primary tracking-tighter">CYBER-BOOTH_V1.0</h1>
+<div class="hidden md:flex h-6 border-l-2 border-outline-variant mx-2"></div>
+<span class="hidden md:block font-tech-mono text-tech-mono uppercase text-neon-yellow font-bold">STEP 01: SELECT FRAME</span>
+</div>
+<div class="flex items-center gap-4 text-neon-yellow dark:text-neon-yellow">
+<span class="material-symbols-outlined text-[24px]">wifi_tethering</span>
+<span class="material-symbols-outlined text-[24px]">timer</span>
+</div>
+</header>
+<!-- Mobile Step Indicator -->
+<div class="md:hidden bg-ink-black p-2 border-b-3 border-ink-black flex justify-center">
+<span class="font-tech-mono text-tech-mono uppercase text-neon-yellow font-bold">STEP 01: SELECT FRAME</span>
+</div>
+<!-- Canvas -->
+<main class="flex-1 p-margin-mobile md:p-margin-desktop relative">
+<!-- Background pattern for that cyber-sketch feel -->
+<div class="absolute inset-0 pointer-events-none opacity-5" style="background-image: radial-gradient(#DFFF00 1px, transparent 1px); background-size: 16px 16px;"></div>
+<div class="max-w-6xl mx-auto relative z-10">
+<!-- Instructions Module -->
+<div class="bg-stark-white border-3 border-ink-black hard-shadow mb-8 md:mb-12 inline-block">
+<!-- Window Controls -->
+<div class="border-b-3 border-ink-black bg-ink-black p-1 flex gap-1">
+<div class="w-2 h-2 bg-stark-white"></div>
+<div class="w-2 h-2 bg-stark-white"></div>
+<div class="w-2 h-2 bg-stark-white"></div>
+</div>
+<div class="p-4 px-6 flex items-center gap-4">
+<span class="material-symbols-outlined text-ink-black text-[32px]">photo_camera_back</span>
+<div>
+<h2 class="font-headline-md text-headline-md text-ink-black uppercase">Initialize Sequence</h2>
+<p class="font-body-md text-body-md text-on-tertiary">Select a structural enclosure for your digital capture.</p>
+</div>
+</div>
+</div>
+<!-- Frame Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+<!-- Frame 1: Neon Tokyo (Selected) -->
+<label class="cursor-pointer group relative block">
+<input checked="" class="peer sr-only" name="frame_selection" type="radio"/>
+<!-- Card Container -->
+<div class="bg-surface-container border-3 border-ink-black hard-shadow h-full flex flex-col peer-checked:border-neon-yellow peer-checked:shadow-[8px_8px_0_0_#DFFF00] transition-all duration-200 jiggle-active hover:translate-y-[-4px] hover:translate-x-[-4px]">
+<!-- Header -->
+<div class="border-b-3 border-ink-black peer-checked:border-neon-yellow bg-ink-black p-2 flex justify-between items-center">
+<span class="font-tech-mono text-tech-mono text-stark-white peer-checked:text-neon-yellow">F-001 // NEON TOKYO</span>
+<div class="w-3 h-3 border-2 border-stark-white peer-checked:bg-neon-yellow peer-checked:border-neon-yellow"></div>
+</div>
+<!-- Preview Area -->
+<div class="p-6 flex-1 flex items-center justify-center relative bg-surface-container-highest">
+<!-- Tape Accents -->
+<div class="absolute top-0 left-0 w-4 h-4 bg-ink-black transform -rotate-45 -translate-x-2 -translate-y-2"></div>
+<div class="absolute top-0 right-0 w-4 h-4 bg-ink-black transform rotate-45 translate-x-2 -translate-y-2"></div>
+<div class="absolute bottom-0 left-0 w-4 h-4 bg-ink-black transform rotate-45 -translate-x-2 translate-y-2"></div>
+<div class="absolute bottom-0 right-0 w-4 h-4 bg-ink-black transform -rotate-45 translate-x-2 translate-y-2"></div>
+<!-- The Frame Itself (Visual Representation) -->
+<div class="w-3/4 aspect-[3/4] border-4 border-neon-pink p-2 relative shadow-[0_0_15px_rgba(255,105,180,0.5)]" style="border-color: #FF107A;">
+<div class="w-full h-full bg-ink-black flex items-center justify-center opacity-80" data-alt="Abstract glowing neon pink and blue grid lines on a dark background, evoking a cyberpunk cityscape at night, low poly aesthetic, highly contrasted technical design." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCuYT8yMwE4TPQHZTIN4m72XYGG4Gx2jfPDf_U1oxK_8AveqODSS_HuHGY_IIb20tVfvlCKRpAxNEGuEmT4CeJEWAIAkXB_voKE97TsM9kjAbTEqi3A5crz-XaOnTb43zm1jwz3G2Pz96h-Q6vZ33NbAO4kuupKN_UsOSLWYGuVUrvnWVL-5evufsuQWATWmUBtqVo8TWUBe4pHFkbU2blTLfjwE7veTjwCeBUMiBMufg8VNGKXTeUi8A'); background-size: cover; background-position: center;">
+<span class="material-symbols-outlined text-stark-white opacity-50 text-[48px]">person</span>
+</div>
+<!-- Decorative Frame Elements -->
+<div class="absolute -left-2 top-1/2 w-4 h-8 bg-ink-black border-2 border-[#FF107A]"></div>
+<div class="absolute -right-2 top-1/2 w-4 h-8 bg-ink-black border-2 border-[#FF107A]"></div>
+</div>
+</div>
+<!-- Footer Details -->
+<div class="p-3 border-t-3 border-ink-black peer-checked:border-neon-yellow bg-surface-container flex justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">ASPECT: 3:4</span>
+<span class="font-label-caps text-label-caps text-neon-yellow bg-ink-black px-2 py-1">ACTIVE</span>
+</div>
+</div>
+</label>
+<!-- Frame 2: DigiSkull -->
+<label class="cursor-pointer group relative block">
+<input class="peer sr-only" name="frame_selection" type="radio"/>
+<div class="bg-surface-container border-3 border-ink-black hard-shadow h-full flex flex-col peer-checked:border-neon-yellow peer-checked:shadow-[8px_8px_0_0_#DFFF00] transition-all duration-200 jiggle-active hover:translate-y-[-4px] hover:translate-x-[-4px]">
+<div class="border-b-3 border-ink-black peer-checked:border-neon-yellow bg-ink-black p-2 flex justify-between items-center">
+<span class="font-tech-mono text-tech-mono text-stark-white group-hover:text-neon-yellow transition-colors">F-002 // DIGISKULL</span>
+<div class="w-3 h-3 border-2 border-stark-white peer-checked:bg-neon-yellow peer-checked:border-neon-yellow"></div>
+</div>
+<div class="p-6 flex-1 flex items-center justify-center relative bg-surface-container-highest">
+<div class="w-3/4 aspect-square border-4 border-stark-white p-2 relative bg-ink-black" style="border-style: dashed;">
+<div class="w-full h-full bg-surface-container-lowest flex items-center justify-center" data-alt="Monochrome pixel art pattern of small skulls and crossbones, brutalist black and white design, retro 8-bit aesthetic, harsh contrast." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAw48nGVQUmL9oK6G_2d4I4pHxgYJ0V-SLskHqo5TAGFBWx25YH8V_w0fBsjdOpOrAQqxqDXpp_ati9quIdMKKjioWovpumVG2nKUu4JCyxCUvWQeX3XMN80Bupy2Q0l2W2KQLyqLKpgWIm3SBTEM5Dtc5K2ae2rkyZ1a4K3SdrEnIP7ddTGN9Pgvqn0xtSXKuuDq3DJHVlJR7XBWUs9Wlmp2O3z4BREQcG_H-Wc-Qp1rgciY7PfE_t_g'); background-size: cover; background-position: center;">
+<span class="material-symbols-outlined text-stark-white opacity-50 text-[48px]">person</span>
+</div>
+<div class="absolute -top-4 left-4 bg-stark-white text-ink-black font-label-caps text-[10px] px-1 border-2 border-ink-black">RAW</div>
+</div>
+</div>
+<div class="p-3 border-t-3 border-ink-black peer-checked:border-neon-yellow bg-surface-container flex justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">ASPECT: 1:1</span>
+</div>
+</div>
+</label>
+<!-- Frame 3: CyberPunk -->
+<label class="cursor-pointer group relative block">
+<input class="peer sr-only" name="frame_selection" type="radio"/>
+<div class="bg-surface-container border-3 border-ink-black hard-shadow h-full flex flex-col peer-checked:border-neon-yellow peer-checked:shadow-[8px_8px_0_0_#DFFF00] transition-all duration-200 jiggle-active hover:translate-y-[-4px] hover:translate-x-[-4px]">
+<div class="border-b-3 border-ink-black peer-checked:border-neon-yellow bg-ink-black p-2 flex justify-between items-center">
+<span class="font-tech-mono text-tech-mono text-stark-white group-hover:text-neon-yellow transition-colors">F-003 // CYBERPUNK</span>
+<div class="w-3 h-3 border-2 border-stark-white peer-checked:bg-neon-yellow peer-checked:border-neon-yellow"></div>
+</div>
+<div class="p-6 flex-1 flex items-center justify-center relative bg-surface-container-highest">
+<div class="w-3/4 aspect-[4/3] border-4 border-neon-yellow p-4 relative bg-cyber-purple shadow-[4px_4px_0_0_#0F0F0F]">
+<div class="w-full h-full border-2 border-ink-black bg-ink-black flex items-center justify-center" data-alt="Bright yellow and black hazard stripe pattern, industrial warning tape aesthetic, thick diagonal lines, brutalist and aggressive graphic design." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAxiWdW3zg90ptD5HeQ7olQpgw4KPMS5b7HsRBzV3-g5VkdYR2f13hvARt2JkyTCxrUy3W7wKubeGfYSm9s3fBhummzZNZb4NnpitlObe-jQHrCkTv3Z8W0auDpUq61GtdQrllDEEVaxeuooVgQwgSq7s7uT9gazGp7UcX28OJNhSEmINN3jAs9K_-iRcmOGp8NoPmaXlvQ3Qydh2I75n5MpskCB2Oy7p1ENQHh4a0KtkbULoiiAQYMSg'); background-size: cover; background-position: center;">
+<span class="material-symbols-outlined text-stark-white opacity-50 text-[48px]">person</span>
+</div>
+</div>
+</div>
+<div class="p-3 border-t-3 border-ink-black peer-checked:border-neon-yellow bg-surface-container flex justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">ASPECT: 4:3</span>
+</div>
+</div>
+</label>
+<!-- Frame 4: Glitch Grid -->
+<label class="cursor-pointer group relative block">
+<input class="peer sr-only" name="frame_selection" type="radio"/>
+<div class="bg-surface-container border-3 border-ink-black hard-shadow h-full flex flex-col peer-checked:border-neon-yellow peer-checked:shadow-[8px_8px_0_0_#DFFF00] transition-all duration-200 jiggle-active hover:translate-y-[-4px] hover:translate-x-[-4px]">
+<div class="border-b-3 border-ink-black peer-checked:border-neon-yellow bg-ink-black p-2 flex justify-between items-center">
+<span class="font-tech-mono text-tech-mono text-stark-white group-hover:text-neon-yellow transition-colors">F-004 // GLITCH GRID</span>
+<div class="w-3 h-3 border-2 border-stark-white peer-checked:bg-neon-yellow peer-checked:border-neon-yellow"></div>
+</div>
+<div class="p-6 flex-1 flex items-center justify-center relative bg-surface-container-highest">
+<div class="w-3/4 aspect-[3/4] border-2 border-stark-white relative bg-ink-black overflow-hidden">
+<!-- Simulated Glitch Frame -->
+<div class="absolute inset-0 border-[6px] border-l-cyan-400 border-r-red-500 border-t-transparent border-b-transparent opacity-80 mix-blend-screen"></div>
+<div class="w-full h-full p-2">
+<div class="w-full h-full bg-surface-container-low flex items-center justify-center border border-stark-white border-opacity-30" data-alt="Static tv screen noise texture, monochrome with slight chromatic aberration on edges, chaotic digital interference pattern, high contrast tech aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAv2zwfZGe1umxFDmQTjM1pDbvS8cEAYY-pT1oiTHtZ_dAdAOTXlIJTCGR1PdWHAqy17qBa57bK26vRTNFhUwqH0E8rE73D_JaG1C-n54RStF2zWlKc32xkjRLNJGJE25Zs262wqyeE9g1s3kdYwFxgOVBbC56rwrnISJnkP6cKnv7yWHacSPGxdTiW3iCSyoEuaWtmiwwXwgkwVuOBaOlyTrEnP9Q1uIEJ7XHRQRI0FvwUF8A9cwVuFg'); background-size: cover; background-position: center;">
+<span class="material-symbols-outlined text-stark-white opacity-50 text-[48px]">person</span>
+</div>
+</div>
+</div>
+</div>
+<div class="p-3 border-t-3 border-ink-black peer-checked:border-neon-yellow bg-surface-container flex justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">ASPECT: 3:4</span>
+</div>
+</div>
+</label>
+</div>
+<!-- Bottom Action Bar -->
+<div class="mt-12 flex justify-end">
+<button class="bg-neon-yellow text-ink-black border-3 border-ink-black px-8 py-4 font-headline-md text-headline-md hard-shadow jiggle-active flex items-center gap-2 hover:bg-stark-white transition-colors">
+                        CONFIRM FRAME
+                        <span class="material-symbols-outlined font-bold">arrow_forward</span>
+</button>
+</div>
+</div>
+</main>
+</div>
+</body></html>

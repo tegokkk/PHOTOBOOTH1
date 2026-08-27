@@ -84,19 +84,19 @@ app.use('/api/', apiLimiter); // apply to all API routes
 
 
 // Routes
-const authRoutes = require('./routes/authRoutes');
 const photoRoutes = require('./routes/photoRoutes');
 const frameRoutes = require('./routes/frameRoutes');
 const shareRoutes = require('./routes/shareRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const mediaRoutes = require('./routes/mediaRoutes');
+const printRoutes = require('./routes/printRoutes');
 
 app.use('/api/photos', photoRoutes);
-app.use('/api/auth', authRoutes);
 app.use('/api/frames', frameRoutes);
 app.use('/api/share', shareRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/media', mediaRoutes);
+app.use('/api/print', printRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

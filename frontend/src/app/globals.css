@@ -6,77 +6,103 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-on-error-container: #93000a;
-  --color-surface-container-low: #fff0ef;
-  --color-surface-variant: #fddbd8;
-  --color-on-primary-fixed: #410004;
-  --color-tertiary-fixed-dim: #78d1ff;
-  --color-background: #fff8f7;
-  --color-surface-container-highest: #fddbd8;
-  --color-primary: #bd001b;
-  --color-ink-black: #0F0F0F;
-  --color-on-secondary-fixed: #1b1b1b;
-  --color-on-error: #ffffff;
-  --color-tertiary-fixed: #c2e8ff;
-  --color-secondary-fixed-dim: #c6c6c6;
-  --color-on-secondary: #ffffff;
-  --color-error: #ba1a1a;
-  --color-on-secondary-fixed-variant: #474747;
-  --color-on-primary-fixed-variant: #930012;
-  --color-on-secondary-container: #646464;
-  --color-secondary: #5e5e5e;
-  --color-on-tertiary-fixed-variant: #004d68;
-  --color-on-background: #291715;
-  --color-surface-tint: #c0001b;
-  --color-on-tertiary-fixed: #001e2c;
-  --color-outline-variant: #e7bdb9;
-  --color-surface: #fff8f7;
-  --color-secondary-fixed: #e2e2e2;
-  --color-surface-container-high: #ffe2df;
-  --color-on-primary: #ffffff;
-  --color-surface-container: #ffe9e7;
-  --color-inverse-on-surface: #ffedeb;
-  --color-on-primary-container: #fffdff;
-  --color-on-surface: #291715;
-  --color-error-container: #ffdad6;
-  --color-inverse-surface: #402b29;
-  --color-paper-white: #FFFFFF;
-  --color-tertiary-container: #007ea8;
-  --color-outline: #926e6b;
-  --color-surface-container-lowest: #ffffff;
-  --color-on-surface-variant: #5d3f3d;
-  --color-on-tertiary: #ffffff;
-  --color-blueprint-blue: #2B59FF;
-  --color-primary-fixed: #ffdad7;
-  --color-secondary-container: #e2e2e2;
-  --color-primary-container: #e61d2b;
-  --color-on-tertiary-container: #fdfdff;
-  --color-tertiary: #006486;
-  --color-primary-fixed-dim: #ffb3ad;
-  --color-surface-dim: #f4d2cf;
-  --color-surface-bright: #fff8f7;
-  --color-curtain-red: #E61D2B;
-  --color-inverse-primary: #ffb3ad;
+  /* Bright / Light Mode Palette */
+  --color-background: #FDF8F5;
+  --color-on-background: #0F0F0F;
+  
+  --color-surface: #FFFFFF;
+  --color-on-surface: #0F0F0F;
+  
+  --color-surface-container: #F0F0F0;
+  --color-surface-container-low: #F8F8F8;
+  --color-surface-container-lowest: #FFFFFF;
+  --color-surface-container-high: #E8E8E8;
+  --color-surface-container-highest: #E0E0E0;
 
-  --radius: 0.125rem;
-  --radius-lg: 0.25rem;
-  --radius-xl: 0.5rem;
-  --radius-full: 0.75rem;
+  --color-primary: #FF90E8;
+  --color-on-primary: #0F0F0F;
+  --color-primary-container: #FFB3F0;
+  --color-on-primary-container: #0F0F0F;
+  
+  --color-secondary: #FFC900;
+  --color-on-secondary: #0F0F0F;
+  --color-secondary-container: #FFD940;
+  --color-on-secondary-container: #0F0F0F;
+
+  --color-tertiary: #23A094;
+  --color-on-tertiary: #FFFFFF;
+  --color-tertiary-container: #90E8FF;
+  --color-on-tertiary-container: #0F0F0F;
+
+  --color-error-red: #FF3131;
+  --color-error: #FF3131;
+  --color-on-error: #FFFFFF;
+  --color-error-container: #FF7B54;
+  --color-on-error-container: #0F0F0F;
+
+  --color-ink-black: #0F0F0F;
+  --color-stark-white: #FFFFFF;
+  --color-neon-yellow: #FFC900;
+  --color-cyber-purple: #9D4EDD;
+  --color-blueprint-blue: #3E82FC;
+
+  --color-outline: #0F0F0F;
+  --color-outline-variant: #666666;
+  --color-on-surface-variant: #333333;
+
+  /* Aliases for backwards compatibility or general usage */
+  --color-paper-white: var(--color-stark-white);
+  --color-curtain-red: var(--color-error-red);
+  --color-border-thick: var(--color-ink-black);
+
+  --radius: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-full: 9999px;
 
   --spacing-stack-md: 1rem;
   --spacing-stack-sm: 0.5rem;
-  --spacing-gutter: 1.5rem;
-  --spacing-margin-page: 2rem;
-  --spacing-touch-target: 3rem;
+  --spacing-gutter: 16px;
+  --spacing-margin-page: 20px;
+  --spacing-margin-desktop: 40px;
+  --spacing-margin-mobile: 20px;
+  --spacing-border-thin: 1px;
+  --spacing-unit: 4px;
+  --spacing-border-thick: 3px;
 
+  --font-body-lg: "Courier Prime", monospace;
   --font-body-md: "Courier Prime", monospace;
-  --font-label-caps: "Courier Prime", monospace;
-  --font-headline-lg-mobile: "Bricolage Grotesque", sans-serif;
-  --font-interactive-btn: "Bricolage Grotesque", sans-serif;
-  --font-headline-lg: "Bricolage Grotesque", sans-serif;
   --font-headline-xl: "Bricolage Grotesque", sans-serif;
-  
+  --font-headline-lg: "Bricolage Grotesque", sans-serif;
+  --font-headline-lg-mobile: "Bricolage Grotesque", sans-serif;
+  --font-headline-md: "Bricolage Grotesque", sans-serif;
+  --font-tech-mono: "Courier Prime", monospace;
+  --font-label-caps: "Courier Prime", monospace;
+  --font-interactive-btn: "Bricolage Grotesque", sans-serif;
   --font-sans: var(--font-headline-lg-mobile);
+
+  /* Typography scale used by the booth UI. */
+  --text-headline-xl: 3.5rem;
+  --text-headline-xl--line-height: 0.98;
+  --text-headline-lg: 2.5rem;
+  --text-headline-lg--line-height: 1.05;
+  --text-headline-lg-mobile: 2rem;
+  --text-headline-lg-mobile--line-height: 1.08;
+  --text-headline-md: 1.35rem;
+  --text-headline-md--line-height: 1.15;
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.55;
+  --text-body-md: 1rem;
+  --text-body-md--line-height: 1.5;
+  --text-label-caps: 0.875rem;
+  --text-label-caps--line-height: 1.25;
+  --text-interactive-btn: 1.125rem;
+  --text-interactive-btn--line-height: 1.15;
+  --text-tech-mono: 0.75rem;
+  --text-tech-mono--line-height: 1.35;
+
+  --shadow-hard: 4px 4px 0px 0px #0F0F0F;
+  --shadow-hard-lg: 8px 8px 0px 0px #0F0F0F;
 }
 
 @layer base {
@@ -84,82 +110,88 @@
     @apply border-ink-black outline-ink-black/50;
   }
   body {
-    @apply bg-background text-on-background font-body-md selection:bg-curtain-red selection:text-paper-white;
+    @apply bg-background text-on-background font-body-md selection:bg-neon-yellow selection:text-ink-black;
   }
   html {
     @apply font-body-md;
   }
 }
 
-/* Z-INDEX LAYERING GUIDE:
-   - base: 0 (konten normal)
-   - floating: 40 (tape corners, element melayang)
-   - header: 50 (navbar, sticky controls)
-   - modal: 100 (dialogs, popups)
-   - toast: 150 (notifications, alerts)
-*/
-
-/* Custom sketch-like styles */
+/* Custom sketch-like styles (Cyber-Sketch) */
 .sketch-border {
     border: 3px solid var(--color-ink-black);
-    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+    /* No rounded doodle edges in Cyber-Sketch */
 }
 .sketch-border-thin {
     border: 2px solid var(--color-ink-black);
-    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
 }
 .sketchy-border {
     border: 3px solid var(--color-ink-black);
-    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
 }
 .sketchy-border-alt {
     border: 2px solid var(--color-ink-black);
-    border-radius: 15px 225px 15px 255px/255px 15px 225px 15px;
 }
 .hard-shadow {
     box-shadow: 4px 4px 0px 0px var(--color-ink-black);
 }
-.hard-shadow:active {
-    box-shadow: 1px 1px 0px 0px var(--color-ink-black);
-    transform: translate(3px, 3px);
-}
 .hard-shadow-lg {
     box-shadow: 8px 8px 0px 0px var(--color-ink-black);
 }
-.tape-corner-tl {
-    position: absolute;
-    top: -10px;
-    left: -15px;
-    width: 60px;
-    height: 25px;
-    background-color: rgba(255, 255, 255, 0.7);
-    border: 1px solid rgba(15,15,15,0.3);
-    transform: rotate(-15deg);
-    z-index: 40;
-    backdrop-filter: blur(2px);
+.hard-shadow-sm {
+    box-shadow: 2px 2px 0px 0px var(--color-ink-black);
 }
-.tape-corner-br {
-    position: absolute;
-    bottom: -10px;
-    right: -15px;
-    width: 60px;
-    height: 25px;
-    background-color: rgba(255, 255, 255, 0.7);
-    border: 1px solid rgba(15,15,15,0.3);
-    transform: rotate(-10deg);
-    z-index: 40;
-    backdrop-filter: blur(2px);
+
+/* Explicit utilities for the design vocabulary used by the booth screens. */
+.border-border-thick {
+    border: 3px solid var(--color-ink-black);
 }
-.wiggle-hover:hover, .hover-wiggle:hover {
-    animation: wiggle 0.3s ease-in-out infinite alternate;
+.border-b-border-thick {
+    border-bottom: 3px solid var(--color-ink-black);
 }
-@keyframes wiggle {
-    0% { transform: rotate(-2deg) scale(1.02); }
-    100% { transform: rotate(2deg) scale(1.02); }
+.border-t-border-thick {
+    border-top: 3px solid var(--color-ink-black);
+}
+.border-l-border-thick {
+    border-left: 3px solid var(--color-ink-black);
 }
 .jiggle-active:active {
-    transform: translate(2px, 2px);
-    box-shadow: 2px 2px 0px 0px var(--color-ink-black) !important;
+    box-shadow: none !important;
+    transform: translate(4px, 4px) !important;
+}
+
+.pixel-corners {
+    position: relative;
+}
+.pixel-corners::before,
+.pixel-corners::after,
+.pixel-corners-inner::before,
+.pixel-corners-inner::after {
+    content: '';
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background-color: #0F0F0F;
+}
+.pixel-corners::before { top: -3px; left: -3px; }
+.pixel-corners::after { top: -3px; right: -3px; }
+.pixel-corners-inner::before { bottom: -3px; left: -3px; }
+.pixel-corners-inner::after { bottom: -3px; right: -3px; }
+
+/* Tape corners are no longer standard tape, they are structural dog-ears if needed */
+.tape-corner-tl {
+    display: none; /* Disabled in Cyber-Sketch */
+}
+.tape-corner-br {
+    display: none;
+}
+
+/* Background for specific cyber screens */
+.bg-cyber-grid {
+    background-image: radial-gradient(#6320EE 20%, transparent 20%),
+    radial-gradient(#6320EE 20%, transparent 20%);
+    background-color: #211e29;
+    background-position: 0 0, 10px 10px;
+    background-size: 20px 20px;
 }
 
 /* Loading scribble animation */
@@ -197,7 +229,7 @@ body {
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
   /* Make sure background extends behind the notch */
-  background-color: var(--color-paper-white);
+  background-color: var(--color-background);
 }
 
 /* Base minimum tap target for accessibility */

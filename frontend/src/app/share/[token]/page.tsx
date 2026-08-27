@@ -54,30 +54,33 @@ export default async function SharedPhotoPage({ params }: SharePageProps) {
   const imageUrl = toApiUrl(photo.imageUrl);
 
   return (
-    <main className="flex-grow flex flex-col items-center justify-center p-4 md:p-8">
-      <div className="w-full max-w-2xl bg-paper-white p-4 md:p-8 sketch-border hard-shadow-lg flex flex-col gap-6">
-        <div className="text-center">
-          <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-ink-black italic">Memori yang Dibagikan</h1>
-          <p className="font-body-md text-on-surface-variant mt-1">Seseorang berbagi foto photobooth ini kepada Anda!</p>
+    <main className="flex-grow flex flex-col items-center justify-center p-4 md:p-8 bg-ink-black">
+      <div className="w-full max-w-2xl bg-stark-white p-6 md:p-8 border-border-thick border-ink-black pixel-corners hard-shadow-lg flex flex-col gap-6 relative">
+        <div className="pixel-corners-inner"></div>
+        <div className="text-center relative z-10">
+          <h1 className="font-tech-mono text-xl uppercase tracking-widest text-ink-black font-bold">SHARED_MEMORY_SYS</h1>
+          <p className="font-tech-mono text-[10px] text-on-surface-variant mt-2 uppercase">Someone shared this photobooth memory with you!</p>
         </div>
 
-        <div className="relative w-full overflow-hidden sketch-border border-2 border-ink-black bg-surface-container-highest">
-          <img src={imageUrl} alt="Shared Photo" fetchPriority="high" decoding="async" className="w-full h-auto object-contain" />
+        <div className="relative w-full overflow-hidden border-border-thick border-ink-black bg-surface-container-highest hard-shadow-sm p-2 pixel-corners z-10">
+          <div className="pixel-corners-inner"></div>
+          <img src={imageUrl} alt="Shared Photo" fetchPriority="high" decoding="async" className="w-full h-auto object-contain relative z-10" />
         </div>
 
-        <div className="flex flex-col gap-4 w-full">
+        <div className="flex flex-col gap-4 w-full relative z-10">
           {photo.frame && (
-            <div className="flex justify-between items-center bg-surface-container p-3 sketch-border-thin">
-              <span className="font-label-caps text-on-surface-variant text-xs">FRAME</span>
-              <span className="font-bold text-ink-black">{photo.frame.name}</span>
+            <div className="flex justify-between items-center bg-surface-container p-3 border-border-thick border-ink-black pixel-corners">
+              <div className="pixel-corners-inner"></div>
+              <span className="font-tech-mono text-on-surface-variant text-[10px] uppercase font-bold relative z-10">TARGET_FRAME</span>
+              <span className="font-tech-mono font-bold text-neon-yellow uppercase bg-ink-black px-2 py-1 text-xs border border-ink-black relative z-10">{photo.frame.name}</span>
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
             <ShareDownloadButton imageUrl={imageUrl} filename={`ririi-${photo.frame?.name || "photobooth"}.jpg`} />
-            <Link href="/" className="w-full px-4 py-4 bg-paper-white text-ink-black font-interactive-btn border-2 border-ink-black sketch-border hard-shadow hover:bg-surface-container-low active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+            <Link href="/" className="w-full px-4 py-4 bg-stark-white text-ink-black font-tech-mono font-bold uppercase border-border-thick border-ink-black hard-shadow hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2">
               <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>add_a_photo</span>
-              Buat Foto Sendiri
+              CREATE_YOUR_OWN
             </Link>
           </div>
         </div>

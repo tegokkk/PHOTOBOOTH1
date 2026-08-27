@@ -28,44 +28,71 @@ export function CameraOverlays({
     <>
       {/* Camera permission denied */}
       {hasPermission === false && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-surface-container-high p-8 text-center z-40">
-          <span className="material-symbols-outlined text-5xl text-curtain-red">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-ink-black/80 backdrop-blur-md p-8 text-center z-50 pointer-events-auto">
+          <span className="material-symbols-outlined text-5xl text-error-red">
             no_photography
           </span>
-          <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-ink-black">
-            Akses Kamera Ditolak
+          <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-stark-white uppercase">
+            KAMERA TIDAK BISA DIAKSES
           </h2>
-          <p className="font-body-md text-body-md text-on-surface-variant">
-            Izinkan akses kamera di browser Anda untuk menggunakan Photobooth.
+          <p className="font-body-md text-body-md text-on-surface-variant max-w-sm">
+            Izinkan akses kamera pada browser, lalu tekan tombol di bawah untuk mencoba lagi.
           </p>
           {error && (
-            <p className="font-label-caps text-label-caps text-curtain-red text-sm">
+            <p className="font-tech-mono text-error-red text-sm bg-ink-black px-2 py-1 border border-error-red">
               {error}
             </p>
           )}
           <button
             onClick={onRequestPermission}
-            className="px-6 py-3 bg-curtain-red text-paper-white font-interactive-btn text-interactive-btn border-2 border-ink-black sketch-border hard-shadow"
+            className="mt-4 px-6 py-3 bg-neon-yellow text-ink-black font-tech-mono font-bold border-border-thick border-ink-black hard-shadow jiggle-active"
           >
-            Coba Lagi
+            COBA LAGI
           </button>
         </div>
       )}
 
       {/* Loading state */}
       {hasPermission === null && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/70 backdrop-blur-sm z-40">
-          <div className="w-8 h-8 border-4 border-paper-white border-t-curtain-red rounded-full animate-spin" />
-          <p className="text-paper-white font-label-caps text-label-caps text-sm">
-            Meminta akses kamera...
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-ink-black/80 backdrop-blur-sm z-50">
+          <div className="w-12 h-12 border-4 border-stark-white border-t-neon-yellow rounded-full animate-spin" />
+          <p className="text-neon-yellow font-tech-mono uppercase tracking-widest text-sm animate-pulse">
+            MENYIAPKAN KAMERA...
           </p>
+        </div>
+      )}
+
+      {/* Persistent Scanlines Overlay */}
+      {hasPermission && (
+        <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] pointer-events-none opacity-50 z-20"></div>
+      )}
+
+      {/* Grid Overlay */}
+      {hasPermission && (
+        <div className="absolute inset-0 pointer-events-none opacity-30 z-20">
+          <div className="absolute left-1/3 top-0 bottom-0 border-l border-stark-white border-dashed"></div>
+          <div className="absolute right-1/3 top-0 bottom-0 border-l border-stark-white border-dashed"></div>
+          <div className="absolute top-1/3 left-0 right-0 border-t border-stark-white border-dashed"></div>
+          <div className="absolute bottom-1/3 left-0 right-0 border-t border-stark-white border-dashed"></div>
+          {/* Central Reticle */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 border-2 border-neon-yellow flex items-center justify-center opacity-70">
+            <div className="w-2 h-2 bg-neon-yellow"></div>
+          </div>
+        </div>
+      )}
+
+      {/* Recording Indicator */}
+      {hasPermission && (
+        <div className="absolute top-4 right-4 flex items-center gap-2 bg-ink-black/80 px-3 py-1 border border-stark-white/30 backdrop-blur-sm z-30">
+          <div className="w-3 h-3 rounded-full bg-error-red animate-pulse"></div>
+          <span className="font-tech-mono text-[10px] text-stark-white uppercase">REC</span>
         </div>
       )}
 
       {/* Countdown overlay */}
       {countdown !== null && (
-        <div className="absolute inset-0 flex items-center justify-center z-30 bg-black/30">
-          <span className="font-headline-lg text-paper-white drop-shadow-lg animate-ping text-[100px] leading-none">
+        <div className="absolute inset-0 flex items-center justify-center z-40 bg-ink-black/40">
+          <span className="font-headline-xl text-stark-white text-[150px] md:text-[200px] font-bold drop-shadow-[0_0_15px_rgba(255,255,255,0.8)] animate-pulse">
             {countdown}
           </span>
         </div>
@@ -73,7 +100,7 @@ export function CameraOverlays({
 
       {/* Flash */}
       {flashVisible && (
-        <div className="absolute inset-0 bg-white z-40 pointer-events-none" />
+        <div className="absolute inset-0 bg-stark-white z-50 pointer-events-none" />
       )}
 
       {/* Slot indicator overlay */}
@@ -84,10 +111,10 @@ export function CameraOverlays({
               key={i}
               className={`absolute border-2 transition-all duration-300 ${
                 i === currentPhotoIndex
-                  ? "border-curtain-red bg-curtain-red/10"
+                  ? "border-neon-yellow bg-neon-yellow/10"
                   : i < currentPhotoIndex
-                  ? "border-green-500 bg-green-500/10"
-                  : "border-paper-white/30"
+                  ? "border-cyber-purple bg-cyber-purple/20"
+                  : "border-stark-white/30"
               }`}
               style={{
                 left: `${slot.x * 100}%`,
@@ -97,19 +124,19 @@ export function CameraOverlays({
               }}
             >
               {i === currentPhotoIndex && (
-                <div className="absolute top-1 left-1 bg-curtain-red text-paper-white text-[10px] font-label-caps px-1">
-                  Slot {i + 1}
+                <div className="absolute top-1 left-1 bg-neon-yellow text-ink-black text-[10px] font-tech-mono font-bold px-1 uppercase border border-ink-black">
+                  FOTO {i + 1}
                 </div>
               )}
               {i < currentPhotoIndex && (
-                <div className="absolute top-1 left-1 bg-green-500 text-white text-[10px] font-label-caps px-1 flex items-center gap-1">
+                <div className="absolute top-1 left-1 bg-cyber-purple text-neon-yellow text-[10px] font-tech-mono font-bold px-1 flex items-center gap-1 border border-neon-yellow">
                   <span
                     className="material-symbols-outlined text-[10px]"
                     style={{ fontVariationSettings: "'FILL' 1" }}
                   >
                     check
                   </span>
-                  ✓
+                    SELESAI
                 </div>
               )}
             </div>
@@ -118,10 +145,10 @@ export function CameraOverlays({
       )}
 
       {/* Decorative corner tapes */}
-      <div className="absolute top-0 left-0 w-10 h-5 bg-yellow-200/80 -rotate-45 -translate-x-2 -translate-y-1 mix-blend-multiply z-20 pointer-events-none" />
-      <div className="absolute top-0 right-0 w-10 h-5 bg-yellow-200/80 rotate-45 translate-x-2 -translate-y-1 mix-blend-multiply z-20 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-10 h-5 bg-yellow-200/80 rotate-45 -translate-x-2 translate-y-1 mix-blend-multiply z-20 pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-10 h-5 bg-yellow-200/80 -rotate-45 translate-x-2 translate-y-1 mix-blend-multiply z-20 pointer-events-none" />
+      <div className="absolute top-[-2px] left-[-14px] w-[40px] h-[12px] bg-ink-black -rotate-45 z-30 pointer-events-none" />
+      <div className="absolute top-[-2px] right-[-14px] w-[40px] h-[12px] bg-ink-black rotate-45 z-30 pointer-events-none" />
+      <div className="absolute bottom-[-2px] left-[-14px] w-[40px] h-[12px] bg-ink-black rotate-45 z-30 pointer-events-none" />
+      <div className="absolute bottom-[-2px] right-[-14px] w-[40px] h-[12px] bg-ink-black -rotate-45 z-30 pointer-events-none" />
     </>
   );
 }

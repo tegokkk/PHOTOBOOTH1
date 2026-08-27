@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useState } from "react";
 import { useUIStore } from "@/store/useUIStore";
 import { API_URL } from "@/lib/api";
 import { useRouter } from "next/navigation";
@@ -16,57 +15,79 @@ interface AdminMetrics {
 }
 
 export default function AdminDashboardPage() {
-  const { user, token } = useAuthStore();
   const { showToast } = useUIStore();
   const router = useRouter();
+  
+  const [pin, setPin] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
   const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [photos, setPhotos] = useState<AdminPhoto[]>([]);
 
-  useEffect(() => {
-    // Basic protection: Must be logged in & must be admin
-    // Note: the real protection is on the backend. This is just UI routing.
-    if (!user) {
-      router.replace("/login");
-      return;
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const correctPin = process.env.NEXT_PUBLIC_OPERATOR_PIN || "1234";
+    if (pin === correctPin) {
+      setIsAuthenticated(true);
+      fetchData();
+    } else {
+      showToast("PIN salah", "error");
     }
-    
-    if (user && !user.isAdmin) {
-      showToast("Akses ditolak. Halaman khusus Admin.", "error");
-      router.replace("/");
-      return;
-    }
+  };
 
-    const fetchMetrics = async () => {
-      try {
-        const headers: Record<string, string> = {};
-        if (token) headers["Authorization"] = `Bearer ${token}`;
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setPin("");
+  };
 
-        const [metricsResponse, photosResponse] = await Promise.all([
-          fetch(`${API_URL}/api/admin/metrics`, { headers }),
-          fetch(`${API_URL}/api/admin/photos?limit=50`, { headers }),
-        ]);
-        const data = await metricsResponse.json();
-        const photosData = await photosResponse.json();
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const [metricsResponse, photosResponse] = await Promise.all([
+        fetch(`${API_URL}/api/admin/metrics`),
+        fetch(`${API_URL}/api/admin/photos?limit=50`),
+      ]);
+      const data = await metricsResponse.json();
+      const photosData = await photosResponse.json();
 
-        if (data.success) {
-          setMetrics(data.data);
-        } else {
-          showToast(data.message || "Gagal memuat metrik.", "error");
-        }
-        if (photosData.success && Array.isArray(photosData.data)) setPhotos(photosData.data);
-      } catch {
-        showToast("Terjadi kesalahan saat menghubungi server.", "error");
-      } finally {
-        setIsLoading(false);
+      if (data.success) {
+        setMetrics(data.data);
+      } else {
+        showToast(data.message || "Gagal memuat metrik.", "error");
       }
-    };
+      if (photosData.success && Array.isArray(photosData.data)) setPhotos(photosData.data);
+    } catch {
+      showToast("Terjadi kesalahan saat menghubungi server.", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    fetchMetrics();
-  }, [user, token, router, showToast]);
-
-  if (!user || !user.isAdmin) {
-    return null; // Will redirect in useEffect
+  if (!isAuthenticated) {
+    return (
+      <main className="flex-grow w-full max-w-md mx-auto p-4 md:p-8 pt-24 pb-24 flex flex-col items-center justify-center">
+        <div className="bg-surface-container border-2 border-ink-black hard-shadow p-8 w-full">
+          <h1 className="font-headline-lg text-ink-black mb-6 text-center">Login Admin</h1>
+          <form onSubmit={handleLogin} className="flex flex-col gap-4">
+            <input
+              type="password"
+              placeholder="Masukkan PIN Operator"
+              value={pin}
+              onChange={(e) => setPin(e.target.value)}
+              className="w-full bg-stark-white border-2 border-ink-black px-4 py-3 font-tech-mono text-center tracking-widest text-lg focus:outline-none focus:ring-4 focus:ring-neon-yellow"
+              autoFocus
+            />
+            <Button type="submit" variant="primary" className="w-full">
+              Masuk
+            </Button>
+            <Button type="button" variant="outline" className="w-full" onClick={() => router.push("/")}>
+              Kembali
+            </Button>
+          </form>
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -83,6 +104,10 @@ export default function AdminDashboardPage() {
             Pantau aktivitas dan statistik aplikasi.
           </p>
         </div>
+        <Button variant="outline" onClick={handleLogout} aria-label="Keluar dari akun admin">
+          <span className="material-symbols-outlined mr-2" aria-hidden="true">logout</span>
+          Keluar
+        </Button>
       </div>
 
       {isLoading ? (
@@ -94,26 +119,20 @@ export default function AdminDashboardPage() {
       ) : metrics ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <MetricCard 
-            title="Total Pengguna" 
-            value={metrics.totalUsers.toString()} 
-            icon="group"
-            color="bg-blueprint-blue text-paper-white" 
-          />
-          <MetricCard 
             title="Total Foto" 
-            value={metrics.totalPhotos.toString()} 
+            value={metrics.totalPhotos?.toString() || "0"} 
             icon="photo_library"
             color="bg-paper-white text-ink-black" 
           />
           <MetricCard 
             title="Foto Hari Ini" 
-            value={metrics.photosToday.toString()} 
+            value={metrics.photosToday?.toString() || "0"} 
             icon="today"
             color="bg-yellow-300 text-ink-black" 
           />
           <MetricCard 
             title="Penyimpanan" 
-            value={`${metrics.totalStorageMB} MB`} 
+            value={`${metrics.totalStorageMB || 0} MB`} 
             icon="storage"
             color="bg-curtain-red text-paper-white" 
           />
@@ -121,14 +140,14 @@ export default function AdminDashboardPage() {
       ) : (
         <div className="bg-red-50 text-red-800 p-4 border-2 border-red-800 sketch-border flex items-center gap-2">
           <span className="material-symbols-outlined">error</span>
-          <span>Gagal memuat data dasbor. Pastikan Backend menyala dan Anda memiliki akses admin.</span>
+          <span>Gagal memuat data dasbor. Pastikan Backend menyala.</span>
         </div>
       )}
       
       <div className="mt-8 pt-8 border-t-2 border-ink-black">
         <h2 className="font-headline-lg-mobile text-ink-black mb-4">Aksi Cepat</h2>
         <div className="flex gap-4">
-          <Button variant="secondary" onClick={() => window.location.reload()}>
+          <Button variant="secondary" onClick={() => fetchData()}>
             <span className="material-symbols-outlined mr-2">refresh</span>
             Refresh Metrik
           </Button>
@@ -138,7 +157,7 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {token && <AdminPhotoQueue photos={photos} token={token} />}
+      <AdminPhotoQueue photos={photos} token={""} />
     </main>
   );
 }

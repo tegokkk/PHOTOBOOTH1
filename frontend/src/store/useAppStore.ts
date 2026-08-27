@@ -62,6 +62,7 @@ interface AppState {
   setSelectedFrameId: (id: string | null) => void;
   frames: FrameData[];
   isLoadingFrames: boolean;
+  frameLoadError: string | null;
   fetchFrames: () => Promise<void>;
 
   // ── Editor values ────────────────────────────────────────
@@ -159,8 +160,9 @@ export const useAppStore = create<AppState>()(
       },
       frames: [],
       isLoadingFrames: false,
+      frameLoadError: null,
       fetchFrames: async () => {
-        set({ isLoadingFrames: true });
+        set({ isLoadingFrames: true, frameLoadError: null });
         try {
           const res = await fetch(`${API_URL}/api/frames`);
           const data = await res.json();
@@ -168,16 +170,19 @@ export const useAppStore = create<AppState>()(
             set((state) => ({
               frames: data.data,
               isLoadingFrames: false,
+              frameLoadError: null,
               selectedFrameId: state.selectedFrameId,
             }));
           } else {
-            set({ frames: [], isLoadingFrames: false });
-            useUIStore.getState().showToast("Gagal memuat daftar frame dari server.", "error");
+            const message = "Daftar frame belum bisa dimuat. Coba lagi.";
+            set({ frames: [], isLoadingFrames: false, frameLoadError: message });
+            useUIStore.getState().showToast(message, "error");
           }
         } catch (error) {
           console.error('Failed to fetch frames', error);
-          set({ frames: [], isLoadingFrames: false });
-          useUIStore.getState().showToast("Gagal terhubung ke server. Pastikan backend aktif.", "error");
+          const message = "Server tidak dapat dihubungi. Periksa koneksi lalu coba lagi.";
+          set({ frames: [], isLoadingFrames: false, frameLoadError: message });
+          useUIStore.getState().showToast(message, "error");
         }
       },
 

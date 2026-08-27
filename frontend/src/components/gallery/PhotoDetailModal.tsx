@@ -25,6 +25,7 @@ export function PhotoDetailModal({
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const mediaObjectUrlRef = useRef<string | null>(null);
+  const previousFocusedElementRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,30 +50,63 @@ export function PhotoDetailModal({
   }, [photo.compositeImageUrl, token]);
 
   useEffect(() => {
-    dialogRef.current?.focus();
-  }, []);
+    previousFocusedElementRef.current = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (event.key !== "Tab" || !dialogRef.current) return;
+      const focusable = Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((element) => !element.hasAttribute("disabled"));
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    requestAnimationFrame(() => dialogRef.current?.focus());
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previousFocusedElementRef.current?.focus();
+    };
+  }, [onClose]);
 
   if (typeof document === "undefined") return null;
 
   return createPortal(
-    <>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       <div
-        className="fixed inset-0 bg-ink-black/60 backdrop-blur-sm z-[100]"
-        style={{ zIndex: 9999 }}
+        className="absolute inset-0 bg-ink-black/60 backdrop-blur-sm"
         onClick={onClose}
+        aria-hidden="true"
       />
-      <div 
-        className="fixed inset-4 md:inset-12 lg:inset-24 z-[100] bg-paper-white sketch-border shadow-[8px_8px_0_0_#0F0F0F] flex flex-col overflow-hidden"
-        style={{ zIndex: 10000 }}
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="photo-detail-title"
+        tabIndex={-1}
+        className="relative z-10 w-full max-w-5xl max-h-[90vh] bg-paper-white sketch-border shadow-[8px_8px_0_0_#0F0F0F] flex flex-col overflow-hidden"
       >
-        <div
-          ref={dialogRef}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="photo-detail-title"
-          tabIndex={-1}
-          className="contents"
-        >
         {/* Modal Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b-2 border-ink-black shrink-0">
           <div>
@@ -89,8 +123,10 @@ export function PhotoDetailModal({
             </p>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="w-10 h-10 flex items-center justify-center border-2 border-ink-black hover:bg-surface-container-high"
+            aria-label="Tutup detail foto"
           >
             <span className="material-symbols-outlined">close</span>
           </button>
@@ -155,9 +191,8 @@ export function PhotoDetailModal({
             </>
           )}
         </div>
-        </div>
       </div>
-    </>,
+    </div>,
     document.body
   );
 }

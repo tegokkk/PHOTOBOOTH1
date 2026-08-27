@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CYBER-BOOTH_V1.0 - Landing</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&amp;family=Bricolage+Grotesque:opsz,wght@12..96,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#2f3131",
+                        "surface-container": "#211e29",
+                        "secondary-container": "#d2f000",
+                        "primary-fixed-dim": "#cdbdff",
+                        "on-primary-fixed-variant": "#5000d0",
+                        "on-secondary-container": "#5d6b00",
+                        "primary": "#cdbdff",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "surface-container-low": "#1d1a25",
+                        "inverse-primary": "#692bf4",
+                        "inverse-on-surface": "#322f3a",
+                        "on-primary": "#370095",
+                        "surface-bright": "#3b3743",
+                        "surface-container-highest": "#36333f",
+                        "error-container": "#93000a",
+                        "on-primary-fixed": "#20005f",
+                        "primary-container": "#6320ee",
+                        "on-surface-variant": "#cbc3d9",
+                        "on-secondary-fixed": "#191e00",
+                        "inverse-surface": "#e7e0ef",
+                        "cyber-purple": "#6320EE",
+                        "primary-fixed": "#e8deff",
+                        "on-primary-container": "#d6c8ff",
+                        "outline-variant": "#494456",
+                        "on-secondary": "#2c3400",
+                        "surface-container-high": "#2b2834",
+                        "secondary-fixed": "#d2f000",
+                        "background": "#14121c",
+                        "surface-tint": "#cdbdff",
+                        "surface-container-lowest": "#0f0d17",
+                        "surface": "#14121c",
+                        "tertiary-container": "#575959",
+                        "on-surface": "#e7e0ef",
+                        "on-tertiary-container": "#cfd0d0",
+                        "on-background": "#e7e0ef",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "on-secondary-fixed-variant": "#414c00",
+                        "ink-black": "#0F0F0F",
+                        "on-error": "#690005",
+                        "neon-yellow": "#DFFF00",
+                        "outline": "#948ea2",
+                        "stark-white": "#FFFFFF",
+                        "error-red": "#FF3131",
+                        "on-error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#b8d300",
+                        "error": "#ffb4ab",
+                        "tertiary-fixed": "#e2e2e2",
+                        "tertiary": "#c6c6c7",
+                        "secondary": "#ffffff",
+                        "surface-dim": "#14121c",
+                        "surface-variant": "#36333f",
+                        "tertiary-fixed-dim": "#c6c6c7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "40px",
+                        "gutter": "16px",
+                        "margin-mobile": "20px",
+                        "border-thin": "1px",
+                        "unit": "4px",
+                        "border-thick": "3px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Courier Prime"],
+                        "body-md": ["Courier Prime"],
+                        "headline-lg": ["Bricolage Grotesque"],
+                        "headline-md": ["Bricolage Grotesque"],
+                        "headline-lg-mobile": ["Bricolage Grotesque"],
+                        "tech-mono": ["Courier Prime"],
+                        "headline-xl": ["Bricolage Grotesque"],
+                        "label-caps": ["Courier Prime"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-md": ["24px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "1.1", "fontWeight": "800" }],
+                        "tech-mono": ["14px", { "lineHeight": "1.2", "fontWeight": "400" }],
+                        "headline-xl": ["80px", { "lineHeight": "1.0", "letterSpacing": "-0.04em", "fontWeight": "800" }],
+                        "label-caps": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "700" }]
+                    },
+                    "boxShadow": {
+                        "hard": "4px 4px 0px 0px #0F0F0F",
+                        "hard-lg": "8px 8px 0px 0px #0F0F0F"
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .hard-shadow {
+            box-shadow: 4px 4px 0px 0px #0F0F0F;
+        }
+        .hard-shadow-lg {
+            box-shadow: 8px 8px 0px 0px #0F0F0F;
+        }
+        .jiggle-active:active {
+            box-shadow: none !important;
+            transform: translate(4px, 4px) !important;
+        }
+        .pixel-corners {
+            position: relative;
+        }
+        .pixel-corners::before,
+        .pixel-corners::after,
+        .pixel-corners-inner::before,
+        .pixel-corners-inner::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background-color: #0F0F0F;
+        }
+        .pixel-corners::before { top: -3px; left: -3px; }
+        .pixel-corners::after { top: -3px; right: -3px; }
+        .pixel-corners-inner::before { bottom: -3px; left: -3px; }
+        .pixel-corners-inner::after { bottom: -3px; right: -3px; }
+        
+        body {
+            background-image: radial-gradient(#6320EE 20%, transparent 20%),
+            radial-gradient(#6320EE 20%, transparent 20%);
+            background-color: #211e29;
+            background-position: 0 0, 10px 10px;
+            background-size: 20px 20px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="bg-surface-container text-stark-white h-screen flex flex-col font-body-md overflow-hidden relative">
+<!-- Top Navigation Placeholder (Hidden for this specific landing view logic) -->
+<main class="flex-grow flex flex-col items-center justify-center p-margin-mobile md:p-margin-desktop relative z-10 w-full h-full">
+<!-- Cyber Doodle Graphic Placeholder -->
+<div class="relative w-64 h-64 md:w-96 md:h-96 mb-8 group">
+<div class="absolute inset-0 bg-cyber-purple border-border-thick border-ink-black hard-shadow-lg transform rotate-3 transition-transform duration-500 group-hover:rotate-6"></div>
+<div class="absolute inset-0 bg-stark-white border-border-thick border-ink-black -rotate-3 p-4 flex flex-col items-center justify-center transition-transform duration-500 group-hover:-rotate-6">
+<!-- Doodle style camera representation -->
+<div class="w-3/4 h-2/3 border-4 border-ink-black border-dashed flex items-center justify-center relative">
+<div class="w-16 h-16 rounded-full border-4 border-ink-black bg-neon-yellow flex items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 bg-ink-black opacity-20 transform translate-x-2 translate-y-2 rounded-full"></div>
+<div class="w-6 h-6 rounded-full bg-ink-black"></div>
+</div>
+<div class="absolute top-2 right-2 w-4 h-4 bg-error-red border-2 border-ink-black rounded-full animate-pulse"></div>
+</div>
+<div class="mt-4 font-tech-mono text-tech-mono text-ink-black uppercase tracking-widest bg-neon-yellow px-2 py-1 border-2 border-ink-black">
+                     SYS_CAM_01
+                 </div>
+</div>
+</div>
+<div class="text-center max-w-4xl px-4 z-20">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-xl md:text-headline-xl text-stark-white mb-6 uppercase leading-none drop-shadow-[4px_4px_0_rgba(15,15,15,1)]">
+                BUILT FOR MEMORIES, <br class="hidden md:block"/>
+<span class="text-neon-yellow">MADE FOR THE FUTURE</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto mb-10 bg-ink-black/50 p-4 border-l-4 border-cyber-purple font-bold tracking-tight">
+                INITIALIZING BOOTH PROTOCOL... READY FOR CAPTURE.
+            </p>
+</div>
+<button class="relative bg-neon-yellow text-ink-black font-label-caps text-label-caps md:font-headline-md md:text-headline-md px-12 py-6 border-border-thick border-ink-black hard-shadow-lg jiggle-active transition-transform group flex items-center gap-4 z-20 pixel-corners">
+<div class="pixel-corners-inner"></div>
+<span class="material-symbols-outlined text-3xl font-bold group-hover:rotate-12 transition-transform" style="font-variation-settings: 'FILL' 1;">camera</span>
+            START PHOTO SESSION
+            <div class="absolute top-0 right-0 w-4 h-4 bg-stark-white border-b-border-thick border-l-border-thick border-ink-black"></div>
+</button>
+<!-- Ambient Decor -->
+<div class="absolute top-10 left-10 text-neon-yellow/30 font-tech-mono text-tech-mono pointer-events-none hidden md:block">
+            &gt; [ROOT] <br/>
+            &gt; SCANNING ENVIRONMENT... <br/>
+            &gt; 0xDEADBEEF DETECTED
+        </div>
+<div class="absolute bottom-10 right-10 flex gap-2 pointer-events-none">
+<div class="w-8 h-8 bg-cyber-purple border-2 border-ink-black hard-shadow animate-pulse"></div>
+<div class="w-8 h-8 bg-error-red border-2 border-ink-black hard-shadow"></div>
+<div class="w-8 h-8 bg-stark-white border-2 border-ink-black hard-shadow"></div>
+</div>
+</main>
+<!-- SideNavBar Placeholder for Structural Context (Suppressed visually per rules, showing as hidden skeleton) -->
+<nav aria-hidden="true" class="hidden md:flex fixed left-0 top-0 h-screen w-24 border-r-3 border-ink-black bg-surface-container flex-col items-center py-8 z-40 -translate-x-full">
+<!-- Rendered offscreen to comply with single page structural requirements while respecting "Linear/Transactional" suppression -->
+</nav>
+</body></html>

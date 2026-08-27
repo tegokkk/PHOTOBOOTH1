@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const shareController = require('../controllers/shareController');
-const { optionalAuth } = require('../middleware/authMiddleware');
 const rateLimit = require('express-rate-limit');
 
 const shareLimiter = rateLimit({
@@ -11,12 +10,12 @@ const shareLimiter = rateLimit({
 });
 
 // @route   POST /api/share
-router.post('/', shareLimiter, optionalAuth, shareController.createShareLink);
+router.post('/', shareLimiter, shareController.createShareLink);
 
 // @route   GET /api/share/:token
 router.get('/:token', shareController.getSharedPhoto);
 
 // @route   DELETE /api/share/:token
-router.delete('/:token', optionalAuth, shareController.revokeShareLink);
+router.delete('/:token', shareController.revokeShareLink);
 
 module.exports = router;

@@ -14,6 +14,7 @@ interface ModalProps {
 export function Modal({ isOpen, onClose, title, children, className }: ModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const previousFocusedElementRef = useRef<HTMLElement | null>(null);
   const titleId = title ? 'modal-title' : undefined;
 
   useEffect(() => {
@@ -24,14 +25,21 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
     };
 
     if (isOpen) {
+      previousFocusedElementRef.current = document.activeElement as HTMLElement | null;
+      const previousOverflow = document.body.style.overflow;
       document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
-      dialogRef.current?.focus();
+      requestAnimationFrame(() => dialogRef.current?.focus());
+
+      return () => {
+        document.removeEventListener('keydown', handleEscape);
+        document.body.style.overflow = previousOverflow;
+        previousFocusedElementRef.current?.focus();
+      };
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
     };
   }, [isOpen, onClose]);
 

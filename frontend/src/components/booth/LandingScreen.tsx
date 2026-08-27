@@ -1,18 +1,30 @@
 "use client";
 
 import { useAppStore } from "@/store/useAppStore";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function LandingScreen() {
   const { resetSession, openSession } = useAppStore();
   const [isExiting, setIsExiting] = useState(false);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  const [operatorConfirmed, setOperatorConfirmed] = useState(false);
+  const [operatorPin, setOperatorPin] = useState("");
+  const startButtonRef = useRef<HTMLButtonElement>(null);
+  const paymentDialogRef = useRef<HTMLDivElement>(null);
 
   const handleStart = () => {
+    setOperatorConfirmed(false);
     setIsPaymentDialogOpen(true);
   };
 
+  const handleClosePaymentDialog = () => {
+    setIsPaymentDialogOpen(false);
+    setOperatorConfirmed(false);
+    setOperatorPin("");
+  };
+
   const handleConfirmPayment = () => {
+    if (!operatorConfirmed) return;
     setIsPaymentDialogOpen(false);
     setIsExiting(true);
     setTimeout(() => {
@@ -21,119 +33,154 @@ export function LandingScreen() {
     }, 300);
   };
 
+  useEffect(() => {
+    if (!isPaymentDialogOpen) return;
+
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const fallbackFocusTarget = startButtonRef.current;
+    paymentDialogRef.current?.focus();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") handleClosePaymentDialog();
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      (previouslyFocused || fallbackFocusTarget)?.focus();
+    };
+  }, [isPaymentDialogOpen]);
+
   return (
     <main 
       className={`
-        flex-grow flex flex-col items-center justify-center p-4 md:p-gutter 
-        min-h-[80vh] relative z-10 w-full max-w-[1600px] mx-auto overflow-hidden
+        flex-grow flex flex-col items-center justify-center gap-8 md:gap-10 p-margin-mobile md:p-margin-desktop 
+        min-h-[calc(100vh-4rem)] relative z-10 w-full h-full max-w-[1600px] mx-auto overflow-hidden text-center
         transition-all duration-300 ease-in-out
         ${isExiting ? "opacity-0 scale-95 translate-y-10" : "opacity-100 scale-100 translate-y-0"}
       `}
     >
       
-      {/* Decorative tapes */}
-      <div className="absolute top-10 left-10 w-24 h-8 bg-yellow-200/80 -rotate-12 mix-blend-multiply z-20 pointer-events-none hidden md:block" />
-      <div className="absolute bottom-20 right-10 w-20 h-8 bg-yellow-200/80 rotate-12 mix-blend-multiply z-20 pointer-events-none hidden md:block" />
-
-      {/* Main Hero Container */}
-      <div className="w-full max-w-3xl bg-surface-container-highest p-8 md:p-16 sketch-border hard-shadow-lg flex flex-col items-center text-center relative z-10 mt-12 md:mt-0">
-        
-        {/* Star Icon Badge */}
-        <div className="absolute -top-6 -left-6 md:-top-8 md:-left-8 w-16 h-16 md:w-20 md:h-20 bg-yellow-400 sketch-border flex items-center justify-center -rotate-12 animate-[wiggle_2s_ease-in-out_infinite_alternate]">
-          <span className="material-symbols-outlined text-4xl md:text-5xl text-ink-black" style={{ fontVariationSettings: "'FILL' 1" }}>
-            star
-          </span>
+      {/* Cyber Doodle Graphic */}
+      <div className="relative w-56 h-56 md:w-80 md:h-80 group shrink-0">
+        <div className="absolute inset-0 bg-cyber-purple border-border-thick border-ink-black hard-shadow-lg transform rotate-3 transition-transform duration-500 group-hover:rotate-6"></div>
+        <div className="absolute inset-0 bg-stark-white border-border-thick border-ink-black -rotate-3 p-4 flex flex-col items-center justify-center transition-transform duration-500 group-hover:-rotate-6">
+          {/* Doodle style camera representation */}
+          <div className="w-3/4 h-2/3 border-4 border-ink-black border-dashed flex items-center justify-center relative">
+            <div className="w-16 h-16 rounded-full border-4 border-ink-black bg-neon-yellow flex items-center justify-center relative overflow-hidden">
+              <div className="absolute inset-0 bg-ink-black opacity-20 transform translate-x-2 translate-y-2 rounded-full"></div>
+              <div className="w-6 h-6 rounded-full bg-ink-black"></div>
+            </div>
+            <div className="absolute top-2 right-2 w-4 h-4 bg-error-red border-2 border-ink-black rounded-full animate-pulse"></div>
+          </div>
+          <div className="mt-4 font-tech-mono text-tech-mono text-ink-black uppercase tracking-widest bg-neon-yellow px-2 py-1 border-2 border-ink-black">
+              SYS_CAM_01
+          </div>
         </div>
+      </div>
 
-        {/* Title */}
-        <h1 className="font-headline-xl text-[4rem] md:text-[6rem] leading-none text-ink-black tracking-tighter mb-4 -rotate-2">
-          RIRII<span className="text-curtain-red">.</span>
+      <div className="text-center max-w-4xl px-4 z-20">
+        <h1 className="font-headline-lg-mobile text-[clamp(2rem,5vw,4.5rem)] text-ink-black uppercase leading-[0.98] tracking-tight drop-shadow-[4px_4px_0_rgba(255,201,0,1)]">
+            ABADIKAN MOMEN,<br />
+            <span className="text-cyber-purple">BUAT KENANGAN.</span>
         </h1>
-        
-        {/* Subtitle */}
-        <div className="bg-ink-black text-paper-white font-label-caps text-label-caps px-4 py-2 sketch-border-thin mb-8 rotate-1">
-          WEB PHOTOBOOTH EXPERIENCE
-        </div>
-
-        <p className="font-body-md text-body-md text-on-surface-variant max-w-lg mb-12">
-          Tangkap momen seru kamu dengan gaya brutalist! Setelah pembayaran diterima operator, pilih frame, ambil foto, lalu cetak atau bagikan.
+        <p className="font-body-lg text-base md:text-lg leading-relaxed text-ink-black max-w-2xl mx-auto mt-5 bg-stark-white p-4 border-2 border-ink-black hard-shadow font-bold">
+            Photo booth siap digunakan. Tekan tombol di bawah untuk memulai sesi foto.
         </p>
-
-        {/* Action Button */}
-        <button
-          onClick={handleStart}
-          className="
-            group relative flex items-center gap-4
-            bg-curtain-red text-paper-white
-            font-interactive-btn text-interactive-btn text-xl md:text-2xl
-            px-8 py-5 md:px-12 md:py-6 border-4 border-ink-black
-            sketch-border hard-shadow-lg
-            hover:scale-[1.02] active:scale-95 hover:bg-primary/90
-            transition-all duration-200
-          "
-        >
-          <span className="material-symbols-outlined text-3xl md:text-4xl group-hover:rotate-12 transition-transform" style={{ fontVariationSettings: "'FILL' 1" }}>
-            photo_camera
-          </span>
-          MULAI FOTO SEKARANG
-        </button>
       </div>
 
-      {/* Decorative Photos */}
-      <div className="absolute top-20 right-[5%] w-32 h-40 bg-surface-container sketch-border shadow-[4px_4px_0_0_#0F0F0F] rotate-12 hidden lg:flex flex-col p-2">
-        <div className="bg-ink-black/10 w-full h-full flex-grow mb-2 flex items-center justify-center">
-            <span className="material-symbols-outlined text-ink-black/20 text-4xl">face</span>
-        </div>
-      </div>
-      
-      <div className="absolute bottom-20 left-[5%] w-28 h-36 bg-surface-container sketch-border shadow-[4px_4px_0_0_#0F0F0F] -rotate-12 hidden lg:flex flex-col p-2">
-        <div className="bg-ink-black/10 w-full h-full flex-grow mb-2 flex items-center justify-center">
-            <span className="material-symbols-outlined text-ink-black/20 text-4xl">cruelty_free</span>
-        </div>
+      <button
+        ref={startButtonRef}
+        onClick={handleStart}
+        className="
+          relative bg-neon-yellow text-ink-black font-label-caps text-label-caps md:font-headline-md md:text-headline-md 
+          px-10 py-5 md:px-12 md:py-6 border-border-thick border-ink-black hard-shadow-lg jiggle-active transition-transform group flex items-center gap-4 z-20 pixel-corners
+        "
+      >
+        <div className="pixel-corners-inner"></div>
+        <span className="material-symbols-outlined text-3xl font-bold group-hover:rotate-12 transition-transform" style={{ fontVariationSettings: "'FILL' 1" }}>camera</span>
+        MULAI SESI FOTO
+        <div className="absolute top-0 right-0 w-4 h-4 bg-stark-white border-b-border-thick border-l-border-thick border-ink-black"></div>
+      </button>
+
+      <div className="absolute bottom-10 right-10 flex gap-2 pointer-events-none">
+        <div className="w-8 h-8 bg-cyber-purple border-2 border-ink-black hard-shadow animate-pulse"></div>
+        <div className="w-8 h-8 bg-error-red border-2 border-ink-black hard-shadow"></div>
+        <div className="w-8 h-8 bg-stark-white border-2 border-ink-black hard-shadow"></div>
       </div>
 
       {isPaymentDialogOpen && (
-        <>
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
           <div
-            className="fixed inset-0 bg-ink-black/50 backdrop-blur-sm z-[70]"
-            onClick={() => setIsPaymentDialogOpen(false)}
+            className="absolute inset-0 bg-ink-black/80 backdrop-blur-sm"
+            onClick={handleClosePaymentDialog}
             aria-hidden="true"
           />
           <div
-            className="fixed inset-x-4 bottom-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 z-[70] w-auto md:w-full md:max-w-md bg-paper-white border-2 border-ink-black sketch-border hard-shadow-lg p-6"
+            ref={paymentDialogRef}
+            className="relative z-10 w-full max-w-lg max-h-[calc(100vh-2rem)] overflow-y-auto bg-stark-white border-border-thick border-ink-black hard-shadow-lg p-6 pixel-corners"
             role="dialog"
             aria-modal="true"
             aria-labelledby="payment-confirmation-title"
+            aria-describedby="payment-confirmation-description"
+            tabIndex={-1}
+            onClick={(event) => event.stopPropagation()}
           >
-            <div className="flex items-start gap-3">
-              <span className="material-symbols-outlined text-curtain-red text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>
-                payments
-              </span>
+            <div className="pixel-corners-inner"></div>
+            {/* Window controls decoration */}
+            <div className="absolute top-0 left-0 right-0 h-8 bg-ink-black flex items-center px-2 gap-2">
+                <div className="w-3 h-3 bg-stark-white"></div>
+                <div className="w-3 h-3 bg-neon-yellow"></div>
+                <div className="w-3 h-3 bg-error-red"></div>
+            </div>
+            
+            <div className="flex items-start gap-4 mt-8">
+              <div className="w-12 h-12 bg-cyber-purple border-2 border-ink-black hard-shadow flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-neon-yellow text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  lock
+                </span>
+              </div>
               <div>
-                <h2 id="payment-confirmation-title" className="font-headline-lg-mobile text-headline-lg-mobile text-ink-black">
-                  Konfirmasi Pembayaran
+                <h2 id="payment-confirmation-title" className="font-headline-md text-headline-md text-ink-black uppercase">
+                  OTORISASI OPERATOR
                 </h2>
-                <p className="font-body-md text-body-md text-on-surface-variant mt-2">
-                  Pastikan pembayaran manual sudah diterima sebelum membuka sesi foto. Pembayaran tidak disimpan di sistem.
+                <p id="payment-confirmation-description" className="font-body-md text-body-md text-ink-black/80 mt-2 font-bold">
+                  Masukkan PIN untuk membuka sesi foto baru.
                 </p>
               </div>
             </div>
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            
+            <div className="mt-6 flex flex-col gap-2">
+              <input
+                type="password"
+                placeholder="****"
+                maxLength={8}
+                value={operatorPin}
+                onChange={(e) => {
+                  setOperatorPin(e.target.value);
+                  const correctPin = process.env.NEXT_PUBLIC_OPERATOR_PIN || "1234";
+                  setOperatorConfirmed(e.target.value === correctPin);
+                }}
+                className="w-full bg-surface-container-highest border-2 border-ink-black px-4 py-4 text-center font-tech-mono text-2xl tracking-[0.5em] text-ink-black focus:outline-none focus:ring-4 focus:ring-neon-yellow"
+                autoFocus
+              />
+            </div>
+            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button
-                onClick={() => setIsPaymentDialogOpen(false)}
-                className="py-4 bg-paper-white text-ink-black font-interactive-btn border-2 border-ink-black sketch-border hard-shadow"
+                onClick={handleClosePaymentDialog}
+                className="py-4 bg-stark-white text-ink-black font-label-caps border-border-thick border-ink-black hard-shadow jiggle-active"
               >
-                Batal
+                BATAL
               </button>
               <button
                 onClick={handleConfirmPayment}
-                className="py-4 bg-curtain-red text-paper-white font-interactive-btn border-2 border-ink-black sketch-border hard-shadow"
+                disabled={!operatorConfirmed}
+                className="py-4 bg-neon-yellow text-ink-black font-label-caps border-border-thick border-ink-black hard-shadow jiggle-active pixel-corners disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Pembayaran Diterima
+                BUKA SESI
               </button>
             </div>
           </div>
-        </>
+        </div>
       )}
 
     </main>

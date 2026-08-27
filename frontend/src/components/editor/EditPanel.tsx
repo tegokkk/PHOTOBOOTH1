@@ -13,21 +13,20 @@ export function EditPanel() {
 
   return (
     <div className="w-full space-y-6">
-      <div className="flex items-center justify-between border-b-2 border-ink-black pb-2 mb-4">
-        <h3 className="font-headline-lg-mobile text-ink-black">Edit Foto</h3>
+      <div className="flex items-center justify-end border-ink-black pb-2 mb-4">
         <button 
           onClick={resetEdits}
-          className="text-on-surface-variant font-label-caps text-label-caps hover:text-curtain-red transition-colors flex items-center gap-1"
+          className="text-on-surface-variant font-tech-mono text-[10px] uppercase hover:text-neon-yellow transition-colors flex items-center gap-1 bg-ink-black px-2 py-1 border border-ink-black"
         >
           <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 0" }}>history</span>
-          Reset
+          RESET_ALL
         </button>
       </div>
 
       <div className="space-y-2">
-        <div className="flex justify-between font-label-caps text-label-caps">
-          <span>Kecerahan</span>
-          <span className="text-secondary">{brightness}%</span>
+        <div className="flex justify-between font-tech-mono text-[10px] uppercase text-on-surface-variant">
+          <span>BRIGHTNESS</span>
+          <span className="text-stark-white">{brightness}%</span>
         </div>
         <Slider 
           value={[brightness]} 
@@ -38,9 +37,9 @@ export function EditPanel() {
       </div>
 
       <div className="space-y-2">
-        <div className="flex justify-between font-label-caps text-label-caps">
-          <span>Kontras</span>
-          <span className="text-secondary">{contrast}%</span>
+        <div className="flex justify-between font-tech-mono text-[10px] uppercase text-on-surface-variant">
+          <span>CONTRAST</span>
+          <span className="text-stark-white">{contrast}%</span>
         </div>
         <Slider 
           value={[contrast]} 
@@ -51,9 +50,9 @@ export function EditPanel() {
       </div>
 
       <div className="space-y-2">
-        <div className="flex justify-between font-label-caps text-label-caps">
-          <span>Saturasi</span>
-          <span className="text-secondary">{saturation}%</span>
+        <div className="flex justify-between font-tech-mono text-[10px] uppercase text-on-surface-variant">
+          <span>SATURATION</span>
+          <span className="text-stark-white">{saturation}%</span>
         </div>
         <Slider 
           value={[saturation]} 

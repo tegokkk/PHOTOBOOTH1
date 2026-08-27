@@ -16,7 +16,7 @@ export function CameraScreen() {
   const {
     capturedPhotos, addCapturedPhoto, clearPhotos, setCurrentStep,
     selectedFrameId, frames,
-    currentPhotoIndex, totalPhotosNeeded, setPhotoSession, advancePhotoIndex, setPhotoIndex, resetPhotoSession,
+    currentPhotoIndex, totalPhotosNeeded, setPhotoSession, advancePhotoIndex, resetPhotoSession,
   } = useAppStore();
   const { showToast } = useUIStore();
 
@@ -98,6 +98,21 @@ export function CameraScreen() {
     startCountdown();
   };
 
+  const handleChangeFrame = () => {
+    if (capturedPhotos.some(Boolean) && !window.confirm("Foto yang sudah diambil akan dihapus. Yakin ingin mengganti frame?")) {
+      return;
+    }
+
+    if (countdownRef.current) clearInterval(countdownRef.current);
+    countdownRef.current = null;
+    setCountdown(null);
+    setIsCapturing(false);
+    stopCamera();
+    clearPhotos();
+    resetPhotoSession();
+    setCurrentStep("frame-selection");
+  };
+
   // Cleanup countdown on unmount
   useEffect(() => {
     return () => {
@@ -106,190 +121,146 @@ export function CameraScreen() {
   }, []);
 
   return (
-    <main className="flex-grow flex flex-col items-center justify-start relative z-10 w-full max-w-[1600px] mx-auto p-4 md:p-gutter pb-[100px] md:pb-gutter pt-6">
+    <div className="flex-1 flex flex-col w-full h-full bg-cyber-purple relative overflow-hidden">
+      {/* TopAppBar inside the view */}
+      <header className="flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 w-full z-50 bg-background border-b-border-thick border-ink-black sticky top-0">
+        <div className="flex items-center gap-4">
+          <h1 className="font-headline-md text-headline-md text-primary tracking-tighter">CYBER-BOOTH_V1.0</h1>
+          <div className="hidden md:flex h-6 border-l-2 border-outline-variant mx-2"></div>
+          <span className="hidden md:block font-tech-mono text-tech-mono uppercase text-neon-yellow font-bold">LANGKAH 2 • AMBIL FOTO</span>
+        </div>
+        <div className="flex items-center gap-4 text-neon-yellow">
+          <span className="material-symbols-outlined text-[24px]">wifi_tethering</span>
+          <span className="material-symbols-outlined text-[24px]">timer</span>
+        </div>
+      </header>
 
-      {/* Step Indicator */}
-      <div className="flex items-center gap-3 mb-4 self-start w-full flex-wrap">
-        <span className="bg-curtain-red text-paper-white font-label-caps text-label-caps px-3 py-1 sketch-border hard-shadow text-xs shrink-0">
-          LANGKAH 2 / 3
-        </span>
-        <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-ink-black italic">
-          Ambil Foto
-        </h1>
-        <button
-          onClick={() => {
-            if (capturedPhotos.filter(Boolean).length > 0) {
-              if (!window.confirm("Yakin ingin ganti frame? Foto yang sudah diambil akan hilang jika frame baru membutuhkan jumlah slot yang berbeda.")) {
-                return;
-              }
-            }
-            if (countdownRef.current) clearInterval(countdownRef.current);
-            stopCamera();
-            clearPhotos();
-            resetPhotoSession();
-            setCurrentStep("frame-selection");
-          }}
-          className="ml-auto flex items-center gap-1 font-label-caps text-label-caps text-on-surface-variant hover:text-curtain-red transition-colors text-sm"
-        >
-          <span className="material-symbols-outlined text-base">arrow_back</span>
-          Ganti Frame
-        </button>
+      {/* Mobile Step Indicator */}
+      <div className="md:hidden bg-ink-black p-2 border-b-border-thick border-ink-black flex justify-center z-40 relative">
+        <span className="font-tech-mono text-tech-mono uppercase text-neon-yellow font-bold">LANGKAH 2 • AMBIL FOTO</span>
       </div>
 
-      {/* Switch Camera Button (if multiple cameras exist) */}
-      {hasMultipleCameras && hasPermission && (
-        <div className="self-end mb-2 mr-2 z-20 md:relative md:mb-3">
-          <button
-            onClick={() => switchCamera()}
-            className="flex items-center gap-2 px-3 py-2 bg-surface-container-high border-2 border-ink-black sketch-border-thin hard-shadow hover:bg-surface-container-highest active:translate-y-px transition-all"
-          >
-            <span className="material-symbols-outlined text-sm">cameraswitch</span>
-            <span className="font-label-caps text-xs hidden sm:inline">Tukar Kamera</span>
-          </button>
-        </div>
-      )}
+      <main className="flex-1 p-margin-mobile md:p-margin-desktop flex flex-col relative min-h-0 z-10 w-full max-w-[1200px] mx-auto pb-8">
+        {/* Status Bar & Indicators */}
+        <div className="flex justify-between items-start mb-4 z-20">
+          {/* OS Style Window Bar */}
+          <div className="bg-stark-white border-border-thick border-ink-black px-4 py-2 inline-flex items-center hard-shadow-sm">
+            <div className="flex mr-4 gap-1">
+              <span className="w-3 h-3 border-2 border-ink-black bg-stark-white"></span>
+              <span className="w-3 h-3 border-2 border-ink-black bg-neon-yellow"></span>
+              <span className="w-3 h-3 border-2 border-ink-black bg-error-red"></span>
+            </div>
+            <span className="font-tech-mono text-ink-black font-bold uppercase tracking-widest text-[12px]">LIVE CAMERA</span>
+          </div>
 
-      {/* Multi-shot progress */}
-      {photoCount > 1 && (
-        <div className="self-start mb-3 flex items-center gap-3">
-          <span className="font-label-caps text-label-caps text-ink-black text-sm">
-            Foto {Math.min(currentPhotoIndex + 1, photoCount)} dari {photoCount}:
-          </span>
-          <div className="flex gap-2">
-            {Array.from({ length: photoCount }).map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setPhotoIndex(i)}
-                className={`w-8 h-8 border-2 border-ink-black flex items-center justify-center transition-all cursor-pointer ${
-                  i === currentPhotoIndex
-                    ? "bg-ink-black text-paper-white animate-pulse"
-                    : capturedPhotos[i]
-                      ? "bg-curtain-red text-paper-white"
-                      : "bg-paper-white text-on-surface-variant hover:bg-gray-100"
-                }`}
-                title={capturedPhotos[i] ? "Klik untuk foto ulang slot ini" : "Slot foto"}
-              >
-                {capturedPhotos[i] && i !== currentPhotoIndex ? (
-                  <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>check</span>
-                ) : (
-                  <span className="font-label-caps text-[11px]">{i + 1}</span>
-                )}
-              </button>
-            ))}
+          {/* Photos Counter Chip */}
+          <div className="bg-ink-black text-neon-yellow border-border-thick border-stark-white px-6 py-3 hard-shadow-sm transform rotate-2">
+            <span className="font-tech-mono font-bold text-lg">
+              FOTO {Math.min(currentPhotoIndex + 1, photoCount)}/{photoCount}
+            </span>
           </div>
         </div>
-      )}
 
-      {/* Frame badge */}
-      {currentFrame && (
-        <div className="self-start mb-3 flex items-center gap-2 px-3 py-1 bg-surface-container sketch-border-thin">
-          <span className="material-symbols-outlined text-sm text-curtain-red" style={{ fontVariationSettings: "'FILL' 1" }}>
-            filter_frames
-          </span>
-          <span className="font-label-caps text-label-caps text-ink-black text-xs">{currentFrame.name}</span>
-        </div>
-      )}
+        {/* Camera Viewfinder Container */}
+        <div className="flex-1 relative w-full flex flex-col justify-center min-h-[400px]">
+          
+          <div className="relative w-fit max-w-full mx-auto bg-surface-container border-border-thick border-ink-black hard-shadow flex items-center justify-center overflow-hidden group pixel-corners">
+            <div className="pixel-corners-inner"></div>
+            
+            {/* The invisible image keeps the viewfinder at the frame's natural ratio. */}
+            {previewFrameUrl ? (
+              <img 
+                src={previewFrameUrl}
+                alt=""
+                className="relative block w-auto h-auto max-w-full max-h-[min(54vh,560px)] object-contain opacity-0 pointer-events-none" 
+                aria-hidden="true" 
+              />
+            ) : (
+              <div className="w-[min(92vw,720px)] aspect-[4/3]" />
+            )}
 
-      {/* Camera Box */}
-      <div className="relative w-full max-w-2xl bg-surface-container sketch-border hard-shadow-lg flex items-center justify-center overflow-hidden mb-6">
-        
-        {/* Aspect ratio placeholder (invisible frame image) */}
-        {previewFrameUrl ? (
-          <img 
-            src={previewFrameUrl}
-            alt="aspect-ratio-placeholder" 
-            className="relative w-full h-auto opacity-0 pointer-events-none" 
-            aria-hidden="true" 
-          />
-        ) : (
-          <div className="w-full" style={{ paddingBottom: photoCount > 1 ? '133.33%' : '75%' }} />
-        )}
+            {/* Previously Captured Photos */}
+            {photoCount > 1 && frameMeta?.slots && frameMeta.slots.map((slot, i) => {
+              if (i >= currentPhotoIndex || !capturedPhotos[i]) return null;
+              return (
+                <img
+                  key={i}
+                  src={capturedPhotos[i]}
+                  alt={`Slot ${i + 1}`}
+                  className="absolute object-cover z-10"
+                  style={{
+                    left: `${slot.x * 100}%`,
+                    top: `${slot.y * 100}%`,
+                    width: `${slot.width * 100}%`,
+                    height: `${slot.height * 100}%`
+                  }}
+                />
+              );
+            })}
 
-        {/* Previously Captured Photos */}
-        {photoCount > 1 && frameMeta?.slots && frameMeta.slots.map((slot, i) => {
-          if (i >= currentPhotoIndex || !capturedPhotos[i]) return null;
-          return (
-            <img
-              key={i}
-              src={capturedPhotos[i]}
-              alt={`Slot ${i + 1}`}
-              className="absolute object-cover z-10"
-              style={{
-                left: `${slot.x * 100}%`,
-                top: `${slot.y * 100}%`,
-                width: `${slot.width * 100}%`,
-                height: `${slot.height * 100}%`
-              }}
+            {/* Video stream (bounded to active slot) */}
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className={`absolute object-cover transition-all duration-300 z-10 filter ${facingMode === 'user' ? 'transform scale-x-[-1]' : ''}`}
+              style={
+                frameMeta?.slots && frameMeta.slots[currentPhotoIndex]
+                  ? {
+                      left: `${frameMeta.slots[currentPhotoIndex].x * 100}%`,
+                      top: `${frameMeta.slots[currentPhotoIndex].y * 100}%`,
+                      width: `${frameMeta.slots[currentPhotoIndex].width * 100}%`,
+                      height: `${frameMeta.slots[currentPhotoIndex].height * 100}%`,
+                    }
+                  : { left: 0, top: 0, width: '100%', height: '100%' }
+              }
             />
-          );
-        })}
 
-        {/* Video stream (bounded to active slot) */}
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          className={`absolute object-cover transition-all duration-300 z-10 ${facingMode === 'user' ? 'transform scale-x-[-1]' : ''}`}
-          style={
-            frameMeta?.slots && frameMeta.slots[currentPhotoIndex]
-              ? {
-                  left: `${frameMeta.slots[currentPhotoIndex].x * 100}%`,
-                  top: `${frameMeta.slots[currentPhotoIndex].y * 100}%`,
-                  width: `${frameMeta.slots[currentPhotoIndex].width * 100}%`,
-                  height: `${frameMeta.slots[currentPhotoIndex].height * 100}%`,
-                }
-              : { left: 0, top: 0, width: '100%', height: '100%' }
-          }
-        />
+            {/* Frame Overlay (with transparent holes) */}
+            {previewFrameUrl && (
+              <img 
+                src={previewFrameUrl}
+                alt="Frame Overlay" 
+                className="absolute inset-0 w-full h-full object-fill z-20 pointer-events-none" 
+              />
+            )}
 
-        {/* Frame Overlay (with transparent holes) */}
-        {previewFrameUrl && (
-          <img 
-            src={previewFrameUrl}
-            alt="Frame Overlay" 
-            className="absolute inset-0 w-full h-full object-cover z-20 pointer-events-none" 
-          />
-        )}
+            {/* Overlays (countdown, flash, slot indicators, scanlines) */}
+            <div className="absolute inset-0 z-30 pointer-events-none">
+              <CameraOverlays
+                hasPermission={hasPermission}
+                error={error}
+                onRequestPermission={() => requestPermission()}
+                countdown={countdown}
+                flashVisible={flashVisible}
+                frameMeta={frameMeta}
+                currentPhotoIndex={currentPhotoIndex}
+              />
+            </div>
+          </div>
 
-        {/* Overlays (countdown, flash, slot indicators) */}
-        <div className="absolute inset-0 z-30 pointer-events-none">
-          <CameraOverlays
+          {/* Bottom Controls Cluster */}
+          <CameraControls
             hasPermission={hasPermission}
-            error={error}
-            onRequestPermission={() => requestPermission()}
-            countdown={countdown}
-            flashVisible={flashVisible}
-            frameMeta={frameMeta}
+            photoCount={photoCount}
             currentPhotoIndex={currentPhotoIndex}
+            countdown={countdown}
+            onSnap={handleSnap}
+            onChangeFrame={handleChangeFrame}
+            onRetake={() => {
+               if (countdownRef.current) clearInterval(countdownRef.current);
+               countdownRef.current = null;
+               setCountdown(null);
+               setIsCapturing(false);
+               clearPhotos();
+               resetPhotoSession();
+               showToast("Sesi foto diulang dengan frame yang sama.", "info");
+            }}
+            onSwitchCamera={hasMultipleCameras ? switchCamera : undefined}
           />
         </div>
-      </div>
-
-      {/* Capture Controls */}
-      <CameraControls
-        hasPermission={hasPermission}
-        photoCount={photoCount}
-        currentPhotoIndex={currentPhotoIndex}
-        countdown={countdown}
-        onSnap={handleSnap}
-      />
-      
-      {photoCount > 1 && currentPhotoIndex > 0 && currentPhotoIndex < totalPhotosNeeded && (
-        <div className="mt-4 flex justify-center w-full max-w-2xl">
-          <button
-            onClick={() => {
-              clearPhotos();
-              resetPhotoSession();
-              showToast("Diulang dari awal.", "info");
-            }}
-            className="font-label-caps text-label-caps text-on-surface-variant hover:text-curtain-red transition-colors text-sm flex items-center gap-1"
-          >
-            <span className="material-symbols-outlined text-sm">replay</span>
-            Ulangi dari Slot 1
-          </button>
-        </div>
-      )}
-    </main>
+      </main>
+    </div>
   );
 }

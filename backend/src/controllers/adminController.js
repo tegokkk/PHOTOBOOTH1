@@ -3,7 +3,7 @@ const photoService = require('../services/photoService');
 
 const getMetrics = async (req, res) => {
   try {
-    const totalUsers = await prisma.user.count();
+    const totalUsers = 0;
     
     // Filter out trashed photos from count
     const totalPhotos = await prisma.photo.count({

@@ -40,10 +40,10 @@ export function ShareDownloadButton({ imageUrl, filename = "ririi-photobooth.jpg
       type="button"
       onClick={handleDownload}
       disabled={isDownloading}
-      className="w-full px-4 py-4 bg-blueprint-blue text-paper-white font-interactive-btn border-2 border-ink-black sketch-border hard-shadow hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+      className="w-full px-4 py-4 bg-neon-yellow text-ink-black font-tech-mono font-bold uppercase border-border-thick border-ink-black hard-shadow hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
     >
       <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>download</span>
-      {isDownloading ? "Menyiapkan Unduhan..." : "Unduh Gambar"}
+      {isDownloading ? "SPOOLING..." : "DOWNLOAD_IMG"}
     </button>
   );
 }
