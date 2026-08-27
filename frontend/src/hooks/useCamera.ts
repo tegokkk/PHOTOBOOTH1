@@ -2,6 +2,12 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 export type FacingMode = 'user' | 'environment';
 
+// Most photobooth slots are close to 4:3. Requesting 16:9 makes many mobile
+// cameras crop the sensor before the video ever reaches the frame, which
+// makes the preview look zoomed in. Keep this as an ideal constraint so older
+// devices can still fall back to the closest supported camera mode.
+const CAMERA_ASPECT_RATIO = 4 / 3;
+
 export function useCamera() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -56,7 +62,8 @@ export function useCamera() {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
           width: { ideal: 1920 },
-          height: { ideal: 1080 },
+          height: { ideal: 1440 },
+          aspectRatio: { ideal: CAMERA_ASPECT_RATIO },
           facingMode: mode
         },
         audio: false
