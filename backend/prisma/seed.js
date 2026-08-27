@@ -188,9 +188,9 @@ const MOCK_FRAMES = [
     imageUrl: '/frames/Pointer Newspaper.webp',
     cssPlaceholder: 'bg-transparent',
     slots: [
-      { x: 0.0622, y: 0.3652, width: 0.8769, height: 0.2617 },
-      { x: 0.6722, y: 0.7148, width: 0.2669, height: 0.1045 },
-      { x: 0.0636, y: 0.7852, width: 0.3223, height: 0.1729 }
+      { x: 0.0572, y: 0.3602, width: 0.8869, height: 0.2717 },
+      { x: 0.6672, y: 0.7098, width: 0.2769, height: 0.1145 },
+      { x: 0.0586, y: 0.7802, width: 0.3323, height: 0.1829 }
     ]
   },
   {
@@ -199,12 +199,12 @@ const MOCK_FRAMES = [
     imageUrl: '/frames/Pointer Striped.webp',
     cssPlaceholder: 'bg-transparent',
     slots: [
-      { x: 0.1041, y: 0.1084, width: 0.3592, height: 0.2402 },
-      { x: 0.5352, y: 0.1084, width: 0.3607, height: 0.2402 },
-      { x: 0.1056, y: 0.3691, width: 0.3607, height: 0.2402 },
-      { x: 0.5367, y: 0.3691, width: 0.3607, height: 0.2402 },
-      { x: 0.1056, y: 0.6299, width: 0.3607, height: 0.2393 },
-      { x: 0.5352, y: 0.6299, width: 0.3607, height: 0.2393 }
+      { x: 0.0991, y: 0.1034, width: 0.3692, height: 0.2502 },
+      { x: 0.5302, y: 0.1034, width: 0.3707, height: 0.2502 },
+      { x: 0.1006, y: 0.3641, width: 0.3707, height: 0.2502 },
+      { x: 0.5317, y: 0.3641, width: 0.3707, height: 0.2502 },
+      { x: 0.1006, y: 0.6249, width: 0.3707, height: 0.2493 },
+      { x: 0.5302, y: 0.6249, width: 0.3707, height: 0.2493 }
     ]
   },
   {
@@ -213,22 +213,10 @@ const MOCK_FRAMES = [
     imageUrl: '/frames/Film Strip Green.webp',
     cssPlaceholder: 'bg-transparent',
     slots: [
-      { x: 0.4298, y: 0.1465, width: 0.1429, height: 0.1699 },
-      { x: 0.4298, y: 0.3252, width: 0.1429, height: 0.1699 },
-      { x: 0.431, y: 0.5039, width: 0.1416, height: 0.1689 },
-      { x: 0.431, y: 0.6816, width: 0.1416, height: 0.166 }
-    ]
-  },
-  {
-    name: 'Leather Polaroid',
-    category: 'Classic',
-    imageUrl: '/frames/Leather Polaroid.webp',
-    cssPlaceholder: 'bg-transparent',
-    slots: [
-      { x: 0.4078, y: 0.0615, width: 0.1844, height: 0.1992 },
-      { x: 0.4078, y: 0.2754, width: 0.1844, height: 0.1992 },
-      { x: 0.4078, y: 0.4893, width: 0.1844, height: 0.1992 },
-      { x: 0.4078, y: 0.7041, width: 0.1844, height: 0.1982 }
+      { x: 0.4248, y: 0.1415, width: 0.1529, height: 0.1799 },
+      { x: 0.4248, y: 0.3202, width: 0.1529, height: 0.1799 },
+      { x: 0.4260, y: 0.4989, width: 0.1516, height: 0.1789 },
+      { x: 0.4260, y: 0.6766, width: 0.1516, height: 0.1760 }
     ]
   }
 ];
