@@ -187,7 +187,7 @@ export function CameraScreen() {
                   key={i}
                   src={capturedPhotos[i]}
                   alt={`Slot ${i + 1}`}
-                  className="absolute object-contain z-10"
+                  className="absolute object-cover z-10"
                   style={{
                     left: `${slot.x * 100}%`,
                     top: `${slot.y * 100}%`,
@@ -204,7 +204,7 @@ export function CameraScreen() {
               autoPlay
               playsInline
               muted
-              className={`absolute object-contain transition-all duration-300 z-10 filter ${facingMode === 'user' ? 'transform scale-x-[-1]' : ''}`}
+              className={`absolute object-cover transition-all duration-300 z-10 filter ${facingMode === 'user' ? 'transform scale-x-[-1]' : ''}`}
               style={
                 frameMeta?.slots && frameMeta.slots[currentPhotoIndex]
                   ? {

@@ -2,27 +2,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 export type FacingMode = 'user' | 'environment';
 
-// The project TypeScript DOM definitions do not include resizeMode yet, but
-// mobile browsers that support Media Capture expose it at runtime.
-type CameraVideoConstraints = MediaTrackConstraints & {
-  resizeMode?: ConstrainDOMString;
-};
-
-// Most photobooth slots are close to 4:3. Keep the camera's orientation when
-// requesting that ratio: portrait devices use 3:4 (the same 4:3 sensor turned
-// vertically), while landscape devices use 4:3. Requesting 16:9 or the wrong
-// orientation can make mobile cameras crop the sensor before previewing it.
-function getCameraFormat() {
-  const isPortrait =
-    typeof window !== 'undefined' &&
-    (window.matchMedia?.('(orientation: portrait)').matches ||
-      window.innerHeight > window.innerWidth);
-
-  return isPortrait
-    ? { width: 1440, height: 1920, aspectRatio: 3 / 4 }
-    : { width: 1920, height: 1440, aspectRatio: 4 / 3 };
-}
-
 export function useCamera() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -74,44 +53,14 @@ export function useCamera() {
         streamRef.current = null;
       }
 
-      let mediaStream: MediaStream;
-      const cameraFormat = getCameraFormat();
-      try {
-        // Prefer a true 4:3 camera mode so the sensor keeps its wider field of
-        // view instead of letting the browser silently choose a 16:9 crop.
-        mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            width: { ideal: cameraFormat.width },
-            height: { ideal: cameraFormat.height },
-            aspectRatio: { exact: cameraFormat.aspectRatio },
-            // Ask mobile browsers not to satisfy the ratio by digitally
-            // cropping the camera sensor before it reaches the preview.
-            resizeMode: { ideal: 'none' },
-            facingMode: mode
-          } as CameraVideoConstraints,
-          audio: false
-        });
-      } catch (err: unknown) {
-        // Some older browsers do not expose a 4:3 mode. Keep them usable by
-        // retrying with a preference instead of a hard requirement.
-        const isOverconstrained =
-          typeof err === 'object' &&
-          err !== null &&
-          'name' in err &&
-          (err as { name?: string }).name === 'OverconstrainedError';
-        if (!isOverconstrained) throw err;
-
-        mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            width: { ideal: cameraFormat.width },
-            height: { ideal: cameraFormat.height },
-            aspectRatio: { ideal: cameraFormat.aspectRatio },
-            resizeMode: { ideal: 'none' },
-            facingMode: mode
-          } as CameraVideoConstraints,
-          audio: false
-        });
-      }
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          facingMode: mode
+        },
+        audio: false
+      });
       
       setStream(mediaStream);
       streamRef.current = mediaStream;
