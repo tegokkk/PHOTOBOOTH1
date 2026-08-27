@@ -2,6 +2,12 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 export type FacingMode = 'user' | 'environment';
 
+// The project TypeScript DOM definitions do not include resizeMode yet, but
+// mobile browsers that support Media Capture expose it at runtime.
+type CameraVideoConstraints = MediaTrackConstraints & {
+  resizeMode?: ConstrainDOMString;
+};
+
 // Most photobooth slots are close to 4:3. Keep the camera's orientation when
 // requesting that ratio: portrait devices use 3:4 (the same 4:3 sensor turned
 // vertically), while landscape devices use 4:3. Requesting 16:9 or the wrong
@@ -78,8 +84,11 @@ export function useCamera() {
             width: { ideal: cameraFormat.width },
             height: { ideal: cameraFormat.height },
             aspectRatio: { exact: cameraFormat.aspectRatio },
+            // Ask mobile browsers not to satisfy the ratio by digitally
+            // cropping the camera sensor before it reaches the preview.
+            resizeMode: { ideal: 'none' },
             facingMode: mode
-          },
+          } as CameraVideoConstraints,
           audio: false
         });
       } catch (err: unknown) {
@@ -97,8 +106,9 @@ export function useCamera() {
             width: { ideal: cameraFormat.width },
             height: { ideal: cameraFormat.height },
             aspectRatio: { ideal: cameraFormat.aspectRatio },
+            resizeMode: { ideal: 'none' },
             facingMode: mode
-          },
+          } as CameraVideoConstraints,
           audio: false
         });
       }
