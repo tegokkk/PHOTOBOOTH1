@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./docs/banner.svg" alt="RIRI Photobooth" width="100%" />
+  <img src="./docs/banner.png" alt="RIRI Photobooth" width="100%" />
 </p>
 
 <h1 align="center">RIRI PHOTOBOOTH</h1>
@@ -134,7 +134,7 @@ RIRI/
 │   └── src/                 # Next.js app, kiosk UI, store, dan compositor
 ├── docs/
 │   ├── PRINT_BRIDGE.md      # Kontrak bridge printer lokal
-│   └── banner.svg           # Banner README
+│   └── banner.png           # Banner README
 ├── FRAME/masters/           # Master lokal; ignored, jangan commit secret/asset mentah
 ├── ARCHITECTURE.md
 └── PHOTOBOOTH_USAHA_PLAN.md
