@@ -181,6 +181,55 @@ const MOCK_FRAMES = [
       { x: 0.0808, y: 0.6762, width: 0.3852, height: 0.2102 },
       { x: 0.5354, y: 0.6762, width: 0.3852, height: 0.2102 }
     ]
+  },
+  {
+    name: 'Pointer Newspaper',
+    category: 'Creative',
+    imageUrl: '/frames/Pointer Newspaper.webp',
+    cssPlaceholder: 'bg-transparent',
+    slots: [
+      { x: 0.0622, y: 0.3652, width: 0.8769, height: 0.2617 },
+      { x: 0.6722, y: 0.7148, width: 0.2669, height: 0.1045 },
+      { x: 0.0636, y: 0.7852, width: 0.3223, height: 0.1729 }
+    ]
+  },
+  {
+    name: 'Pointer Striped',
+    category: 'Creative',
+    imageUrl: '/frames/Pointer Striped.webp',
+    cssPlaceholder: 'bg-transparent',
+    slots: [
+      { x: 0.1041, y: 0.1084, width: 0.3592, height: 0.2402 },
+      { x: 0.5352, y: 0.1084, width: 0.3607, height: 0.2402 },
+      { x: 0.1056, y: 0.3691, width: 0.3607, height: 0.2402 },
+      { x: 0.5367, y: 0.3691, width: 0.3607, height: 0.2402 },
+      { x: 0.1056, y: 0.6299, width: 0.3607, height: 0.2393 },
+      { x: 0.5352, y: 0.6299, width: 0.3607, height: 0.2393 }
+    ]
+  },
+  {
+    name: 'Film Strip Green',
+    category: 'Classic',
+    imageUrl: '/frames/Film Strip Green.webp',
+    cssPlaceholder: 'bg-transparent',
+    slots: [
+      { x: 0.4298, y: 0.1465, width: 0.1429, height: 0.1699 },
+      { x: 0.4298, y: 0.3252, width: 0.1429, height: 0.1699 },
+      { x: 0.431, y: 0.5039, width: 0.1416, height: 0.1689 },
+      { x: 0.431, y: 0.6816, width: 0.1416, height: 0.166 }
+    ]
+  },
+  {
+    name: 'Leather Polaroid',
+    category: 'Classic',
+    imageUrl: '/frames/Leather Polaroid.webp',
+    cssPlaceholder: 'bg-transparent',
+    slots: [
+      { x: 0.4078, y: 0.0615, width: 0.1844, height: 0.1992 },
+      { x: 0.4078, y: 0.2754, width: 0.1844, height: 0.1992 },
+      { x: 0.4078, y: 0.4893, width: 0.1844, height: 0.1992 },
+      { x: 0.4078, y: 0.7041, width: 0.1844, height: 0.1982 }
+    ]
   }
 ];
 
