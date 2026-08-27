@@ -4,8 +4,7 @@ export type FacingMode = 'user' | 'environment';
 
 // Most photobooth slots are close to 4:3. Requesting 16:9 makes many mobile
 // cameras crop the sensor before the video ever reaches the frame, which
-// makes the preview look zoomed in. Keep this as an ideal constraint so older
-// devices can still fall back to the closest supported camera mode.
+// makes the preview look zoomed in.
 const CAMERA_ASPECT_RATIO = 4 / 3;
 
 export function useCamera() {
@@ -59,15 +58,39 @@ export function useCamera() {
         streamRef.current = null;
       }
 
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 1920 },
-          height: { ideal: 1440 },
-          aspectRatio: { ideal: CAMERA_ASPECT_RATIO },
-          facingMode: mode
-        },
-        audio: false
-      });
+      let mediaStream: MediaStream;
+      try {
+        // Prefer a true 4:3 camera mode so the sensor keeps its wider field of
+        // view instead of letting the browser silently choose a 16:9 crop.
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 1920 },
+            height: { ideal: 1440 },
+            aspectRatio: { exact: CAMERA_ASPECT_RATIO },
+            facingMode: mode
+          },
+          audio: false
+        });
+      } catch (err: unknown) {
+        // Some older browsers do not expose a 4:3 mode. Keep them usable by
+        // retrying with a preference instead of a hard requirement.
+        const isOverconstrained =
+          typeof err === 'object' &&
+          err !== null &&
+          'name' in err &&
+          (err as { name?: string }).name === 'OverconstrainedError';
+        if (!isOverconstrained) throw err;
+
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 1920 },
+            height: { ideal: 1440 },
+            aspectRatio: { ideal: CAMERA_ASPECT_RATIO },
+            facingMode: mode
+          },
+          audio: false
+        });
+      }
       
       setStream(mediaStream);
       streamRef.current = mediaStream;
