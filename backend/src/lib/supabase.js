@@ -1,11 +1,6 @@
-const { createClient } = require('@supabase/supabase-js');
-
-// Create a single supabase client for interacting with your database
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '';
-
-const supabase = supabaseUrl && supabaseKey 
-  ? createClient(supabaseUrl, supabaseKey)
-  : null;
-
-module.exports = supabase;
+/**
+ * @deprecated Supabase telah diganti dengan Cloudflare R2.
+ * Gunakan `../lib/r2` untuk operasi file storage.
+ * File ini hanya ada untuk backward compatibility dan selalu mengembalikan null.
+ */
+module.exports = null;

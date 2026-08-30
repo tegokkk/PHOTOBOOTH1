@@ -83,22 +83,25 @@ const getMedia = async (req, res) => {
     }
 
     // Serve the file
-    const supabase = require('../lib/supabase');
-    if (supabase) {
-      // Stream from Supabase Storage
-      const { data, error } = await supabase.storage.from('photos').download(filename);
-      if (error || !data) {
+    const r2 = require('../lib/r2');
+    if (r2.isConfigured()) {
+      // Stream dari Cloudflare R2
+      let r2Response;
+      try {
+        r2Response = await r2.downloadFile(filename);
+      } catch (r2Error) {
+        // NoSuchKey atau error lain dari R2
         return res.status(404).json({ success: false, message: 'File not found on cloud storage' });
       }
-      
+
       res.set('X-Content-Type-Options', 'nosniff');
       res.set('Cache-Control', 'private, max-age=3600');
-      res.set('Content-Type', data.type);
-      
-      // Convert Blob to buffer and send
-      const arrayBuffer = await data.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      return res.send(buffer);
+      res.set('Content-Type', r2Response.contentType);
+
+      // Pipe ReadableStream dari R2 SDK langsung ke response
+      const { Readable } = require('stream');
+      const nodeStream = Readable.from(r2Response.body);
+      nodeStream.pipe(res);
     } else {
       // Local fallback
       const uploadsDir = path.resolve(process.env.UPLOAD_DIR || path.join(__dirname, '../../uploads'));
@@ -112,7 +115,7 @@ const getMedia = async (req, res) => {
       }
 
       res.set('X-Content-Type-Options', 'nosniff');
-      res.set('Cache-Control', 'private, max-age=3600'); 
+      res.set('Cache-Control', 'private, max-age=3600');
       res.sendFile(filePath);
     }
   } catch (error) {

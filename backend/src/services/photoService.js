@@ -172,24 +172,19 @@ const processAndSavePhoto = async ({ frameId, compositeImageBase64, idempotencyK
   const filePath = path.join(uploadsDir, fileName);
   const guestAccessToken = idempotencyKey || crypto.randomBytes(32).toString('hex');
 
-  const supabase = require('../lib/supabase');
+  const r2 = require('../lib/r2');
   let fileWritten = false;
   try {
-    if (supabase) {
-      const { data, error } = await supabase.storage
-        .from('photos')
-        .upload(fileName, imageBuffer, {
-          contentType: actualMime === 'jpeg' ? 'image/jpeg' : 'image/png',
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (error) {
-        throw new Error('Supabase Storage Error: ' + error.message);
-      }
+    if (r2.isConfigured()) {
+      // Upload ke Cloudflare R2
+      await r2.uploadFile(
+        fileName,
+        imageBuffer,
+        actualMime === 'jpeg' ? 'image/jpeg' : 'image/png'
+      );
       fileWritten = true;
     } else {
-      // Fallback for local testing without Supabase
+      // Fallback untuk local testing tanpa R2
       if (!fs.existsSync(uploadsDir)) {
         await fsPromises.mkdir(uploadsDir, { recursive: true });
       }
@@ -218,10 +213,10 @@ const processAndSavePhoto = async ({ frameId, compositeImageBase64, idempotencyK
 
     return guestAccessToken ? { ...newPhoto, guestAccessToken } : newPhoto;
   } catch (error) {
-    if (fileWritten && !supabase && fs.existsSync(filePath)) {
+    if (fileWritten && r2.isConfigured()) {
+      await r2.deleteFile(fileName).catch(console.error);
+    } else if (fileWritten && fs.existsSync(filePath)) {
       await fsPromises.unlink(filePath).catch(console.error);
-    } else if (fileWritten && supabase) {
-      await supabase.storage.from('photos').remove([fileName]).catch(console.error);
     }
     throw error;
   }
@@ -322,10 +317,12 @@ const permanentDeletePhoto = async (id) => {
 
   if (photo.compositeImageUrl) {
     const fileName = photo.compositeImageUrl.split('/').pop();
-    const supabase = require('../lib/supabase');
-    if (supabase) {
-      await supabase.storage.from('photos').remove([fileName]).catch(console.error);
+    const r2 = require('../lib/r2');
+    if (r2.isConfigured()) {
+      // Hapus dari Cloudflare R2
+      await r2.deleteFile(fileName).catch(console.error);
     } else {
+      // Fallback local
       const uploadsDir = path.resolve(process.env.UPLOAD_DIR || path.join(__dirname, '../../uploads'));
       const filePath = path.resolve(uploadsDir, fileName);
       if (!filePath.startsWith(`${uploadsDir}${path.sep}`)) {
