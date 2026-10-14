@@ -157,7 +157,7 @@ export function LandingScreen() {
                 value={operatorPin}
                 onChange={(e) => {
                   setOperatorPin(e.target.value);
-                  const correctPin = process.env.NEXT_PUBLIC_OPERATOR_PIN || "0909";
+                  const correctPin = process.env.NEXT_PUBLIC_OPERATOR_PIN || "0606";
                   setOperatorConfirmed(e.target.value === correctPin);
                 }}
                 className="w-full bg-surface-container-highest border-2 border-ink-black px-4 py-4 text-center font-tech-mono text-2xl tracking-[0.5em] text-ink-black focus:outline-none focus:ring-4 focus:ring-neon-yellow"

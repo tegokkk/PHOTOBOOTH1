@@ -11,7 +11,7 @@ https.get('https://riri-frontend-three.vercel.app', (res) => {
         let js = '';
         sRes.on('data', d => js += d);
         sRes.on('end', () => {
-          if (js.includes('0909')) { console.log('FOUND 0909 in ' + scriptPath); found = true; }
+          if (js.includes('0606')) { console.log('FOUND 0606 in ' + scriptPath); found = true; }
           if (js.includes('1234')) { console.log('FOUND 1234 in ' + scriptPath); }
           pending--;
           if (pending === 0 && !found) console.log('NOT FOUND');

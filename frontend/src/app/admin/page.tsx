@@ -27,7 +27,7 @@ export default function AdminDashboardPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    const correctPin = process.env.NEXT_PUBLIC_OPERATOR_PIN || "0909";
+    const correctPin = process.env.NEXT_PUBLIC_OPERATOR_PIN || "0606";
     if (pin === correctPin) {
       setIsAuthenticated(true);
       fetchData();
