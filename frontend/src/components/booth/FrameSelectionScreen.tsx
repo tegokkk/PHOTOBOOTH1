@@ -44,7 +44,7 @@ export function FrameSelectionScreen() {
       {/* TopAppBar inside the view */}
       <header className="flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 w-full z-50 bg-background border-b-border-thick border-ink-black sticky top-0">
         <div className="flex items-center gap-4">
-          <h1 className="font-headline-md text-headline-md text-primary tracking-tighter">CYBER-BOOTH_V1.0</h1>
+          <h1 className="font-headline-md text-headline-md text-primary tracking-tighter">POINTER PHOTOBOOTH</h1>
           <div className="hidden md:flex h-6 border-l-2 border-outline-variant mx-2"></div>
           <span className="hidden md:block font-tech-mono text-tech-mono uppercase text-neon-yellow font-bold">LANGKAH 1 • PILIH FRAME</span>
         </div>
