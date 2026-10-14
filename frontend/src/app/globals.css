@@ -317,11 +317,7 @@ input[type="reset"] {
   #photobooth-print-surface img {
     display: block !important;
     visibility: visible !important;
-    /* Fill full height of paper, scale width proportionally according to frame aspect ratio */
-    height: 100vh !important;
     width: auto !important;
-    max-height: 100vh !important;
-    max-width: 100vw !important;
     object-fit: contain !important;
     /* Pin image flush to the very top-left corner of the paper sheet */
     object-position: left top !important;
@@ -332,5 +328,31 @@ input[type="reset"] {
     image-rendering: auto !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+
+  /* Size 1: Compact (Default) - ~145mm height, does NOT fill the whole paper */
+  #photobooth-print-surface.print-size-compact .photobooth-print-img,
+  #photobooth-print-surface.print-size-compact img,
+  #photobooth-print-surface:not(.print-size-mini):not(.print-size-full) .photobooth-print-img,
+  #photobooth-print-surface:not(.print-size-mini):not(.print-size-full) img {
+    height: 145mm !important;
+    max-height: min(70vh, 145mm) !important;
+    max-width: 70vw !important;
+  }
+
+  /* Size 2: Mini - ~115mm height (wallet / pocket size, maximum paper saving) */
+  #photobooth-print-surface.print-size-mini .photobooth-print-img,
+  #photobooth-print-surface.print-size-mini img {
+    height: 115mm !important;
+    max-height: min(52vh, 115mm) !important;
+    max-width: 55vw !important;
+  }
+
+  /* Size 3: Full Paper (100vh) */
+  #photobooth-print-surface.print-size-full .photobooth-print-img,
+  #photobooth-print-surface.print-size-full img {
+    height: 100vh !important;
+    max-height: 100vh !important;
+    max-width: 100vw !important;
   }
 }

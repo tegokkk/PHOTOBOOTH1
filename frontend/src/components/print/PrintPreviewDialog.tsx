@@ -26,6 +26,7 @@ export function PrintPreviewDialog({
   const [isPrinting, setIsPrinting] = useState(false);
   const [copies, setCopies] = useState(1);
   const [printLayout, setPrintLayout] = useState<"single" | "twin">("single");
+  const [printSize, setPrintSize] = useState<"compact" | "mini" | "full">("compact");
   const [imageRatio, setImageRatio] = useState<number>(0.33); // width / height
   const [mounted, setMounted] = useState(false);
   const [printJob, setPrintJob] = useState<PrintJob | null>(null);
@@ -227,44 +228,114 @@ export function PrintPreviewDialog({
             {/* Paper Sheet Representation */}
             <div className="w-full bg-[#f4f4f4] border-2 border-ink-black p-3 md:p-4 pixel-corners hard-shadow-sm flex justify-center items-center">
               <div className="pixel-corners-inner"></div>
-              <div className="relative h-64 md:h-72 aspect-[2/3] bg-stark-white border-2 border-dashed border-ink-black/40 flex flex-row items-stretch justify-start overflow-hidden shadow-md">
-                {/* Image placed flush left */}
-                <div className="h-full flex-shrink-0 flex flex-row items-stretch border-r-2 border-dashed border-ink-black/60 relative group">
-                  <img
-                    src={compositeDataUrl}
-                    alt="Preview foto rata kiri"
-                    className="h-full w-auto object-contain block"
-                    decoding="async"
-                  />
-                  {printLayout === "twin" && isStrip && (
+              <div className="relative h-64 md:h-72 aspect-[2/3] bg-stark-white border-2 border-dashed border-ink-black/40 flex flex-col items-stretch justify-start overflow-hidden shadow-md">
+                
+                {/* Photo Row (flush top-left) */}
+                <div className={`flex flex-row items-stretch justify-start ${
+                  printSize === "compact" ? "h-[65%]" : printSize === "mini" ? "h-[48%]" : "h-full"
+                }`}>
+                  {/* Photo Strip 1 */}
+                  <div className="h-full flex-shrink-0 relative border-r-2 border-dashed border-ink-black/60 bg-white">
                     <img
                       src={compositeDataUrl}
-                      alt="Preview foto twin"
-                      className="h-full w-auto object-contain block border-l border-ink-black/20"
+                      alt="Preview foto rata kiri"
+                      className="h-full w-auto object-contain block"
                       decoding="async"
                     />
+                    <div className="absolute top-1 left-1 bg-ink-black/80 text-neon-yellow font-tech-mono text-[7px] font-bold px-1 py-0.5 pointer-events-none">
+                      KIRI (0MM)
+                    </div>
+                  </div>
+
+                  {/* Twin strip if active */}
+                  {printLayout === "twin" && isStrip && (
+                    <div className="h-full flex-shrink-0 relative border-r-2 border-dashed border-ink-black/60 bg-white">
+                      <img
+                        src={compositeDataUrl}
+                        alt="Preview foto twin"
+                        className="h-full w-auto object-contain block"
+                        decoding="async"
+                      />
+                    </div>
                   )}
-                  {/* Position badge on photo */}
-                  <div className="absolute top-1 left-1 bg-ink-black/80 text-neon-yellow font-tech-mono text-[8px] font-bold px-1 py-0.5 pointer-events-none">
-                    KIRI (0MM)
+
+                  {/* Right Leftover Area */}
+                  <div className="flex-1 bg-[repeating-linear-gradient(45deg,#f9f9f9,#f9f9f9_8px,#f0f0f0_8px,#f0f0f0_16px)] flex flex-col items-center justify-center p-2 text-center select-none">
+                    <span className="material-symbols-outlined text-ink-black/40 text-lg">content_cut</span>
+                    <span className="font-tech-mono text-[8px] font-bold text-ink-black/60 uppercase">
+                      SISA KERTAS KANAN
+                    </span>
+                    <span className="font-tech-mono text-[7px] text-ink-black/40 uppercase">
+                      HEMAT / POTONG ✂️
+                    </span>
                   </div>
                 </div>
 
-                {/* Leftover Paper Area (Right side) */}
-                <div className="flex-1 bg-[repeating-linear-gradient(45deg,#f9f9f9,#f9f9f9_10px,#f0f0f0_10px,#f0f0f0_20px)] flex flex-col items-center justify-center p-2 text-center select-none">
-                  <span className="material-symbols-outlined text-ink-black/40 text-xl md:text-2xl">content_cut</span>
-                  <span className="font-tech-mono text-[9px] md:text-[10px] font-bold text-ink-black/60 uppercase tracking-wider mt-1">
-                    KERTAS SISA
-                  </span>
-                  <span className="font-tech-mono text-[8px] text-ink-black/40 uppercase">
-                    HEMAT / POTONG DI SINI ✂️
-                  </span>
-                </div>
+                {/* Bottom Leftover Area (when not full) */}
+                {printSize !== "full" && (
+                  <div className="w-full flex-1 border-t-2 border-dashed border-ink-black/40 bg-[repeating-linear-gradient(45deg,#f9f9f9,#f9f9f9_8px,#f0f0f0_8px,#f0f0f0_16px)] flex items-center justify-center select-none p-1">
+                    <span className="font-tech-mono text-[8px] font-bold text-ink-black/50 uppercase flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[13px]">content_cut</span>
+                      SISA KERTAS BAWAH (TIDAK PENUH 1 LEMBAR) ✂️
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
             <p className="font-tech-mono text-[10px] text-on-surface-variant text-center uppercase">
-              Foto otomatis dicetak rata kiri kertas (0mm margin) agar kertas sisa di kanan dapat dipotong rapi.
+              Foto dicetak lebih kecil di sudut kiri (0mm margin) agar tidak penuh satu kertas dan sisa kertas dapat disimpan/dipotong.
             </p>
+          </div>
+
+          {/* Print Size Selector (Kompak ~15cm, Mini ~12cm, Penuh 1 Kertas) */}
+          <div className="flex flex-col gap-2 bg-surface-container p-3 border-border-thick border-ink-black hard-shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="font-tech-mono font-bold text-xs text-ink-black uppercase flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px] text-cyber-purple">straighten</span>
+                PILIH UKURAN CETAK
+              </span>
+              <span className="font-tech-mono text-[10px] font-bold text-cyber-purple bg-stark-white px-2 py-0.5 border border-ink-black">
+                {printSize === "compact" ? "KOMPAK (~14.5 CM)" : printSize === "mini" ? "MINI (~11.5 CM)" : "PENUH KERTAS"}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setPrintSize("compact")}
+                className={`py-2 px-1 font-tech-mono font-bold text-xs uppercase border-2 border-ink-black flex flex-col items-center justify-center gap-0.5 transition-all jiggle-active ${
+                  printSize === "compact"
+                    ? "bg-neon-yellow text-ink-black hard-shadow-sm scale-[1.01]"
+                    : "bg-stark-white text-ink-black/70 hover:bg-neon-yellow/30"
+                }`}
+              >
+                <span>KOMPAK</span>
+                <span className="text-[9px] font-normal opacity-80">(~14.5 CM)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPrintSize("mini")}
+                className={`py-2 px-1 font-tech-mono font-bold text-xs uppercase border-2 border-ink-black flex flex-col items-center justify-center gap-0.5 transition-all jiggle-active ${
+                  printSize === "mini"
+                    ? "bg-neon-yellow text-ink-black hard-shadow-sm scale-[1.01]"
+                    : "bg-stark-white text-ink-black/70 hover:bg-neon-yellow/30"
+                }`}
+              >
+                <span>MINI</span>
+                <span className="text-[9px] font-normal opacity-80">(~11.5 CM)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPrintSize("full")}
+                className={`py-2 px-1 font-tech-mono font-bold text-xs uppercase border-2 border-ink-black flex flex-col items-center justify-center gap-0.5 transition-all jiggle-active ${
+                  printSize === "full"
+                    ? "bg-neon-yellow text-ink-black hard-shadow-sm scale-[1.01]"
+                    : "bg-stark-white text-ink-black/70 hover:bg-neon-yellow/30"
+                }`}
+              >
+                <span>PENUH</span>
+                <span className="text-[9px] font-normal opacity-80">(100%)</span>
+              </button>
+            </div>
           </div>
 
           {/* Layout Mode for Strips */}
@@ -372,7 +443,7 @@ export function PrintPreviewDialog({
 
       {/* Dedicated Print Portal attached directly to document.body for true 0mm left-aligned print */}
       {mounted && typeof document !== "undefined" && createPortal(
-        <div id="photobooth-print-surface" aria-hidden="true">
+        <div id="photobooth-print-surface" className={`print-size-${printSize}`} aria-hidden="true">
           <img
             src={compositeDataUrl}
             alt="Foto photobooth 1"
