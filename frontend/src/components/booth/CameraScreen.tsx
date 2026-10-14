@@ -16,6 +16,7 @@ export function CameraScreen() {
     capturedPhotos, addCapturedPhoto, clearPhotos, setCurrentStep,
     selectedFrameId, frames,
     currentPhotoIndex, totalPhotosNeeded, setPhotoSession, advancePhotoIndex, resetPhotoSession,
+    timerDuration, setTimerDuration,
   } = useAppStore();
   const { showToast } = useUIStore();
 
@@ -72,11 +73,11 @@ export function CameraScreen() {
     }, 0);
   };
 
-  /** 3-2-1 countdown then capture */
+  /** Countdown with user-selected duration (3s, 5s, 10s) then capture */
   const startCountdown = () => {
     if (isCapturing || countdown !== null) return;
     setIsCapturing(true);
-    let n = 3;
+    let n = timerDuration;
     setCountdown(n);
     countdownRef.current = setInterval(() => {
       n--;
@@ -155,7 +156,10 @@ export function CameraScreen() {
         </div>
         <div className="flex items-center gap-4 text-neon-yellow">
           <span className="material-symbols-outlined text-[24px]">wifi_tethering</span>
-          <span className="material-symbols-outlined text-[24px]">timer</span>
+          <div className="flex items-center gap-1 font-tech-mono text-xs font-bold bg-ink-black text-neon-yellow px-2.5 py-1 border border-neon-yellow hard-shadow-sm">
+            <span className="material-symbols-outlined text-[16px]">timer</span>
+            <span>{timerDuration}S</span>
+          </div>
         </div>
       </header>
 
@@ -348,7 +352,7 @@ export function CameraScreen() {
                   </span>
                 </div>
                 <span className="font-tech-mono text-[10px] text-ink-black bg-neon-yellow px-2 py-1 border border-ink-black font-bold">
-                  {countdown !== null ? `HITUNG: ${countdown}S` : "STANDBY"}
+                  {countdown !== null ? `HITUNG: ${countdown}S` : `TIMER: ${timerDuration}S`}
                 </span>
               </div>
             </div>
@@ -403,10 +407,47 @@ export function CameraScreen() {
               </span>
             </div>
 
+            {/* Timer Selector Options */}
+            <div className="w-full bg-surface-container border-2 border-ink-black p-3 flex flex-col gap-2 hard-shadow-sm">
+              <div className="flex items-center justify-between text-ink-black">
+                <span className="font-tech-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[16px]">timer</span>
+                  PILIH TIMER
+                </span>
+                <span className="font-tech-mono text-xs font-black text-cyber-purple bg-stark-white px-2 py-0.5 border border-ink-black">
+                  {timerDuration} DETIK
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 w-full">
+                {([3, 5, 10] as const).map((seconds) => {
+                  const isSelected = timerDuration === seconds;
+                  return (
+                    <button
+                      key={seconds}
+                      type="button"
+                      onClick={() => {
+                        setTimerDuration(seconds);
+                        showToast(`Timer diatur ke ${seconds} detik ⏱`, "info");
+                      }}
+                      disabled={countdown !== null}
+                      className={`py-2 px-1 font-tech-mono font-bold text-xs border-2 border-ink-black uppercase transition-all flex items-center justify-center gap-1 disabled:opacity-50 jiggle-active ${
+                        isSelected
+                          ? "bg-neon-yellow text-ink-black hard-shadow-sm scale-[1.02]"
+                          : "bg-stark-white text-ink-black/70 hover:bg-neon-yellow/30 hover:text-ink-black"
+                      }`}
+                      aria-label={`Timer ${seconds} detik`}
+                    >
+                      <span className="font-black text-sm">{seconds}s</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Status Footer */}
             <div className="w-full border-t-2 border-ink-black/20 pt-3">
               <p className="font-tech-mono text-[10px] text-on-surface-variant uppercase tracking-wider">
-                TIMER OTOMATIS: 3 DETIK
+                TIMER AKTIF: {timerDuration} DETIK
               </p>
             </div>
           </div>

@@ -73,6 +73,8 @@ interface AppState {
   saturation: number;
   setSaturation: (val: number) => void;
   resetEdits: () => void;
+  timerDuration: 3 | 5 | 10;
+  setTimerDuration: (sec: 3 | 5 | 10) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -194,12 +196,15 @@ export const useAppStore = create<AppState>()(
       saturation: 100,
       setSaturation: (val) => set({ saturation: val }),
       resetEdits: () => set({ brightness: 100, contrast: 100, saturation: 100 }),
+      timerDuration: 3,
+      setTimerDuration: (sec) => set({ timerDuration: sec }),
     }),
     {
       name: 'photobooth-storage',
       // Only persist user preferences — NOT photos (too large for localStorage)
       partialize: (state) => ({
         selectedFrameId: state.selectedFrameId,
+        timerDuration: state.timerDuration,
         brightness: state.brightness,
         contrast: state.contrast,
         saturation: state.saturation,
