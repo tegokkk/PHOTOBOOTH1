@@ -167,6 +167,13 @@ export const useAppStore = create<AppState>()(
         set({ isLoadingFrames: true, frameLoadError: null });
         try {
           const res = await fetch(`${API_URL}/api/frames`);
+          if (!res.ok) {
+            throw new Error(`HTTP error ${res.status}`);
+          }
+          const contentType = res.headers.get("content-type") || "";
+          if (!contentType.includes("application/json")) {
+            throw new Error(`Respon bukan JSON: ${contentType}`);
+          }
           const data = await res.json();
           if (data.success && Array.isArray(data.data)) {
             set((state) => ({
@@ -181,7 +188,7 @@ export const useAppStore = create<AppState>()(
             useUIStore.getState().showToast(message, "error");
           }
         } catch (error) {
-          console.error('Failed to fetch frames', error);
+          console.warn('Failed to fetch frames:', error);
           const message = "Server tidak dapat dihubungi. Periksa koneksi lalu coba lagi.";
           set({ frames: [], isLoadingFrames: false, frameLoadError: message });
           useUIStore.getState().showToast(message, "error");

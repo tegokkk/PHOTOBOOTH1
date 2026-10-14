@@ -48,15 +48,19 @@ export default function AdminDashboardPage() {
         fetch(`${API_URL}/api/admin/metrics`),
         fetch(`${API_URL}/api/admin/photos?limit=50`),
       ]);
-      const data = await metricsResponse.json();
-      const photosData = await photosResponse.json();
+      const data = metricsResponse.ok && metricsResponse.headers.get("content-type")?.includes("application/json")
+        ? await metricsResponse.json().catch(() => null)
+        : null;
+      const photosData = photosResponse.ok && photosResponse.headers.get("content-type")?.includes("application/json")
+        ? await photosResponse.json().catch(() => null)
+        : null;
 
-      if (data.success) {
+      if (data?.success) {
         setMetrics(data.data);
       } else {
-        showToast(data.message || "Gagal memuat metrik.", "error");
+        showToast(data?.message || "Gagal memuat metrik.", "error");
       }
-      if (photosData.success && Array.isArray(photosData.data)) setPhotos(photosData.data);
+      if (photosData?.success && Array.isArray(photosData.data)) setPhotos(photosData.data);
     } catch {
       showToast("Terjadi kesalahan saat menghubungi server.", "error");
     } finally {

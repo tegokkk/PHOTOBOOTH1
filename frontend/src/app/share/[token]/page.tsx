@@ -17,9 +17,9 @@ async function getSharedPhoto(token: string, purpose?: "prefetch") {
       headers,
     });
 
-    if (!response.ok) return null;
-    const data = await response.json();
-    return data.success ? data.data : null;
+    if (!response.ok || !response.headers.get("content-type")?.includes("application/json")) return null;
+    const data = await response.json().catch(() => null);
+    return data?.success ? data.data : null;
   } catch {
     return null;
   }

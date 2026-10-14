@@ -15,48 +15,56 @@ export interface PrintJob extends PrintJobRequest {
   updatedAt: string;
 }
 
+import { API_URL } from "@/lib/api";
+
 const memoryJobs = new Map<string, PrintJob>();
 
-// Base API URL for backend
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+// Base API URL for backend print queue
+const PRINT_API_BASE = `${API_URL.replace(/\/api\/?$/, "")}/api/print`;
+
+async function parseJsonSafely(res: Response) {
+  if (!res.ok) return null;
+  const contentType = res.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) return null;
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
 
 export async function getPrintJob(id: string): Promise<PrintJob | null> {
   try {
-    const res = await fetch(`${API_URL}/print/${id}`);
-    const data = await res.json();
-    if (data.success) {
+    const res = await fetch(`${PRINT_API_BASE}/${id}`);
+    const data = await parseJsonSafely(res);
+    if (data?.success && data.data) {
       const job = data.data as PrintJob;
       memoryJobs.set(id, job);
       return job;
     }
   } catch (error) {
-    console.error("Failed to get print job from server", error);
+    console.warn("Failed to get print job from server", error);
   }
   return memoryJobs.get(id) || null;
 }
 
 export async function listPrintJobs(limit = 20): Promise<PrintJob[]> {
   try {
-    const res = await fetch(`${API_URL}/print/queue?limit=${limit}`);
-    const data = await res.json();
-    if (data.success) {
+    const res = await fetch(`${PRINT_API_BASE}/queue?limit=${limit}`);
+    const data = await parseJsonSafely(res);
+    if (data?.success && Array.isArray(data.data)) {
       const jobs = data.data as PrintJob[];
       jobs.forEach(job => memoryJobs.set(job.id, job));
       return jobs;
     }
   } catch (error) {
-    console.error("Failed to list print jobs from server", error);
+    console.warn("Failed to list print jobs from server", error);
   }
   return Array.from(memoryJobs.values()).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, limit);
 }
 
 export function createPrintJob(request: PrintJobRequest): PrintJob {
   const now = new Date().toISOString();
-  // We use crypto.randomUUID() to generate an ID sync, the backend will use this or create its own.
-  // Wait, if the backend creates its own, we might have a mismatch. 
-  // Let's have the backend accept this ID or we just wait for it.
-  // Actually, our backend controller `printController.js` currently generates its own UUID!
-  // I need to update printController.js to accept an optional ID from body.
   const tempId = crypto.randomUUID();
   const job: PrintJob = {
     ...request,
@@ -71,23 +79,16 @@ export function createPrintJob(request: PrintJobRequest): PrintJob {
   memoryJobs.set(tempId, job);
 
   // Async API call without blocking
-  fetch(`${API_URL}/print`, {
+  fetch(PRINT_API_BASE, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ...request, id: tempId })
   }).then(async (res) => {
-    const data = await res.json();
-    if (data.success) {
-      // Backend returned the actual job (maybe with a different ID if we didn't send it)
-      // We should update memoryJobs just in case
+    const data = await parseJsonSafely(res);
+    if (data?.success && data.data) {
       memoryJobs.set(data.data.id, data.data as PrintJob);
-      if (data.data.id !== tempId) {
-        // Backend didn't accept our tempId, we should ideally use the backend one, 
-        // but for synchronous print flow, the UI already has tempId. 
-        // We will modify backend to accept the ID if passed.
-      }
     }
-  }).catch(err => console.error("Failed to create print job on server", err));
+  }).catch(err => console.warn("Failed to create print job on server", err));
 
   return job;
 }
@@ -101,18 +102,18 @@ export async function updatePrintJob(
   memoryJobs.set(id, updated);
 
   try {
-    const res = await fetch(`${API_URL}/print/${id}`, {
+    const res = await fetch(`${PRINT_API_BASE}/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(update)
     });
-    const data = await res.json();
-    if (data.success) {
+    const data = await parseJsonSafely(res);
+    if (data?.success && data.data) {
       memoryJobs.set(data.data.id, data.data as PrintJob);
       return data.data;
     }
   } catch (error) {
-    console.error("Failed to update print job on server", error);
+    console.warn("Failed to update print job on server", error);
   }
   return updated;
 }

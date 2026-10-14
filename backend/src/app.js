@@ -106,6 +106,7 @@ app.use('/api/share', shareRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/media', mediaRoutes);
 app.use('/api/print', printRoutes);
+app.use('/print', printRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

@@ -128,13 +128,15 @@ export function PhotoPreviewScreen() {
         compositeImageBase64: dataUrl,
       }),
     });
-    const photoData = await photoResponse.json();
+    const photoData = photoResponse.headers.get("content-type")?.includes("application/json")
+      ? await photoResponse.json().catch(() => ({}))
+      : {};
     if (!photoResponse.ok || !photoData.success || !photoData.data?.id) {
       if (photoResponse.status === 413) {
         throw new Error("Ukuran foto terlalu besar untuk disimpan online.");
       }
       const requestId = photoData.requestId ? ` (kode: ${photoData.requestId})` : "";
-      throw new Error(`${photoData.message || "Gagal menyimpan foto di cloud."}${requestId}`);
+      throw new Error(`${photoData.message || `Gagal menyimpan foto (status ${photoResponse.status}).`}${requestId}`);
     }
 
     const result = {
@@ -169,10 +171,12 @@ export function PhotoPreviewScreen() {
       headers,
       body: JSON.stringify(shareBody),
     });
-    const shareData = await shareResponse.json();
+    const shareData = shareResponse.headers.get("content-type")?.includes("application/json")
+      ? await shareResponse.json().catch(() => ({}))
+      : {};
     if (!shareResponse.ok || !shareData.success || !shareData.data?.token) {
       const requestId = shareData.requestId ? ` (kode: ${shareData.requestId})` : "";
-      throw new Error(`${shareData.message || "Gagal membuat tautan."}${requestId}`);
+      throw new Error(`${shareData.message || `Gagal membuat tautan (status ${shareResponse.status}).`}${requestId}`);
     }
 
     return shareData.data.token;
