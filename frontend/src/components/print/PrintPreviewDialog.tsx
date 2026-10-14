@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useUIStore } from "@/store/useUIStore";
 import { hasPrintBridge, retryPrintJob, sendPrintJob } from "@/lib/printAdapter";
 import { createPrintJob, PrintJob, updatePrintJob } from "@/lib/printQueue";
@@ -24,9 +25,29 @@ export function PrintPreviewDialog({
   const showToast = useUIStore((state) => state.showToast);
   const [isPrinting, setIsPrinting] = useState(false);
   const [copies, setCopies] = useState(1);
+  const [printLayout, setPrintLayout] = useState<"single" | "twin">("single");
+  const [imageRatio, setImageRatio] = useState<number>(0.33); // width / height
+  const [mounted, setMounted] = useState(false);
   const [printJob, setPrintJob] = useState<PrintJob | null>(null);
   const afterPrintCleanupRef = useRef<(() => void) | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!compositeDataUrl) return;
+    const img = new Image();
+    img.onload = () => {
+      if (img.naturalHeight > 0) {
+        setImageRatio(img.naturalWidth / img.naturalHeight);
+      }
+    };
+    img.src = compositeDataUrl;
+  }, [compositeDataUrl]);
+
+  const isStrip = imageRatio < 0.65;
 
   useEffect(() => {
     if (!isOpen) {
@@ -191,13 +212,96 @@ export function PrintPreviewDialog({
         </div>
 
         <div className="p-6 space-y-6 bg-stark-white">
-          <div className="bg-surface-container-highest p-4 border-border-thick border-ink-black flex justify-center pixel-corners hard-shadow-sm">
-            <div className="pixel-corners-inner"></div>
-            <img src={compositeDataUrl} alt="Preview foto yang akan dicetak" className="max-h-[48vh] w-auto max-w-full object-contain relative z-10" decoding="async" />
+          {/* Paper Sheet Preview Simulation */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="font-tech-mono text-[11px] font-bold uppercase tracking-wider text-ink-black flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px] text-cyber-purple">format_align_left</span>
+                SIMULASI KERTAS CETAK (FLUSH KIRI)
+              </span>
+              <span className="font-tech-mono text-[10px] font-black bg-neon-yellow text-ink-black px-2 py-0.5 border border-ink-black uppercase">
+                MARGIN: 0MM
+              </span>
+            </div>
+
+            {/* Paper Sheet Representation */}
+            <div className="w-full bg-[#f4f4f4] border-2 border-ink-black p-3 md:p-4 pixel-corners hard-shadow-sm flex justify-center items-center">
+              <div className="pixel-corners-inner"></div>
+              <div className="relative h-64 md:h-72 aspect-[2/3] bg-stark-white border-2 border-dashed border-ink-black/40 flex flex-row items-stretch justify-start overflow-hidden shadow-md">
+                {/* Image placed flush left */}
+                <div className="h-full flex-shrink-0 flex flex-row items-stretch border-r-2 border-dashed border-ink-black/60 relative group">
+                  <img
+                    src={compositeDataUrl}
+                    alt="Preview foto rata kiri"
+                    className="h-full w-auto object-contain block"
+                    decoding="async"
+                  />
+                  {printLayout === "twin" && isStrip && (
+                    <img
+                      src={compositeDataUrl}
+                      alt="Preview foto twin"
+                      className="h-full w-auto object-contain block border-l border-ink-black/20"
+                      decoding="async"
+                    />
+                  )}
+                  {/* Position badge on photo */}
+                  <div className="absolute top-1 left-1 bg-ink-black/80 text-neon-yellow font-tech-mono text-[8px] font-bold px-1 py-0.5 pointer-events-none">
+                    KIRI (0MM)
+                  </div>
+                </div>
+
+                {/* Leftover Paper Area (Right side) */}
+                <div className="flex-1 bg-[repeating-linear-gradient(45deg,#f9f9f9,#f9f9f9_10px,#f0f0f0_10px,#f0f0f0_20px)] flex flex-col items-center justify-center p-2 text-center select-none">
+                  <span className="material-symbols-outlined text-ink-black/40 text-xl md:text-2xl">content_cut</span>
+                  <span className="font-tech-mono text-[9px] md:text-[10px] font-bold text-ink-black/60 uppercase tracking-wider mt-1">
+                    KERTAS SISA
+                  </span>
+                  <span className="font-tech-mono text-[8px] text-ink-black/40 uppercase">
+                    HEMAT / POTONG DI SINI ✂️
+                  </span>
+                </div>
+              </div>
+            </div>
+            <p className="font-tech-mono text-[10px] text-on-surface-variant text-center uppercase">
+              Foto otomatis dicetak rata kiri kertas (0mm margin) agar kertas sisa di kanan dapat dipotong rapi.
+            </p>
           </div>
-          <p className="font-tech-mono text-[10px] text-on-surface-variant text-center uppercase">
-            Pastikan ukuran kertas sesuai dengan printer booth.
-          </p>
+
+          {/* Layout Mode for Strips */}
+          {isStrip && (
+            <div className="flex flex-col gap-2 bg-surface-container p-3 border-border-thick border-ink-black hard-shadow-sm">
+              <span className="font-tech-mono font-bold text-xs text-ink-black uppercase">
+                TATA LETAK STRIP
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPrintLayout("single")}
+                  className={`py-2 px-3 font-tech-mono font-bold text-xs uppercase border-2 border-ink-black flex items-center justify-center gap-1.5 transition-all jiggle-active ${
+                    printLayout === "single"
+                      ? "bg-neon-yellow text-ink-black hard-shadow-sm scale-[1.01]"
+                      : "bg-stark-white text-ink-black/70 hover:bg-neon-yellow/30"
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-sm">format_align_left</span>
+                  1 STRIP (SISA KANAN)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPrintLayout("twin")}
+                  className={`py-2 px-3 font-tech-mono font-bold text-xs uppercase border-2 border-ink-black flex items-center justify-center gap-1.5 transition-all jiggle-active ${
+                    printLayout === "twin"
+                      ? "bg-neon-yellow text-ink-black hard-shadow-sm scale-[1.01]"
+                      : "bg-stark-white text-ink-black/70 hover:bg-neon-yellow/30"
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-sm">view_column</span>
+                  2 STRIP KEMBAR
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-between gap-4 bg-surface-container p-3 border-border-thick border-ink-black hard-shadow-sm">
             <label htmlFor="print-copies" className="font-tech-mono font-bold text-ink-black text-sm uppercase">COPIES_REQ</label>
             <select
@@ -263,12 +367,27 @@ export function PrintPreviewDialog({
             </button>
           </div>
         </div>
+      </div>
+      </div>
 
-        <div id="photobooth-print-surface" aria-hidden="true" className="hidden">
-          <img src={compositeDataUrl} alt="Foto photobooth" />
-        </div>
-      </div>
-      </div>
+      {/* Dedicated Print Portal attached directly to document.body for true 0mm left-aligned print */}
+      {mounted && typeof document !== "undefined" && createPortal(
+        <div id="photobooth-print-surface" aria-hidden="true">
+          <img
+            src={compositeDataUrl}
+            alt="Foto photobooth 1"
+            className="photobooth-print-img"
+          />
+          {printLayout === "twin" && isStrip && (
+            <img
+              src={compositeDataUrl}
+              alt="Foto photobooth 2"
+              className="photobooth-print-img"
+            />
+          )}
+        </div>,
+        document.body
+      )}
     </>
   );
 }
