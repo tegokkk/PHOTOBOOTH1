@@ -42,7 +42,7 @@ export function PhotoPreviewScreen() {
   const photoUploadKeysRef = useRef(new Map<string, string>());
 
   const currentFrame = frames.find((f) => f.id === selectedFrameId) || null;
-  const previewFrameUrl = currentFrame ? getFrameMasterUrl(currentFrame) : "";
+  const previewFrameUrl = currentFrame ? getFramePreviewUrl(currentFrame) : "";
   const frameMeta = getFrameMetaFromFrame(currentFrame);
   const outputKey = `${selectedFrameId || "none"}:${brightness}:${contrast}:${saturation}:${capturedPhotos.length}`;
 
@@ -108,7 +108,7 @@ export function PhotoPreviewScreen() {
     if (uploadedPhoto?.key === outputKey) return uploadedPhoto;
 
     const dataUrl = await compositeToDataUrl(
-      capturedPhotos, currentFrame, brightness, contrast, saturation, "png"
+      capturedPhotos, currentFrame, brightness, contrast, saturation, "jpg"
     );
 
     const headers: Record<string, string> = { "Content-Type": "application/json" };

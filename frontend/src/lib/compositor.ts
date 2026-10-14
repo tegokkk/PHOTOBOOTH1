@@ -112,11 +112,18 @@ export async function compositeToDataUrl(
   // Build correct URL (frames are served from /public/frames/... → /frames/...)
   const frameImg = await loadImage(getFrameMasterUrl(frame));
 
-  // Ensure high resolution canvas so frame edges and photos are never blurred or downsampled
+  // Ensure high resolution canvas so frame edges and photos are never blurred or downsampled,
+  // while capping at 3600px max dimension (~600 DPI print quality) to prevent browser canvas memory exhaustion.
   const minTargetHeight = 2400;
-  const scale = frameImg.naturalHeight < minTargetHeight
-    ? Math.max(1, Math.ceil(minTargetHeight / frameImg.naturalHeight))
-    : 1;
+  const maxTargetDimension = 3600;
+  let scale = 1;
+
+  const maxNatural = Math.max(frameImg.naturalWidth, frameImg.naturalHeight);
+  if (frameImg.naturalHeight < minTargetHeight) {
+    scale = minTargetHeight / frameImg.naturalHeight;
+  } else if (maxNatural > maxTargetDimension) {
+    scale = maxTargetDimension / maxNatural;
+  }
 
   canvas.width = Math.round(frameImg.naturalWidth * scale);
   canvas.height = Math.round(frameImg.naturalHeight * scale);

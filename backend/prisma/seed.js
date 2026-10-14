@@ -16,7 +16,7 @@ const MOCK_FRAMES = [
     name: 'Beige Friends',
     category: 'Aesthetic',
     imageUrl: '/frames/Beige and Colorful Playful Friends Photo Booth Bookmark.png',
-    previewImageUrl: '/frames/Beige and Colorful Playful Friends Photo Booth Bookmark.png',
+    previewImageUrl: '/frames/Beige and Colorful Playful Friends Photo Booth Bookmark-preview.webp',
     masterImageUrl: '/frames/Beige and Colorful Playful Friends Photo Booth Bookmark.png',
     cssPlaceholder: 'border-4 border-yellow-500 border-dotted bg-transparent',
     slots: [
@@ -28,7 +28,7 @@ const MOCK_FRAMES = [
     name: 'Modern Friends',
     category: 'Party',
     imageUrl: '/frames/Green and Red Modern Friends Photo Booth Bookmark.png',
-    previewImageUrl: '/frames/Green and Red Modern Friends Photo Booth Bookmark.png',
+    previewImageUrl: '/frames/Green and Red Modern Friends Photo Booth Bookmark-preview.webp',
     masterImageUrl: '/frames/Green and Red Modern Friends Photo Booth Bookmark.png',
     cssPlaceholder: 'border-4 border-green-500 border-dotted bg-transparent',
     slots: [
@@ -41,7 +41,7 @@ const MOCK_FRAMES = [
     name: 'Newspaper Collage',
     category: 'Aesthetic',
     imageUrl: '/frames/Black and White Creative Photostrip Newspaper Photo Collage.png',
-    previewImageUrl: '/frames/Black and White Creative Photostrip Newspaper Photo Collage.png',
+    previewImageUrl: '/frames/Black and White Creative Photostrip Newspaper Photo Collage-preview.webp',
     masterImageUrl: '/frames/Black and White Creative Photostrip Newspaper Photo Collage.png',
     cssPlaceholder: 'border-4 border-gray-400 bg-transparent',
     slots: [
@@ -57,7 +57,7 @@ const MOCK_FRAMES = [
     name: 'Blue & Pink Friendship',
     category: 'Cute',
     imageUrl: '/frames/Blue and Pink Playful Friendship Photo Strip Bookmark.png',
-    previewImageUrl: '/frames/Blue and Pink Playful Friendship Photo Strip Bookmark.png',
+    previewImageUrl: '/frames/Blue and Pink Playful Friendship Photo Strip Bookmark-preview.webp',
     masterImageUrl: '/frames/Blue and Pink Playful Friendship Photo Strip Bookmark.png',
     cssPlaceholder: 'border-4 border-pink-300 bg-transparent',
     slots: [
@@ -71,7 +71,7 @@ const MOCK_FRAMES = [
     name: 'Blue Jeans Modern',
     category: 'Vintage',
     imageUrl: '/frames/Blue Jeans Trendy Modern Vintage Photostrip Bookmark.png',
-    previewImageUrl: '/frames/Blue Jeans Trendy Modern Vintage Photostrip Bookmark.png',
+    previewImageUrl: '/frames/Blue Jeans Trendy Modern Vintage Photostrip Bookmark-preview.webp',
     masterImageUrl: '/frames/Blue Jeans Trendy Modern Vintage Photostrip Bookmark.png',
     cssPlaceholder: 'border-4 border-blue-500 bg-transparent',
     slots: [
@@ -85,7 +85,7 @@ const MOCK_FRAMES = [
     name: 'Brown Playful',
     category: 'Aesthetic',
     imageUrl: '/frames/Brown Playful Friendship Photostrip Bookmark.png',
-    previewImageUrl: '/frames/Brown Playful Friendship Photostrip Bookmark.png',
+    previewImageUrl: '/frames/Brown Playful Friendship Photostrip Bookmark-preview.webp',
     masterImageUrl: '/frames/Brown Playful Friendship Photostrip Bookmark.png',
     cssPlaceholder: 'border-4 border-yellow-700 bg-transparent',
     slots: [
@@ -98,7 +98,7 @@ const MOCK_FRAMES = [
     name: 'Pink Illustrated Friendship',
     category: 'Cute',
     imageUrl: '/frames/Pink and Blue Illustrated Friendship Photobooth Bookmark.png',
-    previewImageUrl: '/frames/Pink and Blue Illustrated Friendship Photobooth Bookmark.png',
+    previewImageUrl: '/frames/Pink and Blue Illustrated Friendship Photobooth Bookmark-preview.webp',
     masterImageUrl: '/frames/Pink and Blue Illustrated Friendship Photobooth Bookmark.png',
     cssPlaceholder: 'border-4 border-pink-400 bg-transparent',
     slots: [
@@ -111,7 +111,7 @@ const MOCK_FRAMES = [
     name: 'Pink Strike A Pose',
     category: 'Cute',
     imageUrl: '/frames/Pink and Blue Minimalist Strike A Pose Photostrip.png',
-    previewImageUrl: '/frames/Pink and Blue Minimalist Strike A Pose Photostrip.png',
+    previewImageUrl: '/frames/Pink and Blue Minimalist Strike A Pose Photostrip-preview.webp',
     masterImageUrl: '/frames/Pink and Blue Minimalist Strike A Pose Photostrip.png',
     cssPlaceholder: 'border-4 border-pink-400 bg-transparent',
     slots: [
@@ -125,7 +125,7 @@ const MOCK_FRAMES = [
     name: 'Pink Captured In Fun',
     category: 'Cute',
     imageUrl: '/frames/Pink and Blue Playful Captured In Fun Photostrip.png',
-    previewImageUrl: '/frames/Pink and Blue Playful Captured In Fun Photostrip.png',
+    previewImageUrl: '/frames/Pink and Blue Playful Captured In Fun Photostrip-preview.webp',
     masterImageUrl: '/frames/Pink and Blue Playful Captured In Fun Photostrip.png',
     cssPlaceholder: 'border-4 border-pink-400 bg-transparent',
     slots: [
@@ -138,7 +138,7 @@ const MOCK_FRAMES = [
     name: 'Purple Vintage Friends',
     category: 'Vintage',
     imageUrl: '/frames/Purple Vintage Friends Photostrip Photo Collage (1).png',
-    previewImageUrl: '/frames/Purple Vintage Friends Photostrip Photo Collage (1).png',
+    previewImageUrl: '/frames/Purple Vintage Friends Photostrip Photo Collage (1)-preview.webp',
     masterImageUrl: '/frames/Purple Vintage Friends Photostrip Photo Collage (1).png',
     cssPlaceholder: 'border-4 border-purple-500 bg-transparent',
     slots: [
@@ -154,7 +154,7 @@ const MOCK_FRAMES = [
     name: 'Yellow Girl Gang',
     category: 'Party',
     imageUrl: '/frames/Yellow and Pink Playful Girl Gang Photobooth Bookmark.png',
-    previewImageUrl: '/frames/Yellow and Pink Playful Girl Gang Photobooth Bookmark.png',
+    previewImageUrl: '/frames/Yellow and Pink Playful Girl Gang Photobooth Bookmark-preview.webp',
     masterImageUrl: '/frames/Yellow and Pink Playful Girl Gang Photobooth Bookmark.png',
     cssPlaceholder: 'border-4 border-yellow-400 bg-transparent',
     slots: [
@@ -167,7 +167,7 @@ const MOCK_FRAMES = [
     name: 'Jejak Kebersamaan',
     category: 'Vintage',
     imageUrl: '/frames/Jejak Kebersamaan.png',
-    previewImageUrl: '/frames/Jejak Kebersamaan.png',
+    previewImageUrl: '/frames/Jejak Kebersamaan-preview.webp',
     masterImageUrl: '/frames/Jejak Kebersamaan.png',
     cssPlaceholder: 'border-0 bg-transparent',
     slots: [
@@ -181,7 +181,7 @@ const MOCK_FRAMES = [
     name: 'OMG Checkerboard',
     category: 'Cute',
     imageUrl: '/frames/OMG Checkerboard.png',
-    previewImageUrl: '/frames/OMG Checkerboard.png',
+    previewImageUrl: '/frames/OMG Checkerboard-preview.webp',
     masterImageUrl: '/frames/OMG Checkerboard.png',
     cssPlaceholder: 'border-0 bg-transparent',
     slots: [
@@ -197,7 +197,7 @@ const MOCK_FRAMES = [
     name: 'Cinema Premiere',
     category: 'Vintage',
     imageUrl: '/frames/Cinema Premiere.png',
-    previewImageUrl: '/frames/Cinema Premiere.png',
+    previewImageUrl: '/frames/Cinema Premiere-preview.webp',
     masterImageUrl: '/frames/Cinema Premiere.png',
     cssPlaceholder: 'border-0 bg-transparent',
     slots: [
@@ -213,7 +213,7 @@ const MOCK_FRAMES = [
     name: 'Pointer Newspaper',
     category: 'Creative',
     imageUrl: '/frames/Pointer Newspaper.png',
-    previewImageUrl: '/frames/Pointer Newspaper.png',
+    previewImageUrl: '/frames/Pointer Newspaper-preview.webp',
     masterImageUrl: '/frames/Pointer Newspaper.png',
     cssPlaceholder: 'bg-transparent',
     slots: [
@@ -226,7 +226,7 @@ const MOCK_FRAMES = [
     name: 'Pointer Striped',
     category: 'Creative',
     imageUrl: '/frames/Pointer Striped.png',
-    previewImageUrl: '/frames/Pointer Striped.png',
+    previewImageUrl: '/frames/Pointer Striped-preview.webp',
     masterImageUrl: '/frames/Pointer Striped.png',
     cssPlaceholder: 'bg-transparent',
     slots: [
@@ -242,7 +242,7 @@ const MOCK_FRAMES = [
     name: 'Film Strip Green',
     category: 'Classic',
     imageUrl: '/frames/Film Strip Green.png',
-    previewImageUrl: '/frames/Film Strip Green.png',
+    previewImageUrl: '/frames/Film Strip Green-preview.webp',
     masterImageUrl: '/frames/Film Strip Green.png',
     cssPlaceholder: 'bg-transparent',
     slots: [
@@ -256,7 +256,7 @@ const MOCK_FRAMES = [
     name: 'Innovation 4 Force Split',
     category: 'Event',
     imageUrl: '/frames/Innovation 4 Force Split.png',
-    previewImageUrl: '/frames/Innovation 4 Force Split.png',
+    previewImageUrl: '/frames/Innovation 4 Force Split-preview.webp',
     masterImageUrl: '/frames/Innovation 4 Force Split.png',
     cssPlaceholder: 'bg-transparent',
     slots: [
@@ -267,7 +267,7 @@ const MOCK_FRAMES = [
     name: 'Innovation 4 Force World',
     category: 'Event',
     imageUrl: '/frames/Innovation 4 Force World.png',
-    previewImageUrl: '/frames/Innovation 4 Force World.png',
+    previewImageUrl: '/frames/Innovation 4 Force World-preview.webp',
     masterImageUrl: '/frames/Innovation 4 Force World.png',
     cssPlaceholder: 'bg-transparent',
     slots: [

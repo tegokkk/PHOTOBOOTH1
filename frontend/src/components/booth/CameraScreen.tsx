@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useCamera } from "@/hooks/useCamera";
 import { useAppStore } from "@/store/useAppStore";
 import { useUIStore } from "@/store/useUIStore";
-import { getFrameMasterUrl, getFrameMetaFromFrame } from "@/lib/frameMeta";
+import { getFramePreviewUrl, getFrameMetaFromFrame } from "@/lib/frameMeta";
 import { CameraOverlays } from "./camera/CameraOverlays";
 
 export function CameraScreen() {
@@ -26,7 +26,7 @@ export function CameraScreen() {
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
 
   const currentFrame = frames.find((f) => f.id === selectedFrameId) || null;
-  const previewFrameUrl = currentFrame ? getFrameMasterUrl(currentFrame) : "";
+  const previewFrameUrl = currentFrame ? getFramePreviewUrl(currentFrame) : "";
   const frameMeta = getFrameMetaFromFrame(currentFrame);
   const photoCount = frameMeta?.photoCount ?? 1;
 
