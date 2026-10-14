@@ -13,6 +13,7 @@ interface CameraOverlaysProps {
   flashVisible: boolean;
   frameMeta?: { slots: Slot[] } | null;
   currentPhotoIndex: number;
+  onCancel?: () => void;
 }
 
 export function CameraOverlays({
@@ -23,6 +24,7 @@ export function CameraOverlays({
   flashVisible,
   frameMeta,
   currentPhotoIndex,
+  onCancel,
 }: CameraOverlaysProps) {
   return (
     <>
@@ -91,10 +93,20 @@ export function CameraOverlays({
 
       {/* Countdown overlay */}
       {countdown !== null && (
-        <div className="absolute inset-0 flex items-center justify-center z-40 bg-ink-black/40">
-          <span className="font-headline-xl text-stark-white text-[150px] md:text-[200px] font-bold drop-shadow-[0_0_15px_rgba(255,255,255,0.8)] animate-pulse">
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-40 bg-ink-black/50 backdrop-blur-[2px] pointer-events-auto">
+          <span className="font-headline-xl text-stark-white text-[130px] md:text-[180px] font-black drop-shadow-[0_0_20px_rgba(255,255,255,0.9)] animate-pulse leading-none select-none">
             {countdown}
           </span>
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="mt-6 px-6 py-2.5 bg-error-red text-stark-white font-tech-mono font-bold text-xs md:text-sm uppercase tracking-widest border-2 border-stark-white hard-shadow hover:scale-105 active:scale-95 transition-all flex items-center gap-2 jiggle-active cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-base">close</span>
+              BATALKAN FOTO
+            </button>
+          )}
         </div>
       )}
 

@@ -98,6 +98,17 @@ export function CameraScreen() {
     startCountdown();
   };
 
+  /** Cancel active countdown sequence */
+  const handleCancelCountdown = () => {
+    if (countdownRef.current) {
+      clearInterval(countdownRef.current);
+      countdownRef.current = null;
+    }
+    setCountdown(null);
+    setIsCapturing(false);
+    showToast("Hitung mundur dibatalkan ❌", "info");
+  };
+
   const handleChangeFrame = () => {
     if (capturedPhotos.some(Boolean) && !window.confirm("Foto yang sudah diambil akan dihapus. Yakin ingin mengganti frame?")) {
       return;
@@ -123,7 +134,7 @@ export function CameraScreen() {
     showToast("Sesi foto diulang dengan frame yang sama.", "info");
   };
 
-  // Keyboard shortcut: Space or Enter to trigger shutter
+  // Keyboard shortcut: Space or Enter to trigger shutter, Escape to cancel countdown
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
@@ -131,6 +142,11 @@ export function CameraScreen() {
         e.preventDefault();
         if (countdown === null && currentPhotoIndex < photoCount) {
           startCountdown();
+        }
+      } else if (e.code === "Escape") {
+        if (countdown !== null) {
+          e.preventDefault();
+          handleCancelCountdown();
         }
       }
     };
@@ -337,6 +353,7 @@ export function CameraScreen() {
                     flashVisible={flashVisible}
                     frameMeta={frameMeta}
                     currentPhotoIndex={currentPhotoIndex}
+                    onCancel={handleCancelCountdown}
                   />
                 </div>
               </div>
@@ -351,9 +368,21 @@ export function CameraScreen() {
                     {photoCount - currentPhotoIndex - 1 > 0 ? `${photoCount - currentPhotoIndex - 1} FOTO LAGI` : "SLOT TERAKHIR"}
                   </span>
                 </div>
-                <span className="font-tech-mono text-[10px] text-ink-black bg-neon-yellow px-2 py-1 border border-ink-black font-bold">
-                  {countdown !== null ? `HITUNG: ${countdown}S` : `TIMER: ${timerDuration}S`}
-                </span>
+                {countdown !== null ? (
+                  <button
+                    type="button"
+                    onClick={handleCancelCountdown}
+                    className="font-tech-mono text-[10px] text-stark-white bg-error-red px-2 py-1 border border-ink-black font-bold flex items-center gap-1 hover:bg-error-red/90 cursor-pointer jiggle-active"
+                    aria-label="Batalkan Countdown"
+                  >
+                    <span className="material-symbols-outlined text-[13px]">close</span>
+                    BATAL ({countdown}S)
+                  </button>
+                ) : (
+                  <span className="font-tech-mono text-[10px] text-ink-black bg-neon-yellow px-2 py-1 border border-ink-black font-bold">
+                    TIMER: {timerDuration}S
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -377,18 +406,22 @@ export function CameraScreen() {
               </span>
             </div>
 
-            {/* Shutter Button */}
+            {/* Shutter Button (Clicking during countdown will cancel) */}
             <button
-              onClick={handleSnap}
-              disabled={countdown !== null || currentPhotoIndex >= photoCount}
+              onClick={countdown !== null ? handleCancelCountdown : handleSnap}
+              disabled={currentPhotoIndex >= photoCount}
               className="relative group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed jiggle-active transition-all my-2"
-              aria-label="Ambil Foto"
+              aria-label={countdown !== null ? "Batalkan Countdown" : "Ambil Foto"}
             >
-              <div className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-ink-black bg-stark-white hard-shadow flex items-center justify-center transition-transform group-hover:scale-105 group-active:scale-95">
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-ink-black bg-neon-yellow flex items-center justify-center">
+              <div className={`w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-ink-black bg-stark-white hard-shadow flex items-center justify-center transition-transform group-hover:scale-105 group-active:scale-95 ${
+                countdown !== null ? "ring-4 ring-error-red ring-offset-2" : ""
+              }`}>
+                <div className={`w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-ink-black flex items-center justify-center transition-colors ${
+                  countdown !== null ? "bg-error-red text-stark-white animate-pulse" : "bg-neon-yellow"
+                }`}>
                   <div className="w-9 h-9 md:w-11 md:h-11 rounded-full border-2 border-ink-black bg-stark-white flex items-center justify-center">
                     {countdown !== null ? (
-                      <span className="font-tech-mono font-black text-ink-black text-xl animate-pulse">{countdown}</span>
+                      <span className="font-tech-mono font-black text-error-red text-xl animate-pulse">{countdown}</span>
                     ) : (
                       <span className="material-symbols-outlined text-ink-black text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>photo_camera</span>
                     )}
@@ -397,15 +430,32 @@ export function CameraScreen() {
               </div>
             </button>
 
-            {/* Action Label */}
-            <div className="flex flex-col items-center gap-1">
-              <span className="font-headline-md text-headline-md text-ink-black uppercase tracking-tight">
-                {countdown !== null ? `MENGAMBIL... (${countdown}S)` : "TEKAN SHUTTER"}
-              </span>
-              <span className="font-tech-mono text-[10px] text-ink-black/70 uppercase tracking-widest bg-surface-container px-2 py-1 border border-ink-black font-bold">
-                ATAU TEKAN [SPASI]
-              </span>
-            </div>
+            {/* Action Area: Cancel Button when counting down, or Shutter prompt when standby */}
+            {countdown !== null ? (
+              <div className="w-full flex flex-col items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleCancelCountdown}
+                  className="w-full py-3 px-4 bg-error-red text-stark-white border-2 border-ink-black font-tech-mono font-black text-sm uppercase tracking-wider hard-shadow hover:bg-error-red/90 active:scale-95 transition-all flex items-center justify-center gap-2 jiggle-active cursor-pointer"
+                  aria-label="Batalkan Pengambilan Foto"
+                >
+                  <span className="material-symbols-outlined text-lg font-bold">cancel</span>
+                  BATALKAN ({countdown}S)
+                </button>
+                <span className="font-tech-mono text-[10px] text-on-surface-variant uppercase tracking-wider">
+                  KLIK BATAL ATAU TEKAN [ESC]
+                </span>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-1">
+                <span className="font-headline-md text-headline-md text-ink-black uppercase tracking-tight">
+                  TEKAN SHUTTER
+                </span>
+                <span className="font-tech-mono text-[10px] text-ink-black/70 uppercase tracking-widest bg-surface-container px-2 py-1 border border-ink-black font-bold">
+                  ATAU TEKAN [SPASI]
+                </span>
+              </div>
+            )}
 
             {/* Timer Selector Options */}
             <div className="w-full bg-surface-container border-2 border-ink-black p-3 flex flex-col gap-2 hard-shadow-sm">
