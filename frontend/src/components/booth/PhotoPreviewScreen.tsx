@@ -230,121 +230,15 @@ export function PhotoPreviewScreen() {
         <span className="font-tech-mono text-tech-mono uppercase text-neon-yellow font-bold">LANGKAH 3 • HASIL FOTO</span>
       </div>
 
-      <main className="flex-grow p-margin-mobile md:p-margin-desktop flex flex-col items-center gap-6 relative pb-8">
+      <main className="flex-grow p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center relative pb-8">
         {/* Background pattern */}
         <div className="absolute inset-0 pointer-events-none opacity-10" style={{ backgroundImage: "radial-gradient(#6320ee 1px, transparent 1px)", backgroundSize: "20px 20px" }}></div>
         
-        {/* Window Module for Photo */}
-        <div className="w-full max-w-3xl bg-stark-white border-border-thick border-ink-black hard-shadow-lg flex flex-col relative z-10 pixel-corners">
-          <div className="pixel-corners-inner"></div>
-          
-          {/* OS Window Header */}
-          <div className="h-8 bg-ink-black flex items-center justify-start px-4 gap-2 border-b-border-thick border-ink-black">
-            <div className="w-3 h-3 bg-stark-white"></div>
-            <div className="w-3 h-3 bg-neon-yellow"></div>
-            <div className="w-3 h-3 bg-error-red"></div>
-            <span className="ml-2 text-stark-white font-tech-mono text-xs uppercase tracking-widest">HASIL FOTO</span>
-          </div>
+        {/* 3-Column Layout: Left (Edit Foto), Center (Hasil Foto), Right (Pilih Aksi) */}
+        <div className="w-full max-w-[1440px] flex flex-col lg:flex-row items-center lg:items-center justify-center gap-6 relative z-10">
 
-          <div className="p-4 md:p-8 flex flex-col items-center">
-            
-            {/* The frame asset defines the preview ratio so every frame stays fully visible. */}
-            <div className="relative w-fit max-w-full bg-ink-black border-border-thick border-ink-black p-2 flex items-center justify-center">
-              
-              {/* Pixel art corner accents */}
-              <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-neon-yellow -translate-x-2 -translate-y-2 z-30"></div>
-              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-neon-yellow translate-x-2 translate-y-2 z-30"></div>
-
-              {/* Invisible image keeps all slot coordinates aligned to the real frame. */}
-              {previewFrameUrl ? (
-                  <img
-                    src={previewFrameUrl}
-                    alt=""
-                    decoding="async"
-                    className="relative block w-auto h-auto max-w-full max-h-[min(68vh,760px)] object-contain opacity-0 pointer-events-none"
-                    aria-hidden="true"
-                  />
-                ) : (
-                  <div className="w-[min(92vw,720px)] aspect-[4/3]" />
-                )}
-
-              {/* Draw raw photos strictly within the frame slots. */}
-              <div className="absolute inset-0 z-0 overflow-hidden">
-                {frameMeta && frameMeta.slots.length > 0 ? (
-                  frameMeta.slots.map((slot, i) => (
-                    <div
-                      key={i}
-                      className="absolute overflow-hidden"
-                      style={{
-                        left: `${slot.x * 100}%`,
-                        top: `${slot.y * 100}%`,
-                        width: `${slot.width * 100}%`,
-                        height: `${slot.height * 100}%`,
-                        zIndex: slot.zIndex ?? 0,
-                      }}
-                    >
-                      <img
-                        src={capturedPhotos[Math.min(i, capturedPhotos.length - 1)]}
-                        alt={`Foto ${i + 1}`}
-                        decoding="async"
-                        className="w-full h-full object-cover origin-center filter drop-shadow-md"
-                        style={{
-                          filter: filterStyle,
-                          transform: slot.rotation ? `rotate(${slot.rotation}deg)` : undefined,
-                        }}
-                      />
-                    </div>
-                  ))
-                ) : (
-                  <div className={`absolute inset-0 flex ${capturedPhotos.length > 1 ? 'flex-col' : ''} gap-0`}>
-                    {capturedPhotos.map((photo, i) => (
-                      <div key={i} className="flex-1 overflow-hidden">
-                        <img
-                          src={photo}
-                          alt={`Foto ${i + 1}`}
-                          decoding="async"
-                          className="w-full h-full object-cover"
-                          style={{ filter: filterStyle }}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Frame stays above the captured photos and uses the exact same bounds. */}
-              {previewFrameUrl && (
-                  <img
-                    src={previewFrameUrl}
-                    alt="Frame Overlay"
-                    decoding="async"
-                    className="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 block"
-                  />
-                )}
-            </div>
-
-            {/* Metadata */}
-            <div className="mt-6 flex items-center justify-between w-full border-t-border-thick border-ink-black pt-4">
-              <div className="flex flex-col">
-                <span className="font-tech-mono text-ink-black font-bold text-sm uppercase">
-                  {currentFrame?.name || "SYS_FRAME"}
-                </span>
-                <span className="font-label-caps text-on-surface-variant text-[10px] uppercase">
-                  {capturedPhotos.length} FOTO
-                </span>
-              </div>
-              <span className="font-tech-mono text-[10px] text-ink-black bg-neon-yellow px-2 py-1 border border-ink-black">
-                READY
-              </span>
-            </div>
-
-          </div>
-        </div>
-
-        {/* Controls and actions stay below the photo so the kiosk flow remains centered. */}
-        <div className="w-full max-w-3xl flex flex-col gap-6 relative z-10">
-          
-          <div className="order-2 bg-surface-container-highest border-border-thick border-ink-black hard-shadow p-6 pixel-corners">
+          {/* LEFT: EDIT FOTO */}
+          <div className="w-full max-w-md lg:max-w-none lg:w-72 xl:w-80 flex-shrink-0 order-2 lg:order-1 bg-surface-container-highest border-border-thick border-ink-black hard-shadow p-5 md:p-6 pixel-corners">
             <div className="pixel-corners-inner"></div>
             <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-ink-black uppercase tracking-tighter mb-4 flex items-center gap-2 border-b-2 border-ink-black pb-2">
               <span className="material-symbols-outlined text-cyber-purple">tune</span>
@@ -353,7 +247,115 @@ export function PhotoPreviewScreen() {
             <EditPanel />
           </div>
 
-          <div className="order-1 bg-stark-white border-border-thick border-ink-black hard-shadow p-6 pixel-corners flex flex-col gap-4">
+          {/* CENTER: Window Module for Photo */}
+          <div className="w-full max-w-md lg:max-w-none lg:w-auto flex-shrink order-1 lg:order-2 bg-stark-white border-border-thick border-ink-black hard-shadow-lg flex flex-col relative pixel-corners">
+            <div className="pixel-corners-inner"></div>
+            
+            {/* OS Window Header */}
+            <div className="h-8 bg-ink-black flex items-center justify-start px-4 gap-2 border-b-border-thick border-ink-black">
+              <div className="w-3 h-3 bg-stark-white"></div>
+              <div className="w-3 h-3 bg-neon-yellow"></div>
+              <div className="w-3 h-3 bg-error-red"></div>
+              <span className="ml-2 text-stark-white font-tech-mono text-xs uppercase tracking-widest">HASIL FOTO</span>
+            </div>
+
+            <div className="p-4 md:p-6 flex flex-col items-center">
+              
+              {/* The frame asset defines the preview ratio so every frame stays fully visible. */}
+              <div className="relative w-fit max-w-full bg-ink-black border-border-thick border-ink-black p-2 flex items-center justify-center">
+                
+                {/* Pixel art corner accents */}
+                <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-neon-yellow -translate-x-2 -translate-y-2 z-30"></div>
+                <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-neon-yellow translate-x-2 translate-y-2 z-30"></div>
+
+                {/* Invisible image keeps all slot coordinates aligned to the real frame. */}
+                {previewFrameUrl ? (
+                    <img
+                      src={previewFrameUrl}
+                      alt=""
+                      decoding="async"
+                      className="relative block w-auto h-auto max-w-full max-h-[min(65vh,680px)] object-contain opacity-0 pointer-events-none"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <div className="w-[min(92vw,500px)] aspect-[4/3]" />
+                  )}
+
+                {/* Draw raw photos strictly within the frame slots. */}
+                <div className="absolute inset-0 z-0 overflow-hidden">
+                  {frameMeta && frameMeta.slots.length > 0 ? (
+                    frameMeta.slots.map((slot, i) => (
+                      <div
+                        key={i}
+                        className="absolute overflow-hidden"
+                        style={{
+                          left: `${slot.x * 100}%`,
+                          top: `${slot.y * 100}%`,
+                          width: `${slot.width * 100}%`,
+                          height: `${slot.height * 100}%`,
+                          zIndex: slot.zIndex ?? 0,
+                        }}
+                      >
+                        <img
+                          src={capturedPhotos[Math.min(i, capturedPhotos.length - 1)]}
+                          alt={`Foto ${i + 1}`}
+                          decoding="async"
+                          className="w-full h-full object-cover origin-center filter drop-shadow-md"
+                          style={{
+                            filter: filterStyle,
+                            transform: slot.rotation ? `rotate(${slot.rotation}deg)` : undefined,
+                          }}
+                        />
+                      </div>
+                    ))
+                  ) : (
+                    <div className={`absolute inset-0 flex ${capturedPhotos.length > 1 ? 'flex-col' : ''} gap-0`}>
+                      {capturedPhotos.map((photo, i) => (
+                        <div key={i} className="flex-1 overflow-hidden">
+                          <img
+                            src={photo}
+                            alt={`Foto ${i + 1}`}
+                            decoding="async"
+                            className="w-full h-full object-cover"
+                            style={{ filter: filterStyle }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Frame stays above the captured photos and uses the exact same bounds. */}
+                {previewFrameUrl && (
+                    <img
+                      src={previewFrameUrl}
+                      alt="Frame Overlay"
+                      decoding="async"
+                      className="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 block"
+                    />
+                  )}
+              </div>
+
+              {/* Metadata */}
+              <div className="mt-4 flex items-center justify-between w-full border-t-border-thick border-ink-black pt-3">
+                <div className="flex flex-col">
+                  <span className="font-tech-mono text-ink-black font-bold text-sm uppercase">
+                    {currentFrame?.name || "SYS_FRAME"}
+                  </span>
+                  <span className="font-label-caps text-on-surface-variant text-[10px] uppercase">
+                    {capturedPhotos.length} FOTO
+                  </span>
+                </div>
+                <span className="font-tech-mono text-[10px] text-ink-black bg-neon-yellow px-2 py-1 border border-ink-black">
+                  READY
+                </span>
+              </div>
+
+            </div>
+          </div>
+
+          {/* RIGHT: PILIH AKSI */}
+          <div className="w-full max-w-md lg:max-w-none lg:w-72 xl:w-80 flex-shrink-0 order-3 lg:order-3 bg-stark-white border-border-thick border-ink-black hard-shadow p-5 md:p-6 pixel-corners flex flex-col gap-4">
             <div className="pixel-corners-inner"></div>
             <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-ink-black uppercase tracking-tighter mb-2">
               PILIH AKSI
@@ -381,17 +383,17 @@ export function PhotoPreviewScreen() {
               BAGIKAN / UNDUH
             </button>
 
-            <div className="grid grid-cols-2 gap-4 mt-2">
+            <div className="grid grid-cols-2 gap-3 mt-2">
               <button
                 onClick={handleRetake}
-                className="py-3 bg-cyber-purple text-stark-white border-border-thick border-ink-black font-label-caps text-label-caps hard-shadow-sm jiggle-active flex items-center justify-center gap-1 text-[10px]"
+                className="py-3 px-2 bg-cyber-purple text-stark-white border-border-thick border-ink-black font-label-caps text-label-caps hard-shadow-sm jiggle-active flex items-center justify-center gap-1 text-[10px] whitespace-nowrap"
               >
                 <span className="material-symbols-outlined text-sm">undo</span>
                 AMBIL ULANG
               </button>
               <button
                 onClick={handleNewSession}
-                className="py-3 bg-error-red text-stark-white border-border-thick border-ink-black font-label-caps text-label-caps hard-shadow-sm jiggle-active flex items-center justify-center gap-1 text-[10px]"
+                className="py-3 px-2 bg-error-red text-stark-white border-border-thick border-ink-black font-label-caps text-label-caps hard-shadow-sm jiggle-active flex items-center justify-center gap-1 text-[10px] whitespace-nowrap"
               >
                 <span className="material-symbols-outlined text-sm">power_settings_new</span>
                 AKHIRI SESI
@@ -399,6 +401,7 @@ export function PhotoPreviewScreen() {
             </div>
             
           </div>
+
         </div>
 
       </main>

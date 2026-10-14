@@ -218,6 +218,28 @@ const MOCK_FRAMES = [
       { x: 0.4260, y: 0.4989, width: 0.1516, height: 0.1789 },
       { x: 0.4260, y: 0.6766, width: 0.1516, height: 0.1760 }
     ]
+  },
+  {
+    name: 'Innovation 4 Force Split',
+    category: 'Event',
+    imageUrl: '/frames/Innovation 4 Force Split.webp',
+    previewImageUrl: '/frames/Innovation 4 Force Split-preview.webp',
+    masterImageUrl: '/frames/Innovation 4 Force Split.png',
+    cssPlaceholder: 'bg-transparent',
+    slots: [
+      { x: 0.0851, y: 0.0811, width: 0.8299, height: 0.8398 }
+    ]
+  },
+  {
+    name: 'Innovation 4 Force World',
+    category: 'Event',
+    imageUrl: '/frames/Innovation 4 Force World.webp',
+    previewImageUrl: '/frames/Innovation 4 Force World-preview.webp',
+    masterImageUrl: '/frames/Innovation 4 Force World.png',
+    cssPlaceholder: 'bg-transparent',
+    slots: [
+      { x: 0.0955, y: 0.0771, width: 0.7969, height: 0.7891 }
+    ]
   }
 ];
 
@@ -236,7 +258,10 @@ async function main() {
         data: {
           category: frame.category,
           imageUrl: frame.imageUrl,
-          ...(useFrameAssetColumns ? { previewImageUrl: frame.imageUrl || null } : {}),
+          ...(useFrameAssetColumns ? {
+            previewImageUrl: frame.previewImageUrl || frame.imageUrl || null,
+            masterImageUrl: frame.masterImageUrl || null,
+          } : {}),
           cssPlaceholder: frame.cssPlaceholder,
           isActive: true,
           deletedAt: null,
@@ -250,8 +275,8 @@ async function main() {
           category: frame.category,
           imageUrl: frame.imageUrl,
           ...(useFrameAssetColumns ? {
-            previewImageUrl: frame.imageUrl || null,
-            masterImageUrl: null,
+            previewImageUrl: frame.previewImageUrl || frame.imageUrl || null,
+            masterImageUrl: frame.masterImageUrl || null,
           } : {}),
           cssPlaceholder: frame.cssPlaceholder,
           isActive: true,
