@@ -50,7 +50,7 @@ const apiLimiter = rateLimit({
 });
 
 app.use(cors(corsOptions));
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '35mb' }));
 app.disable('x-powered-by');
 app.use((req, res, next) => {
   const requestId = crypto.randomUUID();

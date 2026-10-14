@@ -50,6 +50,8 @@ function drawPhotoIntoSlot(
 
   // Rotate and clip in the same local slot coordinates used by the preview.
   ctx.save();
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
   ctx.translate(slotX + slotW / 2, slotY + slotH / 2);
   ctx.rotate((rotation * Math.PI) / 180);
   ctx.translate(-(slotX + slotW / 2), -(slotY + slotH / 2));
@@ -97,18 +99,29 @@ export async function compositeToDataUrl(
     const photo = await loadImage(photos[0]);
     canvas.width = photo.width;
     canvas.height = photo.height;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
 
     drawPhotoIntoSlot(ctx, photo, 0, 0, canvas.width, canvas.height, filters);
 
     const mimeType = format === 'jpg' ? 'image/jpeg' : 'image/png';
-    return canvas.toDataURL(mimeType, format === 'jpg' ? 0.88 : 1.0);
+    return canvas.toDataURL(mimeType, format === 'jpg' ? 0.98 : 1.0);
   }
 
   // ── Load frame PNG ──────────────────────────────────────────────────────────
   // Build correct URL (frames are served from /public/frames/... → /frames/...)
   const frameImg = await loadImage(getFrameMasterUrl(frame));
-  canvas.width = frameImg.naturalWidth;
-  canvas.height = frameImg.naturalHeight;
+
+  // Ensure high resolution canvas so frame edges and photos are never blurred or downsampled
+  const minTargetHeight = 2400;
+  const scale = frameImg.naturalHeight < minTargetHeight
+    ? Math.max(1, Math.ceil(minTargetHeight / frameImg.naturalHeight))
+    : 1;
+
+  canvas.width = Math.round(frameImg.naturalWidth * scale);
+  canvas.height = Math.round(frameImg.naturalHeight * scale);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
 
   // ── Case 2: Frame with slot metadata (multi or single slot) ────────────────
   const meta = getFrameMetaFromFrame(frame);
@@ -141,7 +154,11 @@ export async function compositeToDataUrl(
     }
 
     // 3. Draw frame PNG ON TOP (This requires the frame to have transparent holes!)
+    ctx.save();
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+    ctx.restore();
   } else {
     // ── Case 3: Frame with imageUrl but NO slot metadata ─────────────────────
     // Clear canvas
@@ -153,11 +170,15 @@ export async function compositeToDataUrl(
     drawPhotoIntoSlot(ctx, photo, 0, 0, canvas.width, canvas.height, filters);
 
     // Draw frame ON TOP
+    ctx.save();
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+    ctx.restore();
   }
 
   const mimeType = format === 'jpg' ? 'image/jpeg' : 'image/png';
-  return canvas.toDataURL(mimeType, format === 'jpg' ? 0.88 : 1.0);
+  return canvas.toDataURL(mimeType, format === 'jpg' ? 0.98 : 1.0);
 }
 // compositeAndDownload
 // ─────────────────────────────────────────────────────────────────────────────

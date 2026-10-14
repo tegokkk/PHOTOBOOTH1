@@ -4,7 +4,7 @@ const path = require('path');
 const prisma = require('../lib/prisma');
 const crypto = require('crypto');
 
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 25 * 1024 * 1024;
 const MAX_IMAGE_DIMENSION = 8000;
 const MAX_IMAGE_PIXELS = 40000000;
 let idempotencyColumnAvailable = null;
@@ -146,7 +146,7 @@ const processAndSavePhoto = async ({ frameId, compositeImageBase64, idempotencyK
   }
 
   if (imageBuffer.length > MAX_IMAGE_BYTES) {
-    throw new Error('File too large. Maximum size is 5MB');
+    throw new Error('File too large. Maximum size is 25MB');
   }
 
   const actualMime = checkMagicBytes(imageBuffer);

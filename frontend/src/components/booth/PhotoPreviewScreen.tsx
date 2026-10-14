@@ -7,7 +7,7 @@ import { EditPanel } from "@/components/editor/EditPanel";
 import { ExportDialog } from "@/components/export/ExportDialog";
 import { PrintPreviewDialog } from "@/components/print/PrintPreviewDialog";
 import { compositeAndDownload, compositeToDataUrl } from "@/lib/compositor";
-import { getFrameMetaFromFrame, getFramePreviewUrl } from "@/lib/frameMeta";
+import { getFrameMasterUrl, getFrameMetaFromFrame, getFramePreviewUrl } from "@/lib/frameMeta";
 import { useAuthStore } from "@/store/useAuthStore";
 import { API_URL } from "@/lib/api";
 
@@ -42,7 +42,7 @@ export function PhotoPreviewScreen() {
   const photoUploadKeysRef = useRef(new Map<string, string>());
 
   const currentFrame = frames.find((f) => f.id === selectedFrameId) || null;
-  const previewFrameUrl = currentFrame ? getFramePreviewUrl(currentFrame) : "";
+  const previewFrameUrl = currentFrame ? getFrameMasterUrl(currentFrame) : "";
   const frameMeta = getFrameMetaFromFrame(currentFrame);
   const outputKey = `${selectedFrameId || "none"}:${brightness}:${contrast}:${saturation}:${capturedPhotos.length}`;
 
@@ -81,7 +81,7 @@ export function PhotoPreviewScreen() {
     setIsCompositing(true);
     try {
       const dataUrl = await compositeToDataUrl(
-        capturedPhotos, currentFrame, brightness, contrast, saturation, "jpg"
+        capturedPhotos, currentFrame, brightness, contrast, saturation, "png"
       );
       setFinalCompositeUrl(dataUrl);
       setIsPrintOpen(true);
@@ -108,7 +108,7 @@ export function PhotoPreviewScreen() {
     if (uploadedPhoto?.key === outputKey) return uploadedPhoto;
 
     const dataUrl = await compositeToDataUrl(
-      capturedPhotos, currentFrame, brightness, contrast, saturation, "jpg"
+      capturedPhotos, currentFrame, brightness, contrast, saturation, "png"
     );
 
     const headers: Record<string, string> = { "Content-Type": "application/json" };
@@ -331,7 +331,7 @@ export function PhotoPreviewScreen() {
                       src={previewFrameUrl}
                       alt="Frame Overlay"
                       decoding="async"
-                      className="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 block"
+                      className="absolute inset-0 w-full h-full object-fill pointer-events-none z-10 block [image-rendering:auto]"
                     />
                   )}
               </div>
