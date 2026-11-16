@@ -14,11 +14,10 @@ interface State {
 
 export class ErrorBoundary extends Component<Props, State> {
   public state: State = {
-    hasError: false
+    hasError: false,
   };
 
   public static getDerivedStateFromError(error: Error): State {
-    // Memperbarui state sehingga render berikutnya menampilkan UI fallback.
     return { hasError: true, error };
   }
 
@@ -29,25 +28,31 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen w-full bg-paper-white flex flex-col items-center justify-center p-4">
-          <div className="max-w-md w-full bg-surface-container p-6 md:p-8 sketch-border hard-shadow flex flex-col items-center text-center gap-4">
-            <span className="material-symbols-outlined text-6xl text-curtain-red" style={{ fontVariationSettings: "'FILL' 1" }}>
-              error
-            </span>
-            <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-ink-black">
-              Oops! Sesuatu Salah
+        <div className="min-h-screen w-full bg-studio-pattern flex flex-col items-center justify-center p-4">
+          <div className="max-w-md w-full bg-white p-6 md:p-8 rounded-[2.5rem] shadow-2xl flex flex-col items-center text-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-red-100 text-red-600 flex items-center justify-center">
+              <span
+                className="material-symbols-outlined text-4xl"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
+                error
+              </span>
+            </div>
+            <h1 className="text-2xl font-black uppercase text-black">
+              Oops! Terjadi Kesalahan
             </h1>
-            <p className="font-body-md text-on-surface-variant text-sm">
-              Terjadi kesalahan tak terduga pada aplikasi. Silakan muat ulang halaman.
+            <p className="text-black/65 text-sm font-medium leading-relaxed">
+              Terjadi kesalahan tak terduga pada aplikasi. Silakan muat ulang halaman untuk melanjutkan.
             </p>
             {this.state.error && process.env.NODE_ENV === "development" && (
-              <pre className="bg-ink-black text-paper-white p-4 text-left w-full overflow-x-auto text-xs sketch-border-thin mt-2">
+              <pre className="bg-gray-900 text-white p-4 rounded-2xl text-left w-full overflow-x-auto text-xs mt-1">
                 {this.state.error.toString()}
               </pre>
             )}
             <Button
               variant="primary"
-              className="mt-4"
+              fullWidth
+              className="mt-2"
               onClick={() => {
                 this.setState({ hasError: false });
                 window.location.reload();

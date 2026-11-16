@@ -26,28 +26,25 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    // Base brutalist classes
     const baseStyles =
-      "inline-flex items-center justify-center font-interactive-btn text-interactive-btn border-2 border-ink-black sketch-border hard-shadow transition-all duration-150 outline-none focus-visible:ring-4 focus-visible:ring-ink-black active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none";
+      "inline-flex items-center justify-center font-black uppercase tracking-wide rounded-full transition-all duration-150 outline-none focus-visible:ring-4 focus-visible:ring-[#CCFF00]/60 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none cursor-pointer";
 
-    // Size variations
     const sizes = {
-      default: "px-6 py-3 min-h-[44px]",
-      sm: "px-4 py-2 min-h-[44px] text-sm", // Ensure min-h 44px for tap target
-      lg: "px-8 py-4 min-h-[56px] text-lg",
-      icon: "w-11 h-11 min-h-[44px] min-w-[44px] p-2", // 44x44 minimum tap target
+      default: "px-6 py-3 min-h-[48px] text-xs md:text-sm",
+      sm: "px-4 py-2 min-h-[42px] text-xs",
+      lg: "px-8 py-4 min-h-[56px] text-sm md:text-base",
+      icon: "w-11 h-11 min-h-[44px] min-w-[44px] p-2",
     };
 
-    // Color variations
     const variants = {
       primary:
-        "bg-blueprint-blue text-paper-white hover:bg-blueprint-blue/90 hover:scale-[1.01] hover:hard-shadow-lg",
+        "bg-[#CCFF00] text-black border-2 border-white shadow-lg hover:bg-[#d8ff33] hover:scale-[1.02]",
       secondary:
-        "bg-paper-white text-ink-black hover:bg-surface-container-low hover:scale-[1.01] hover:hard-shadow-lg",
+        "bg-[#0038FF] text-white border border-[#0038FF] shadow-md hover:bg-[#002db3] hover:scale-[1.02]",
       danger:
-        "bg-curtain-red text-paper-white hover:bg-curtain-red/90 hover:scale-[1.01] hover:hard-shadow-lg",
+        "bg-red-500 text-white border border-red-400 shadow-md hover:bg-red-600",
       outline:
-        "bg-transparent text-ink-black sketch-border-thin hover:bg-surface-container-high hard-shadow-sm",
+        "bg-white text-black border-2 border-gray-200 hover:border-[#0038FF] hover:text-[#0038FF]",
     };
 
     return (

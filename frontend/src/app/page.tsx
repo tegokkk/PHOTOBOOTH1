@@ -5,6 +5,7 @@ import { FrameSelectionScreen } from "@/components/booth/FrameSelectionScreen";
 import { CameraScreen } from "@/components/booth/CameraScreen";
 import { PhotoPreviewScreen } from "@/components/booth/PhotoPreviewScreen";
 import { LandingScreen } from "@/components/booth/LandingScreen";
+import { PhotoReviewScreen } from "@/components/booth/PhotoReviewScreen";
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function Home() {
@@ -22,6 +23,8 @@ export default function Home() {
         return <FrameSelectionScreen />;
       case "camera":
         return <CameraScreen />;
+      case "review":
+        return <PhotoReviewScreen />;
       case "preview":
         return <PhotoPreviewScreen />;
       default:

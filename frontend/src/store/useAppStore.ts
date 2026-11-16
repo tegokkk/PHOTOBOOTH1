@@ -25,7 +25,7 @@ export interface FrameData {
   slots: FrameSlotData[];
 }
 
-export type AppStep = 'landing' | 'frame-selection' | 'camera' | 'preview';
+export type AppStep = 'landing' | 'frame-selection' | 'camera' | 'review' | 'preview';
 
 
 interface AppState {
@@ -55,6 +55,10 @@ interface AppState {
   advancePhotoIndex: () => void;
   setPhotoIndex: (index: number) => void;
   resetPhotoSession: () => void;
+  retakeQueue: number[];
+  startRetake: (indices: number[]) => void;
+  cancelRetake: () => void;
+  completePhotoCapture: (photo: string, mirrored?: boolean) => void;
   resetSession: () => void;
 
   // ── Frame data ───────────────────────────────────────────
@@ -104,7 +108,7 @@ export const useAppStore = create<AppState>()(
         mirrors[currentIndex] = mirrored;
         set({ capturedPhotos: photos, capturedPhotoMirrors: mirrors, capturedImage: photo });
       },
-      clearPhotos: () => set({ capturedPhotos: [], capturedPhotoMirrors: [], capturedImage: null, currentPhotoIndex: 0 }),
+      clearPhotos: () => set({ capturedPhotos: [], capturedPhotoMirrors: [], capturedImage: null, currentPhotoIndex: 0, retakeQueue: [] }),
 
       capturedImage: null,
       setCapturedImage: (image) => set({
@@ -116,7 +120,7 @@ export const useAppStore = create<AppState>()(
       // ── Multi-shot session ───────────────────────────────────
       currentPhotoIndex: 0,
       totalPhotosNeeded: 1,
-      setPhotoSession: (total) => set({ totalPhotosNeeded: total, currentPhotoIndex: 0 }),
+      setPhotoSession: (total) => set({ totalPhotosNeeded: total, currentPhotoIndex: 0, retakeQueue: [] }),
       advancePhotoIndex: () => set((state) => {
         // Find next empty slot or just advance
         let nextIndex = state.currentPhotoIndex + 1;
@@ -126,7 +130,40 @@ export const useAppStore = create<AppState>()(
         return { currentPhotoIndex: nextIndex };
       }),
       setPhotoIndex: (index: number) => set({ currentPhotoIndex: index }),
-      resetPhotoSession: () => set({ currentPhotoIndex: 0 }),
+      resetPhotoSession: () => set({ currentPhotoIndex: 0, retakeQueue: [] }),
+      retakeQueue: [],
+      startRetake: (indices) => {
+        const state = get();
+        if (!state.isSessionOpen) return;
+        const queue = [...new Set(indices)].filter((index) =>
+          Number.isInteger(index) && index >= 0 && index < state.totalPhotosNeeded && Boolean(state.capturedPhotos[index])
+        ).sort((a, b) => a - b);
+        if (!queue.length) return;
+        // Keep the original photos until each replacement is captured successfully.
+        set({ retakeQueue: queue, currentPhotoIndex: queue[0], currentStep: 'camera' });
+      },
+      cancelRetake: () => set({ retakeQueue: [], currentStep: 'review' }),
+      completePhotoCapture: (photo, mirrored = false) => {
+        const state = get();
+        const index = state.currentPhotoIndex;
+        if (!state.isSessionOpen || state.currentStep !== 'camera' || !photo || !Number.isInteger(index) || index < 0 || index >= state.totalPhotosNeeded) return;
+        const photos = [...state.capturedPhotos];
+        const mirrors = [...state.capturedPhotoMirrors];
+        photos[index] = photo;
+        mirrors[index] = mirrored;
+        const queue = state.retakeQueue.filter((target) => target !== index);
+        const nextIndex = state.retakeQueue.length
+          ? (queue[0] ?? -1)
+          : Array.from({ length: state.totalPhotosNeeded }, (_, i) => i).find((i) => !photos[i]) ?? -1;
+        set({
+          capturedPhotos: photos,
+          capturedPhotoMirrors: mirrors,
+          capturedImage: photo,
+          retakeQueue: queue,
+          currentPhotoIndex: nextIndex === -1 ? index : nextIndex,
+          currentStep: nextIndex === -1 ? 'review' : 'camera',
+        });
+      },
       resetSession: () => set({
         currentStep: 'landing',
         isSessionOpen: false,
@@ -136,6 +173,7 @@ export const useAppStore = create<AppState>()(
         capturedImage: null,
         currentPhotoIndex: 0,
         totalPhotosNeeded: 1,
+        retakeQueue: [],
         brightness: 100,
         contrast: 100,
         saturation: 100,
@@ -158,7 +196,7 @@ export const useAppStore = create<AppState>()(
              state.setPhotoSession(newSlots);
           }
         }
-        set({ selectedFrameId: id });
+        set({ selectedFrameId: id, ...(state.selectedFrameId !== id ? { retakeQueue: [] } : {}) });
       },
       frames: [],
       isLoadingFrames: false,

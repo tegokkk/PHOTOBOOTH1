@@ -12,12 +12,19 @@ interface SharePageProps {
 async function getSharedPhoto(token: string, purpose?: "prefetch") {
   try {
     const headers = purpose ? { "x-purpose": purpose } : undefined;
-    const response = await fetch(`${API_URL}/api/share/${encodeURIComponent(token)}`, {
-      cache: "no-store",
-      headers,
-    });
+    const response = await fetch(
+      `${API_URL}/api/share/${encodeURIComponent(token)}`,
+      {
+        cache: "no-store",
+        headers,
+      }
+    );
 
-    if (!response.ok || !response.headers.get("content-type")?.includes("application/json")) return null;
+    if (
+      !response.ok ||
+      !response.headers.get("content-type")?.includes("application/json")
+    )
+      return null;
     const data = await response.json().catch(() => null);
     return data?.success ? data.data : null;
   } catch {
@@ -25,12 +32,14 @@ async function getSharedPhoto(token: string, purpose?: "prefetch") {
   }
 }
 
-export async function generateMetadata({ params }: SharePageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: SharePageProps): Promise<Metadata> {
   const { token } = await params;
   const photo = await getSharedPhoto(token, "prefetch");
 
   if (!photo) {
-    return { title: "Foto Tidak Ditemukan | Photobooth" };
+    return { title: "Foto Tidak Ditemukan | Pointer Photobooth" };
   }
 
   const frameText = photo.frame ? ` dengan frame ${photo.frame.name}` : "";
@@ -41,7 +50,11 @@ export async function generateMetadata({ params }: SharePageProps): Promise<Meta
     description: "Seseorang membagikan memori fotonya dengan Anda.",
     robots: { index: false, follow: false },
     openGraph: { title, images: [toApiUrl(photo.imageUrl)] },
-    twitter: { card: "summary_large_image", title, images: [toApiUrl(photo.imageUrl)] },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      images: [toApiUrl(photo.imageUrl)],
+    },
   };
 }
 
@@ -54,33 +67,64 @@ export default async function SharedPhotoPage({ params }: SharePageProps) {
   const imageUrl = toApiUrl(photo.imageUrl);
 
   return (
-    <main className="flex-grow flex flex-col items-center justify-center p-4 md:p-8 bg-ink-black">
-      <div className="w-full max-w-2xl bg-stark-white p-6 md:p-8 border-border-thick border-ink-black pixel-corners hard-shadow-lg flex flex-col gap-6 relative">
-        <div className="pixel-corners-inner"></div>
-        <div className="text-center relative z-10">
-          <h1 className="font-tech-mono text-xl uppercase tracking-widest text-ink-black font-bold">SHARED_MEMORY_SYS</h1>
-          <p className="font-tech-mono text-[10px] text-on-surface-variant mt-2 uppercase">Someone shared this photobooth memory with you!</p>
+    <main className="flex-grow flex flex-col items-center justify-center p-4 md:p-8 min-h-[calc(100vh-76px)] bg-studio-pattern">
+      <div className="w-full max-w-xl bg-white p-6 md:p-8 rounded-[2.5rem] shadow-[0_24px_60px_rgba(0,0,0,0.35)] flex flex-col gap-6">
+        <div className="text-center">
+          <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#CCFF00] text-black text-xs font-black uppercase mb-3 shadow-xs">
+            <span
+              className="material-symbols-outlined text-sm"
+              style={{ fontVariationSettings: "'FILL' 1" }}
+            >
+              photo_camera
+            </span>
+            POINTER PHOTOBOOTH
+          </span>
+          <h1 className="text-2xl md:text-3xl font-black uppercase text-black">
+            Kenangan Foto Studio
+          </h1>
+          <p className="text-xs md:text-sm font-semibold text-black/60 mt-1">
+            Unduh hasil foto berkualitas tinggi langsung ke perangkatmu.
+          </p>
         </div>
 
-        <div className="relative w-full overflow-hidden border-border-thick border-ink-black bg-surface-container-highest hard-shadow-sm p-2 pixel-corners z-10">
-          <div className="pixel-corners-inner"></div>
-          <img src={imageUrl} alt="Shared Photo" fetchPriority="high" decoding="async" className="w-full h-auto object-contain relative z-10" />
+        <div className="relative w-full overflow-hidden rounded-[1.5rem] border border-gray-100 bg-[#F8F9FA] p-4 flex items-center justify-center">
+          <img
+            src={imageUrl}
+            alt="Foto Photobooth"
+            fetchPriority="high"
+            decoding="async"
+            className="max-w-full max-h-[65vh] w-auto h-auto object-contain drop-shadow-md"
+          />
         </div>
 
-        <div className="flex flex-col gap-4 w-full relative z-10">
+        <div className="flex flex-col gap-4 w-full">
           {photo.frame && (
-            <div className="flex justify-between items-center bg-surface-container p-3 border-border-thick border-ink-black pixel-corners">
-              <div className="pixel-corners-inner"></div>
-              <span className="font-tech-mono text-on-surface-variant text-[10px] uppercase font-bold relative z-10">TARGET_FRAME</span>
-              <span className="font-tech-mono font-bold text-neon-yellow uppercase bg-ink-black px-2 py-1 text-xs border border-ink-black relative z-10">{photo.frame.name}</span>
+            <div className="flex justify-between items-center bg-[#F8F9FA] px-4 py-3 rounded-2xl border border-gray-100">
+              <span className="text-xs font-bold uppercase text-black/55">
+                Bingkai Foto
+              </span>
+              <span className="font-black text-xs uppercase text-white bg-[#0038FF] px-3.5 py-1 rounded-full">
+                {photo.frame.name}
+              </span>
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-            <ShareDownloadButton imageUrl={imageUrl} filename={`ririi-${photo.frame?.name || "photobooth"}.jpg`} />
-            <Link href="/" className="w-full px-4 py-4 bg-stark-white text-ink-black font-tech-mono font-bold uppercase border-border-thick border-ink-black hard-shadow hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2">
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>add_a_photo</span>
-              CREATE_YOUR_OWN
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <ShareDownloadButton
+              imageUrl={imageUrl}
+              filename={`pointer-${photo.frame?.name || "photobooth"}.jpg`}
+            />
+            <Link
+              href="/"
+              className="w-full min-h-[52px] px-5 py-3.5 rounded-full bg-[#0038FF] hover:bg-[#002db3] text-white font-black text-xs uppercase active:scale-95 transition-all flex items-center justify-center gap-2 shadow-md"
+            >
+              <span
+                className="material-symbols-outlined text-lg"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
+                add_a_photo
+              </span>
+              Buat Foto Baru
             </Link>
           </div>
         </div>

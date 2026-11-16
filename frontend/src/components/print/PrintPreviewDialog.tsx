@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useUIStore } from "@/store/useUIStore";
 import { hasPrintBridge, retryPrintJob, sendPrintJob } from "@/lib/printAdapter";
 import { createPrintJob, PrintJob, updatePrintJob } from "@/lib/printQueue";
+import { prepare4RPrint, type PrintLayout } from "@/lib/print4R";
 
 interface PrintPreviewDialogProps {
   isOpen: boolean;
@@ -25,30 +26,37 @@ export function PrintPreviewDialog({
   const showToast = useUIStore((state) => state.showToast);
   const [isPrinting, setIsPrinting] = useState(false);
   const [copies, setCopies] = useState(1);
-  const [printLayout, setPrintLayout] = useState<"single" | "twin">("single");
-  const [printSize, setPrintSize] = useState<"compact" | "mini" | "full">("compact");
-  const [imageRatio, setImageRatio] = useState<number>(0.33); // width / height
-  const [mounted, setMounted] = useState(false);
+  const [printLayout, setPrintLayout] = useState<PrintLayout>("single");
+  const [preparedPrint, setPreparedPrint] = useState<{
+    source: string;
+    layout: PrintLayout;
+    imageDataUrl?: string;
+    isStrip?: boolean;
+    error?: string;
+  } | null>(null);
   const [printJob, setPrintJob] = useState<PrintJob | null>(null);
   const afterPrintCleanupRef = useRef<(() => void) | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    if (!isOpen || !compositeDataUrl) return;
+    let active = true;
+    void prepare4RPrint(compositeDataUrl, printLayout).then((result) => {
+      if (active) setPreparedPrint({ source: compositeDataUrl, layout: printLayout, ...result });
+    }).catch((error: unknown) => {
+      if (active) setPreparedPrint({
+        source: compositeDataUrl,
+        layout: printLayout,
+        error: error instanceof Error ? error.message : "Gagal menyiapkan cetak 4R.",
+      });
+    });
+    return () => { active = false; };
+  }, [isOpen, compositeDataUrl, printLayout]);
 
-  useEffect(() => {
-    if (!compositeDataUrl) return;
-    const img = new Image();
-    img.onload = () => {
-      if (img.naturalHeight > 0) {
-        setImageRatio(img.naturalWidth / img.naturalHeight);
-      }
-    };
-    img.src = compositeDataUrl;
-  }, [compositeDataUrl]);
-
-  const isStrip = imageRatio < 0.65;
+  const currentPrint = preparedPrint?.source === compositeDataUrl && preparedPrint.layout === printLayout
+    ? preparedPrint : null;
+  const printImage = currentPrint?.imageDataUrl;
+  const isStrip = Boolean(preparedPrint?.source === compositeDataUrl && preparedPrint.isStrip);
 
   useEffect(() => {
     if (!isOpen) {
@@ -75,8 +83,10 @@ export function PrintPreviewDialog({
 
   if (!isOpen) return null;
 
-  const handleBrowserPrint = () => {
+  const handleBrowserPrint = async () => {
     afterPrintCleanupRef.current?.();
+    const images = document.querySelectorAll<HTMLImageElement>("#photobooth-print-surface img");
+    await Promise.all(Array.from(images, (image) => image.decode()));
 
     const handleAfterPrint = () => {
       afterPrintCleanupRef.current = null;
@@ -84,9 +94,9 @@ export function PrintPreviewDialog({
     };
 
     window.addEventListener("afterprint", handleAfterPrint, { once: true });
-    afterPrintCleanupRef.current = () => window.removeEventListener("afterprint", handleAfterPrint);
+    afterPrintCleanupRef.current = () =>
+      window.removeEventListener("afterprint", handleAfterPrint);
 
-    // Keep this directly in the click flow for iPad/Safari user-gesture rules.
     window.print();
     showToast("Dialog cetak dibuka. Periksa printer setelah dialog ditutup.", "info");
   };
@@ -99,7 +109,9 @@ export function PrintPreviewDialog({
       status: "completed",
       errorMessage: undefined,
     });
-    setPrintJob(completedJob || { ...printJob, status: "completed", errorMessage: undefined });
+    setPrintJob(
+      completedJob || { ...printJob, status: "completed", errorMessage: undefined }
+    );
     showToast("Cetak ditandai berhasil. Pastikan hasil fisiknya sesuai.", "success");
   };
 
@@ -111,37 +123,51 @@ export function PrintPreviewDialog({
       status: "failed",
       errorMessage: "Hasil cetak belum keluar atau dialog dibatalkan.",
     });
-    setPrintJob(failedJob || {
-      ...printJob,
-      status: "failed",
-      errorMessage: "Hasil cetak belum keluar atau dialog dibatalkan.",
-    });
+    setPrintJob(
+      failedJob || {
+        ...printJob,
+        status: "failed",
+        errorMessage: "Hasil cetak belum keluar atau dialog dibatalkan.",
+      }
+    );
     showToast("Cetak ditandai gagal. Silakan coba lagi.", "error");
   };
 
   const handlePrint = async () => {
-    if (isPrinting) return;
+    if (isPrinting || !printImage) return;
     setIsPrinting(true);
     try {
       if (!hasPrintBridge()) {
-        const job = createPrintJob({ imageDataUrl: compositeDataUrl, frameName, copies });
+        const job = createPrintJob({
+          imageDataUrl: printImage,
+          frameName,
+          copies,
+        });
         setPrintJob({ ...job, status: "printing" });
         void updatePrintJob(job.id, { status: "printing" }).then((updatedJob) => {
           if (updatedJob) setPrintJob(updatedJob);
         });
-        handleBrowserPrint();
+        await handleBrowserPrint();
       } else {
-        const job = await sendPrintJob({ imageDataUrl: compositeDataUrl, frameName, copies });
+        const job = await sendPrintJob({
+          imageDataUrl: printImage,
+          frameName,
+          copies,
+        });
         setPrintJob(job);
-        showToast("Job sent to printer bridge.", "success");
+        showToast("Job dikirim ke printer bridge.", "success");
       }
     } catch (error) {
       console.error("Print bridge error:", error);
-      const failedJob = error && typeof error === "object" && "printJob" in error
-        ? (error as { printJob?: PrintJob }).printJob
-        : undefined;
+      const failedJob =
+        error && typeof error === "object" && "printJob" in error
+          ? (error as { printJob?: PrintJob }).printJob
+          : undefined;
       if (failedJob) setPrintJob(failedJob);
-      showToast(error instanceof Error ? error.message : "Failed to send print job.", "error");
+      showToast(
+        error instanceof Error ? error.message : "Gagal mengirim job cetak.",
+        "error"
+      );
     } finally {
       setIsPrinting(false);
     }
@@ -165,300 +191,282 @@ export function PrintPreviewDialog({
           errorMessage: undefined,
           attempts: printJob.attempts + 1,
         });
-        handleBrowserPrint();
+        await handleBrowserPrint();
       } else {
         setPrintJob(await retryPrintJob(printJob));
-        showToast("Job retried successfully.", "success");
+        showToast("Cetak ulang berhasil dikirim.", "success");
       }
     } catch (error) {
-      const failedJob = error && typeof error === "object" && "printJob" in error
-        ? (error as { printJob?: PrintJob }).printJob
-        : undefined;
+      const failedJob =
+        error && typeof error === "object" && "printJob" in error
+          ? (error as { printJob?: PrintJob }).printJob
+          : undefined;
       if (failedJob) setPrintJob(failedJob);
-      showToast(error instanceof Error ? error.message : "Failed to retry print.", "error");
+      showToast(
+        error instanceof Error ? error.message : "Gagal mencetak ulang.",
+        "error"
+      );
     } finally {
       setIsPrinting(false);
     }
   };
 
   const statusLabels: Record<PrintJob["status"], string> = {
-    queued: "Menunggu antrean",
-    printing: "Sedang mencetak",
-    completed: "Cetak selesai",
-    failed: "Cetak gagal",
+    queued: "Menunggu Antrean",
+    printing: "Sedang Mencetak",
+    completed: "Cetak Selesai",
+    failed: "Cetak Gagal",
   };
 
   return (
     <>
+      {typeof document !== "undefined" && createPortal(
       <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-        <div className="absolute inset-0 bg-ink-black/80 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
-      <div
-        ref={dialogRef}
-        className="relative z-10 w-full max-w-xl max-h-[calc(100vh-2rem)] overflow-y-auto bg-stark-white border-border-thick border-ink-black pixel-corners hard-shadow-lg flex flex-col"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="print-dialog-title"
-        tabIndex={-1}
-      >
-        <div className="pixel-corners-inner"></div>
-
-        <div className="flex items-center justify-between px-6 py-4 border-b-border-thick border-ink-black sticky top-0 bg-ink-black text-stark-white z-10">
-          <div className="flex flex-col">
-            <h2 id="print-dialog-title" className="font-tech-mono font-bold text-lg uppercase tracking-widest text-neon-yellow">PRINT_SYS</h2>
-            <p className="font-tech-mono text-[10px] text-on-surface-variant uppercase">TARGET_FRAME: {frameName}</p>
+        <div
+          className="absolute inset-0 bg-black/65 backdrop-blur-sm"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+        <div
+          ref={dialogRef}
+          className="relative z-10 w-full max-w-xl max-h-[calc(100vh-2rem)] overflow-y-auto bg-white rounded-[2.5rem] border-4 border-[#0038FF] shadow-[0_24px_60px_rgba(0,0,0,0.4)] flex flex-col"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="print-dialog-title"
+          tabIndex={-1}
+        >
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-full bg-[#CCFF00] text-black flex items-center justify-center shrink-0">
+                <span
+                  className="material-symbols-outlined text-xl"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  print
+                </span>
+              </div>
+              <div className="min-w-0">
+                <h2
+                  id="print-dialog-title"
+                  className="text-lg font-black uppercase text-black"
+                >
+                  Pratinjau & Cetak
+                </h2>
+                <p className="text-xs font-semibold text-black/55 truncate">
+                  Bingkai: {frameName}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-10 h-10 min-h-10 min-w-10 rounded-full bg-[#F8F9FA] hover:bg-gray-200 text-black flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Tutup dialog cetak"
+            >
+              <span className="material-symbols-outlined text-xl">close</span>
+            </button>
           </div>
-          <button onClick={onClose} className="w-10 h-10 flex items-center justify-center border-2 border-stark-white bg-error-red text-stark-white hover:bg-error-red/80 transition-colors jiggle-active" aria-label="Tutup dialog cetak">
-            <span className="material-symbols-outlined font-bold">close</span>
-          </button>
-        </div>
 
-        <div className="p-6 space-y-6 bg-stark-white">
-          {/* Paper Sheet Preview Simulation */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <span className="font-tech-mono text-[11px] font-bold uppercase tracking-wider text-ink-black flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[16px] text-cyber-purple">format_align_left</span>
-                SIMULASI KERTAS CETAK (FLUSH KIRI)
-              </span>
-              <span className="font-tech-mono text-[10px] font-black bg-neon-yellow text-ink-black px-2 py-0.5 border border-ink-black uppercase">
-                MARGIN: 0MM
-              </span>
+          <div className="p-6 space-y-5 bg-white">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs font-black uppercase text-black">Pratinjau Kertas 4R</span>
+                <span className="text-[11px] font-black bg-[#CCFF00] text-black px-3 py-1 rounded-full">4 × 6 inci</span>
+              </div>
+              <div className="rounded-2xl border border-gray-200 bg-slate-100 p-4 flex justify-center">
+                <div className="h-64 sm:h-72 aspect-[2/3] bg-white shadow-md overflow-hidden flex items-center justify-center">
+                  {printImage ? (
+                    <img src={printImage} alt="Pratinjau cetak 4R" className="w-full h-full object-contain" />
+                  ) : (
+                    <p role={currentPrint?.error ? "alert" : "status"} className="px-3 text-center text-xs text-slate-500">
+                      {currentPrint?.error || "Menyiapkan pratinjau 4R..."}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="rounded-2xl border border-blue-100 bg-blue-50 p-3.5">
+                <p className="text-sm font-bold text-[#0038FF]">Ukuran tetap: 4R · 10,16 × 15,24 cm</p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-600">
+                  Bingkai dicetak utuh dan proporsional pada kertas 4R. Area yang tidak terisi akan berwarna putih.
+                </p>
+                <p className="mt-2 text-xs leading-relaxed text-slate-600">
+                  Pilih kertas 4 × 6 inci (4R), skala 100%, margin 0, dan matikan header/footer pada dialog printer.
+                </p>
+              </div>
             </div>
 
-            {/* Paper Sheet Representation */}
-            <div className="w-full bg-[#f4f4f4] border-2 border-ink-black p-3 md:p-4 pixel-corners hard-shadow-sm flex justify-center items-center">
-              <div className="pixel-corners-inner"></div>
-              <div className="relative h-64 md:h-72 aspect-[2/3] bg-stark-white border-2 border-dashed border-ink-black/40 flex flex-col items-stretch justify-start overflow-hidden shadow-md">
-                
-                {/* Photo Row (flush top-left) */}
-                <div className={`flex flex-row items-stretch justify-start ${
-                  printSize === "compact" ? "h-[65%]" : printSize === "mini" ? "h-[48%]" : "h-full"
-                }`}>
-                  {/* Photo Strip 1 */}
-                  <div className="h-full flex-shrink-0 relative border-r-2 border-dashed border-ink-black/60 bg-white">
-                    <img
-                      src={compositeDataUrl}
-                      alt="Preview foto rata kiri"
-                      className="h-full w-auto object-contain block"
-                      decoding="async"
-                    />
-                    <div className="absolute top-1 left-1 bg-ink-black/80 text-neon-yellow font-tech-mono text-[7px] font-bold px-1 py-0.5 pointer-events-none">
-                      KIRI (0MM)
-                    </div>
-                  </div>
-
-                  {/* Twin strip if active */}
-                  {printLayout === "twin" && isStrip && (
-                    <div className="h-full flex-shrink-0 relative border-r-2 border-dashed border-ink-black/60 bg-white">
-                      <img
-                        src={compositeDataUrl}
-                        alt="Preview foto twin"
-                        className="h-full w-auto object-contain block"
-                        decoding="async"
-                      />
-                    </div>
-                  )}
-
-                  {/* Right Leftover Area */}
-                  <div className="flex-1 bg-[repeating-linear-gradient(45deg,#f9f9f9,#f9f9f9_8px,#f0f0f0_8px,#f0f0f0_16px)] flex flex-col items-center justify-center p-2 text-center select-none">
-                    <span className="material-symbols-outlined text-ink-black/40 text-lg">content_cut</span>
-                    <span className="font-tech-mono text-[8px] font-bold text-ink-black/60 uppercase">
-                      SISA KERTAS KANAN
+            {isStrip && (
+              <div className="flex flex-col gap-2 bg-[#F8F9FA] p-3.5 rounded-[1.5rem] border border-gray-100">
+                <span className="font-black uppercase text-xs text-black">
+                  Tata Letak Strip
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPrintLayout("single")}
+                    disabled={isPrinting || Boolean(printJob)}
+                    aria-pressed={printLayout === "single"}
+                    className={`min-h-[44px] py-2 px-3 rounded-full font-black text-xs uppercase flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      printLayout === "single"
+                        ? "bg-[#0038FF] text-white shadow-md"
+                        : "bg-white text-black/70 border border-gray-200"
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-base">
+                      format_align_left
                     </span>
-                    <span className="font-tech-mono text-[7px] text-ink-black/40 uppercase">
-                      HEMAT / POTONG ✂️
+                    1 Strip
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPrintLayout("twin")}
+                    disabled={isPrinting || Boolean(printJob)}
+                    aria-pressed={printLayout === "twin"}
+                    className={`min-h-[44px] py-2 px-3 rounded-full font-black text-xs uppercase flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      printLayout === "twin"
+                        ? "bg-[#0038FF] text-white shadow-md"
+                        : "bg-white text-black/70 border border-gray-200"
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-base">
+                      view_column
                     </span>
-                  </div>
+                    2 Strip Kembar
+                  </button>
                 </div>
+              </div>
+            )}
 
-                {/* Bottom Leftover Area (when not full) */}
-                {printSize !== "full" && (
-                  <div className="w-full flex-1 border-t-2 border-dashed border-ink-black/40 bg-[repeating-linear-gradient(45deg,#f9f9f9,#f9f9f9_8px,#f0f0f0_8px,#f0f0f0_16px)] flex items-center justify-center select-none p-1">
-                    <span className="font-tech-mono text-[8px] font-bold text-ink-black/50 uppercase flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[13px]">content_cut</span>
-                      SISA KERTAS BAWAH (TIDAK PENUH 1 LEMBAR) ✂️
-                    </span>
+            <div className="flex items-center justify-between gap-4 bg-[#F8F9FA] px-4 py-3 rounded-[1.5rem] border border-gray-100">
+              <label
+                htmlFor="print-copies"
+                className="font-black uppercase text-black text-xs"
+              >
+                Jumlah Cetak
+              </label>
+              <select
+                id="print-copies"
+                value={copies}
+                onChange={(event) => setCopies(Number(event.target.value))}
+                disabled={isPrinting || Boolean(printJob)}
+                className="min-h-[42px] rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-black text-black focus:outline-none focus:ring-2 focus:ring-[#0038FF]"
+              >
+                {[1, 2, 3].map((count) => (
+                  <option key={count} value={count}>
+                    {count} Lembar
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {printJob && (
+              <div
+                className={`p-4 rounded-[1.5rem] border text-sm ${
+                  printJob.status === "failed"
+                    ? "bg-red-50 border-red-200 text-red-900"
+                    : "bg-[#CCFF00]/30 border-[#CCFF00] text-black"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <strong className="font-black text-xs uppercase tracking-wide">
+                    Status: {statusLabels[printJob.status]}
+                  </strong>
+                  <span className="font-mono text-xs text-black/60">
+                    #{printJob.id.slice(0, 8)}
+                  </span>
+                </div>
+                {printJob.errorMessage && (
+                  <p className="mt-1.5 text-xs text-red-700 font-semibold">
+                    {printJob.errorMessage}
+                  </p>
+                )}
+
+                {printJob.status === "printing" && (
+                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => void markPrintCompleted()}
+                      disabled={isPrinting}
+                      className="min-h-[44px] px-3 py-2.5 rounded-full bg-[#0038FF] hover:bg-[#002db3] text-white font-black text-xs uppercase transition-all cursor-pointer"
+                    >
+                      Hasil Sudah Keluar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void markPrintFailed()}
+                      disabled={isPrinting}
+                      className="min-h-[44px] px-3 py-2.5 rounded-full bg-red-600 hover:bg-red-700 text-white font-black text-xs uppercase transition-all cursor-pointer"
+                    >
+                      Tidak Keluar
+                    </button>
                   </div>
                 )}
-              </div>
-            </div>
-            <p className="font-tech-mono text-[10px] text-on-surface-variant text-center uppercase">
-              Foto dicetak lebih kecil di sudut kiri (0mm margin) agar tidak penuh satu kertas dan sisa kertas dapat disimpan/dipotong.
-            </p>
-          </div>
 
-          {/* Print Size Selector (Kompak ~15cm, Mini ~12cm, Penuh 1 Kertas) */}
-          <div className="flex flex-col gap-2 bg-surface-container p-3 border-border-thick border-ink-black hard-shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="font-tech-mono font-bold text-xs text-ink-black uppercase flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[16px] text-cyber-purple">straighten</span>
-                PILIH UKURAN CETAK
-              </span>
-              <span className="font-tech-mono text-[10px] font-bold text-cyber-purple bg-stark-white px-2 py-0.5 border border-ink-black">
-                {printSize === "compact" ? "KOMPAK (~14.5 CM)" : printSize === "mini" ? "MINI (~11.5 CM)" : "PENUH KERTAS"}
-              </span>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => setPrintSize("compact")}
-                className={`py-2 px-1 font-tech-mono font-bold text-xs uppercase border-2 border-ink-black flex flex-col items-center justify-center gap-0.5 transition-all jiggle-active ${
-                  printSize === "compact"
-                    ? "bg-neon-yellow text-ink-black hard-shadow-sm scale-[1.01]"
-                    : "bg-stark-white text-ink-black/70 hover:bg-neon-yellow/30"
-                }`}
-              >
-                <span>KOMPAK</span>
-                <span className="text-[9px] font-normal opacity-80">(~14.5 CM)</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPrintSize("mini")}
-                className={`py-2 px-1 font-tech-mono font-bold text-xs uppercase border-2 border-ink-black flex flex-col items-center justify-center gap-0.5 transition-all jiggle-active ${
-                  printSize === "mini"
-                    ? "bg-neon-yellow text-ink-black hard-shadow-sm scale-[1.01]"
-                    : "bg-stark-white text-ink-black/70 hover:bg-neon-yellow/30"
-                }`}
-              >
-                <span>MINI</span>
-                <span className="text-[9px] font-normal opacity-80">(~11.5 CM)</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPrintSize("full")}
-                className={`py-2 px-1 font-tech-mono font-bold text-xs uppercase border-2 border-ink-black flex flex-col items-center justify-center gap-0.5 transition-all jiggle-active ${
-                  printSize === "full"
-                    ? "bg-neon-yellow text-ink-black hard-shadow-sm scale-[1.01]"
-                    : "bg-stark-white text-ink-black/70 hover:bg-neon-yellow/30"
-                }`}
-              >
-                <span>PENUH</span>
-                <span className="text-[9px] font-normal opacity-80">(100%)</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Layout Mode for Strips */}
-          {isStrip && (
-            <div className="flex flex-col gap-2 bg-surface-container p-3 border-border-thick border-ink-black hard-shadow-sm">
-              <span className="font-tech-mono font-bold text-xs text-ink-black uppercase">
-                TATA LETAK STRIP
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPrintLayout("single")}
-                  className={`py-2 px-3 font-tech-mono font-bold text-xs uppercase border-2 border-ink-black flex items-center justify-center gap-1.5 transition-all jiggle-active ${
-                    printLayout === "single"
-                      ? "bg-neon-yellow text-ink-black hard-shadow-sm scale-[1.01]"
-                      : "bg-stark-white text-ink-black/70 hover:bg-neon-yellow/30"
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-sm">format_align_left</span>
-                  1 STRIP (SISA KANAN)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPrintLayout("twin")}
-                  className={`py-2 px-3 font-tech-mono font-bold text-xs uppercase border-2 border-ink-black flex items-center justify-center gap-1.5 transition-all jiggle-active ${
-                    printLayout === "twin"
-                      ? "bg-neon-yellow text-ink-black hard-shadow-sm scale-[1.01]"
-                      : "bg-stark-white text-ink-black/70 hover:bg-neon-yellow/30"
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-sm">view_column</span>
-                  2 STRIP KEMBAR
-                </button>
-              </div>
-            </div>
-          )}
-
-          <div className="flex items-center justify-between gap-4 bg-surface-container p-3 border-border-thick border-ink-black hard-shadow-sm">
-            <label htmlFor="print-copies" className="font-tech-mono font-bold text-ink-black text-sm uppercase">COPIES_REQ</label>
-            <select
-              id="print-copies"
-              value={copies}
-              onChange={(event) => setCopies(Number(event.target.value))}
-              disabled={isPrinting || Boolean(printJob)}
-              className="border-2 border-ink-black bg-stark-white px-3 py-2 font-tech-mono font-bold text-ink-black focus:outline-none focus:ring-2 focus:ring-neon-yellow"
-            >
-              {[1, 2, 3].map((count) => <option key={count} value={count}>{count} SET</option>)}
-            </select>
-          </div>
-
-          {printJob && (
-            <div className={`p-4 border-border-thick border-ink-black pixel-corners text-sm ${printJob.status === "failed" ? "bg-error-red text-stark-white" : "bg-neon-yellow text-ink-black"}`}>
-              <div className="pixel-corners-inner"></div>
-              <div className="flex items-center justify-between gap-2 font-tech-mono relative z-10">
-                <strong className="uppercase">STATUS: {statusLabels[printJob.status]}</strong>
-                <span className="text-[10px]">#{printJob.id.slice(0, 8)}</span>
-              </div>
-              {printJob.errorMessage && <p className="mt-2 font-tech-mono text-xs uppercase relative z-10">{printJob.errorMessage}</p>}
-
-              {printJob.status === "printing" && (
-                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 relative z-10">
+                {printJob.status === "failed" && (
                   <button
-                    onClick={() => void markPrintCompleted()}
+                    type="button"
+                    onClick={handleRetry}
                     disabled={isPrinting}
-                    className="px-3 py-3 bg-stark-white text-ink-black border-2 border-ink-black font-tech-mono font-bold uppercase hard-shadow-sm hover:scale-[1.01] active:scale-95 transition-all"
+                    className="mt-3 w-full min-h-[44px] px-4 py-2.5 rounded-full bg-white hover:bg-gray-100 text-black border border-red-200 font-black text-xs uppercase transition-all cursor-pointer"
                   >
-                    HASIL SUDAH KELUAR
+                    Coba Cetak Lagi
                   </button>
+                )}
+                {printJob.status === "completed" && (
                   <button
-                    onClick={() => void markPrintFailed()}
+                    type="button"
+                    onClick={handleRetry}
                     disabled={isPrinting}
-                    className="px-3 py-3 bg-error-red text-stark-white border-2 border-ink-black font-tech-mono font-bold uppercase hard-shadow-sm hover:scale-[1.01] active:scale-95 transition-all"
+                    className="mt-3 w-full min-h-[44px] px-4 py-2.5 rounded-full bg-white hover:bg-gray-100 text-[#0038FF] border border-[#0038FF]/30 font-black text-xs uppercase transition-all cursor-pointer"
                   >
-                    TIDAK KELUAR
+                    Cetak Ulang
                   </button>
-                </div>
-              )}
-              
-              {printJob.status === "failed" && (
-                <button onClick={handleRetry} disabled={isPrinting} className="mt-3 w-full px-4 py-3 bg-stark-white text-ink-black border-2 border-ink-black font-tech-mono font-bold uppercase hard-shadow-sm hover:scale-[1.01] active:scale-95 transition-all relative z-10">
-                  RETRY_JOB
-                </button>
-              )}
-              {printJob.status === "completed" && (
-                <button onClick={handleRetry} disabled={isPrinting} className="mt-3 w-full px-4 py-3 bg-stark-white text-ink-black border-2 border-ink-black font-tech-mono font-bold uppercase hard-shadow-sm hover:scale-[1.01] active:scale-95 transition-all relative z-10">
-                  REPRINT_JOB
-                </button>
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-            <button onClick={handlePrint} disabled={isPrinting} className="py-4 bg-neon-yellow text-ink-black font-tech-mono font-bold text-sm uppercase border-border-thick border-ink-black hard-shadow hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-wait">
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>print</span>
-              {isPrinting ? "SPOOLING..." : "EXEC_PRINT"}
-            </button>
-            <button onClick={onNewSession} className="py-4 bg-cyber-purple text-neon-yellow font-tech-mono font-bold text-sm uppercase border-border-thick border-ink-black hard-shadow hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2">
-              <span className="material-symbols-outlined">restart_alt</span>
-              NEW_SESSION
-            </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <button
+                type="button"
+                onClick={handlePrint}
+                disabled={isPrinting || !printImage}
+                className="min-h-[52px] py-3.5 px-5 rounded-full bg-[#CCFF00] hover:bg-[#b8e600] text-black font-black text-xs uppercase shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-wait cursor-pointer"
+              >
+                <span
+                  className="material-symbols-outlined text-xl"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  print
+                </span>
+                {isPrinting || (!printImage && !currentPrint?.error) ? "Menyiapkan..." : "Cetak 4R"}
+              </button>
+              <button
+                type="button"
+                onClick={onNewSession}
+                className="min-h-[52px] py-3.5 px-5 rounded-full bg-[#0038FF] hover:bg-[#002db3] text-white font-black text-xs uppercase active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-xl">
+                  restart_alt
+                </span>
+                Sesi Baru
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-      </div>
+      </div>, document.body)}
 
-      {/* Dedicated Print Portal attached directly to document.body for true 0mm left-aligned print */}
-      {mounted && typeof document !== "undefined" && createPortal(
-        <div id="photobooth-print-surface" className={`print-size-${printSize}`} aria-hidden="true">
-          <img
-            src={compositeDataUrl}
-            alt="Foto photobooth 1"
-            className="photobooth-print-img"
-          />
-          {printLayout === "twin" && isStrip && (
-            <img
-              src={compositeDataUrl}
-              alt="Foto photobooth 2"
-              className="photobooth-print-img"
-            />
-          )}
-        </div>,
-        document.body
-      )}
+      {/* Every copy is a complete 4R page; preview and bridge use this same raster. */}
+      {typeof document !== "undefined" && printImage &&
+        createPortal(
+          <div id="photobooth-print-surface" aria-hidden="true">
+            {Array.from({ length: copies }, (_, index) => (
+              <div className="photobooth-print-page" key={index}>
+                <img src={printImage} alt={`Foto photobooth 4R ${index + 1}`} className="photobooth-print-img" />
+              </div>
+            ))}
+          </div>,
+          document.body
+        )}
     </>
   );
 }

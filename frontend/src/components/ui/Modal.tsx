@@ -46,9 +46,7 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
   if (!isOpen) return null;
 
   return (
-    <div 
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity"
-    >
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0F172A]/50 backdrop-blur-xs p-4 transition-opacity">
       <div
         ref={overlayRef}
         className="absolute inset-0"
@@ -58,7 +56,7 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
       <div
         ref={dialogRef}
         className={cn(
-          "relative z-[101] w-full max-w-md bg-paper-white p-6 sketch-border hard-shadow-lg",
+          "relative z-[101] w-full max-w-md bg-white p-6 rounded-3xl border border-[#DBEAFE] shadow-[0_20px_50px_-12px_rgba(15,23,42,0.18)]",
           "animate-in fade-in zoom-in-95 duration-200",
           className
         )}
@@ -68,20 +66,18 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
         tabIndex={-1}
       >
         <div className="flex items-center justify-between mb-4">
-          {title && <h2 id={titleId} className="text-xl font-bold">{title}</h2>}
-          <Button 
-            variant="outline" 
-            size="icon" 
+          {title && <h2 id={titleId} className="text-xl font-bold text-[#0F172A]">{title}</h2>}
+          <Button
+            variant="outline"
+            size="icon"
             onClick={onClose}
-            className="rounded-full hover:bg-black/5"
-            aria-label="Close modal"
+            className="rounded-xl hover:bg-[#EFF6FF]"
+            aria-label="Tutup dialog"
           >
             <X className="size-5" />
           </Button>
         </div>
-        <div className="mt-2">
-          {children}
-        </div>
+        <div className="mt-2">{children}</div>
       </div>
     </div>
   );

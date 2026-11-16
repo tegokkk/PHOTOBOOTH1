@@ -4,6 +4,7 @@ import {
   PrintJobRequest,
   updatePrintJob,
 } from "@/lib/printQueue";
+import { PRINT_4R } from "@/lib/print4R";
 
 export type { PrintJob, PrintJobRequest } from "@/lib/printQueue";
 
@@ -14,8 +15,8 @@ export function hasPrintBridge(): boolean {
 }
 
 /**
- * Sends a durable local print job to the optional bridge. The image is kept in
- * IndexedDB so a failed job can be retried without asking the customer to pose again.
+ * Sends a print job to the optional bridge. Keep its 4R raster in session memory
+ * when the queue API returns metadata so retries retain the prepared print image.
  */
 export async function sendPrintJob(request: PrintJobRequest): Promise<PrintJob> {
   const job = await createPrintJob(request);
@@ -49,6 +50,10 @@ async function dispatchPrintJob(job: PrintJob): Promise<PrintJob> {
         imageDataUrl: activeJob.imageDataUrl,
         frameName: activeJob.frameName,
         copies: activeJob.copies,
+        paperSize: PRINT_4R.paperSize,
+        widthMm: PRINT_4R.widthMm,
+        heightMm: PRINT_4R.heightMm,
+        dpi: PRINT_4R.dpi,
       }),
     });
 

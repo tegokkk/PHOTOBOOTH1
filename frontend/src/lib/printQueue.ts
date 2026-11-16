@@ -38,7 +38,7 @@ export async function getPrintJob(id: string): Promise<PrintJob | null> {
     const res = await fetch(`${PRINT_API_BASE}/${id}`);
     const data = await parseJsonSafely(res);
     if (data?.success && data.data) {
-      const job = data.data as PrintJob;
+      const job = { ...memoryJobs.get(id), ...data.data } as PrintJob;
       memoryJobs.set(id, job);
       return job;
     }
@@ -53,7 +53,7 @@ export async function listPrintJobs(limit = 20): Promise<PrintJob[]> {
     const res = await fetch(`${PRINT_API_BASE}/queue?limit=${limit}`);
     const data = await parseJsonSafely(res);
     if (data?.success && Array.isArray(data.data)) {
-      const jobs = data.data as PrintJob[];
+      const jobs = data.data.map((job: PrintJob) => ({ ...memoryJobs.get(job.id), ...job })) as PrintJob[];
       jobs.forEach(job => memoryJobs.set(job.id, job));
       return jobs;
     }
@@ -86,7 +86,7 @@ export function createPrintJob(request: PrintJobRequest): PrintJob {
   }).then(async (res) => {
     const data = await parseJsonSafely(res);
     if (data?.success && data.data) {
-      memoryJobs.set(data.data.id, data.data as PrintJob);
+      memoryJobs.set(data.data.id, { ...job, ...memoryJobs.get(tempId), ...data.data });
     }
   }).catch(err => console.warn("Failed to create print job on server", err));
 
@@ -109,8 +109,9 @@ export async function updatePrintJob(
     });
     const data = await parseJsonSafely(res);
     if (data?.success && data.data) {
-      memoryJobs.set(data.data.id, data.data as PrintJob);
-      return data.data;
+      const serverJob = { ...updated, ...data.data } as PrintJob;
+      memoryJobs.set(serverJob.id, serverJob);
+      return serverJob;
     }
   } catch (error) {
     console.warn("Failed to update print job on server", error);

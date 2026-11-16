@@ -36,7 +36,7 @@ export function PhotoGrid({
           } catch {
             return null;
           }
-        }),
+        })
       );
 
       if (cancelled) {
@@ -49,7 +49,13 @@ export function PhotoGrid({
       objectUrlsRef.current = entries
         .map((entry) => entry?.[1])
         .filter((url): url is string => Boolean(url?.startsWith("blob:")));
-      setMediaUrls(Object.fromEntries(entries.filter((entry): entry is readonly [string, string] => Boolean(entry))));
+      setMediaUrls(
+        Object.fromEntries(
+          entries.filter(
+            (entry): entry is readonly [string, string] => Boolean(entry)
+          )
+        )
+      );
     };
 
     void loadMedia();
@@ -65,15 +71,18 @@ export function PhotoGrid({
     <>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {photos.map((photo) => {
-          const imgSrc = mediaUrls[photo.id] || (!isProtectedMedia(photo.compositeImageUrl)
-            ? toApiUrl(photo.compositeImageUrl)
-            : null);
+          const imgSrc =
+            mediaUrls[photo.id] ||
+            (!isProtectedMedia(photo.compositeImageUrl)
+              ? toApiUrl(photo.compositeImageUrl)
+              : null);
 
           return (
             <button
               key={photo.id}
+              type="button"
               onClick={() => onSelectPhoto(photo)}
-              className="relative aspect-[3/4] group sketch-border hard-shadow overflow-hidden hover:scale-[1.02] transition-transform duration-150 focus:outline-none focus-visible:ring-4 focus-visible:ring-curtain-red"
+              className="relative aspect-[3/4] group rounded-2xl bg-white border border-[#DBEAFE] shadow-xs overflow-hidden hover:border-[#93C5FD] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus-visible:ring-3 focus-visible:ring-[#2563EB]/35 cursor-pointer"
               aria-label={`Lihat foto ${photo.id}`}
             >
               {imgSrc ? (
@@ -87,13 +96,16 @@ export function PhotoGrid({
                   }`}
                 />
               ) : (
-                <div className="absolute inset-0 animate-pulse bg-surface-container-high" aria-label="Memuat foto" />
+                <div
+                  className="absolute inset-0 animate-pulse bg-slate-100"
+                  aria-label="Memuat foto"
+                />
               )}
-              <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                <p className="font-label-caps text-paper-white text-[10px] truncate">
+              <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-[#0F172A]/80 via-[#0F172A]/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity text-left">
+                <p className="text-white font-semibold text-xs truncate">
                   {photo.frame?.name || "Tanpa Frame"}
                 </p>
-                <p className="font-label-caps text-paper-white/70 text-[10px]">
+                <p className="text-white/75 text-[11px]">
                   {new Date(photo.createdAt).toLocaleDateString("id-ID", {
                     day: "2-digit",
                     month: "short",
@@ -108,9 +120,10 @@ export function PhotoGrid({
       {hasNextPage && (
         <div className="flex justify-center mt-8">
           <button
+            type="button"
             onClick={onLoadMore}
             disabled={isLoadingMore}
-            className="px-6 py-3 bg-paper-white text-ink-black font-interactive-btn border-2 border-ink-black sketch-border hover:bg-surface-container transition-colors disabled:opacity-50"
+            className="min-h-[48px] px-6 py-3 rounded-xl bg-white hover:bg-[#EFF6FF] text-[#1D4ED8] font-semibold text-sm border border-[#DBEAFE] shadow-2xs transition-colors disabled:opacity-50 cursor-pointer"
           >
             {isLoadingMore ? "Memuat..." : "Muat Lebih Banyak"}
           </button>

@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Modern Web-Based Photobooth Kiosk System untuk Event, Expo, Wedding, Pop-up, dan Komersial.</strong><br />
-  Cepat digunakan tamu, responsif dengan gaya cyber-sketch, mudah dioperasikan operator, dan dilengkapi sistem cetak serta cloud share.
+  Cepat digunakan tamu, responsif dengan identitas biru elektrik dan aksen lime, mudah dioperasikan operator, serta dilengkapi retake per kolom, cetak 4R, dan cloud share.
 </p>
 
 <p align="center">
@@ -42,12 +42,13 @@
 9. [Print Bridge (Integrasi Printer Fisik)](#print-bridge-integrasi-printer-fisik)
 10. [Keamanan & Privasi](#keamanan--privasi)
 11. [Daftar Perintah (Commands)](#daftar-perintah-commands)
+12. [Pembaruan Terbaru](#pembaruan-terbaru)
 
 ---
 
 ## Ringkasan Proyek
 
-**POINTER PHOTOBOOTH** (sebelumnya *RIRI Photobooth / Cyber-Booth*) adalah aplikasi web photobooth berbasis browser yang dirancang khusus untuk kebutuhan kiosk interaktif. Dibangun dengan estetika *Cyber-Sketch* (brutalisme retro yang dipadukan dengan tipografi *Bricolage Grotesque* & *Courier Prime*, aksen warna neon-yellow, cyber-purple, dan pixel-corners).
+**POINTER PHOTOBOOTH** (sebelumnya *RIRI Photobooth / Cyber-Booth*) adalah aplikasi web photobooth berbasis browser yang dirancang khusus untuk kebutuhan kiosk interaktif. Tampilan terbaru memakai biru elektrik `#0038FF`, aksen lime `#CCFF00`, tipografi *Plus Jakarta Sans*, panel membulat, serta ilustrasi printer interaktif. Landing mempertahankan karakter judul 3D, dengan ukuran yang lebih proporsional. Desain sebelumnya menggunakan estetika *Cyber-Sketch*, tipografi *Bricolage Grotesque* / *Courier Prime*, neon-yellow, cyber-purple, dan pixel-corners; keterangan ini dipertahankan sebagai riwayat desain.
 
 Sistem ini memisahkan antarmuka kiosk (*frontend*) dari layanan backend (*API & Storage*):
 - **Canvas Compositing di Browser**: Foto diproses dan digabungkan langsung pada browser klien secara instan tanpa membebani server backend, menjaga rasio asli dan resolusi master frame.
@@ -59,22 +60,27 @@ Sistem ini memisahkan antarmuka kiosk (*frontend*) dari layanan backend (*API & 
 ## Fitur Unggulan
 
 ### 1. Pengalaman Kiosk Tamu (Guest Kiosk Flow)
-- **Landing Screen**: Layout seimbang 2 kolom (ilustrasi kamera retro di kiri, judul utama dan tombol aksi di kanan) yang nyaman dijangkau dan tidak terpotong pada layar monitor kiosk maupun laptop.
-- **Otorisasi Sesi Operator**: Modal PIN cepat (`0606`) untuk membuka sesi foto baru dan mencegah penyalahgunaan antrean.
+- **Landing Screen**: Judul POINTER PHOTOBOOTH STUDIO berukuran responsif, tombol mulai yang jelas, serta kartu dekorasi memakai logo Manajemen Informatika dan D3 MI Polinela dari aset lokal. Ukuran judul, dekorasi, dan tombol disesuaikan agar tidak memenuhi layar.
+- **Otorisasi Sesi Operator**: Modal PIN yang lebih ringkas, dilengkapi keypad sentuh, untuk membuka sesi foto baru. PIN bawaan `0606` dapat dikonfigurasi melalui `NEXT_PUBLIC_OPERATOR_PIN`.
 - **Pilih Frame Interaktif**: Katalog frame dengan filter kategori dinamis (`Semua`, `Aesthetic`, `Basic`, `Classic`, `Creative`, `Cute`, `Event`, `Party`, `Vintage`) lengkap dengan dialog pratinjau.
 - **Kamera Kiosk Cerdas**:
   - Live framing overlay (melihat posisi wajah langsung di dalam lubang slot frame sebelum memotret).
   - Countdown timer animasi yang jelas.
   - Dukungan multi-kamera (kamera depan/belakang/webcam USB eksternal).
-  - Toggle mirror flip untuk kenyamanan pose tamu.
-  - Alur multi-shot otomatis sesuai jumlah slot pada frame terpilih (1, 2, 3, 4, hingga 6 foto).
+  - Kamera depan ditampilkan dan disimpan secara mirror agar hasil mengikuti pratinjau pose tamu.
+  - Pengambilan beberapa pose mengikuti jumlah slot bingkai (1 hingga 6); setiap pemotretan memakai countdown 3, 5, atau 10 detik.
   - Kemampuan foto ulang (*retake*) slot tertentu tanpa harus mengulang seluruh sesi.
-- **Halaman Pratinjau & Edit 3 Kolom**:
-  - **Sisi Kiri (`EDIT FOTO`)**: Slider tuning filter foto langsung (Brightness, Contrast, Saturation, dan Reset All).
-  - **Sisi Tengah (`HASIL FOTO`)**: Tampilan canvas frame resolusi tinggi tanpa ruang kosong berlebih.
-  - **Sisi Kanan (`PILIH AKSI`)**: Tombol aksi utama (Cetak Foto, Bagikan / Unduh QR, Ambil Ulang, dan Akhiri Sesi).
+- **Periksa Foto & Retake per Kolom**: Setelah seluruh target foto selesai, tamu melihat hasil tiap kolom dan dapat memilih satu, beberapa, atau seluruh kolom untuk diulang. Kamera hanya mengambil ulang target pilihan. Foto lain tetap tersimpan; foto lama baru diganti setelah pengambilan baru berhasil. Setelah retake, aplikasi kembali ke pemeriksaan.
+- **Konfirmasi Sebelum Hasil**: Tombol **Foto sudah sesuai, lanjut** membuka hasil foto dan animasi printer. Retake dari halaman hasil kembali ke pemilihan kolom, bukan menghapus seluruh sesi.
+- **Halaman Hasil Dua Kolom**:
+  - **Panel kiri**: Slider kecerahan, kontras, saturasi, dan reset digabung dengan tombol Cetak Foto, Bagikan / Unduh QR, Retake, dan Akhiri Sesi. Kartu dan tombol dibuat ringkas agar tidak mendominasi printer.
+  - **Area kanan**: Printer dan foto menjadi fokus utama, dengan animasi kertas keluar, interaksi tarik/sobek, serta kontrol suara.
+  - Pada ponsel, printer tampil lebih dahulu, diikuti panel kontrol. Ukuran menyesuaikan layar tanpa mengubah rasio bingkai atau koordinat slot.
+  - **Riwayat layout**: Versi sebelumnya memakai tiga panel terpisah: Edit Foto di kiri, Hasil Foto di tengah, dan Pilih Aksi di kanan. Fungsi ketiganya tetap tersedia pada susunan terbaru.
 
 ### 2. Output & Distribusi Foto
+- **Ukuran Cetak Tetap 4R**: Semua bingkai ditempatkan secara proporsional pada lembar portrait 4 × 6 inci (101,6 × 152,4 mm), menggunakan raster 1200 × 1800 piksel untuk 300 DPI. Bingkai tetap utuh; perbedaan rasio diisi latar putih. Pilihan ukuran mini/kompak/penuh pada versi lama telah digantikan oleh ukuran tetap 4R.
+- **Salinan & Strip Kembar**: Mendukung 1–3 lembar dan pilihan dua strip dalam satu lembar 4R untuk bingkai strip. Pratinjau, browser print, dan Print Bridge memakai raster yang sama.
 - **Cetak Instan**: Terintegrasi dengan sistem dialog cetak browser lokal serta opsi endpoint **Print Bridge** untuk otomatisasi cetak fisik tanpa dialog print.
 - **QR Code & Tautan Digital**: Tamu dapat memindai QR Code di layar untuk langsung mengunduh hasil foto di smartphone tanpa perlu membuat akun atau login.
 - **Download Lokal**: Mendukung ekspor format `.png` (kualitas master) dan `.jpg`.
@@ -89,27 +95,30 @@ Sistem ini memisahkan antarmuka kiosk (*frontend*) dari layanan backend (*API & 
 
 ### Alur Kiosk Tamu
 
+Setelah pemotretan, tamu memeriksa setiap kolom dan bisa memilih satu atau beberapa kolom untuk retake. Foto lain tetap disimpan; pengganti ditulis hanya setelah berhasil diambil. Animasi printer serta pilihan edit, cetak 4R, dan QR muncul setelah tamu menekan **Foto sudah sesuai, lanjut**.
+
 ```mermaid
 flowchart TD
     A["1. Landing Screen (PIN Operator: 0606)"] --> B["2. Pilih Frame (Kategori & Preview)"]
     B --> C["3. Kamera Kiosk (Countdown & Live Slot Overlay)"]
-    C --> D{"Apakah Semua Slot Terisi?"}
+    C --> D{"Semua Target Pengambilan Selesai?"}
     D -- Belum --> C
-    D -- Selesai --> E["4. Pratinjau Hasil Foto"]
+    D -- Selesai --> E["4. Periksa Foto / Pilih Kolom Retake"]
+    E -- "Retake Kolom Pilihan" --> C
+    E -- "Foto Sudah Sesuai" --> H["5. Animasi Printer & Hasil Foto"]
     
-    subgraph ReviewAndActions ["Review & Actions (Layout 3 Kolom)"]
-        E1["Panel Kiri: Filter (Brightness, Contrast, Saturation)"]
-        E2["Panel Tengah: Canvas Hasil Foto"]
-        E3["Panel Kanan: Cetak / QR / Retake / Selesai"]
+    subgraph ReviewAndActions ["Hasil Foto (Layout 2 Kolom)"]
+        E2["Area Kanan: Animasi Printer & Foto"]
+        E3["Panel Kiri: Filter / Reset / Cetak / QR / Retake / Selesai"]
     end
     
-    E --> ReviewAndActions
-    E3 -- "Cetak" --> F["Print Preview / Print Bridge"]
+    H --> ReviewAndActions
+    E3 -- "Cetak" --> F["Pratinjau 4R / Browser Print / Print Bridge"]
     E3 -- "Bagikan/Unduh" --> G["Upload R2/B2 & Buat QR Token"]
-    E3 -- "Ambil Ulang" --> C
+    E3 -- "Retake per Kolom" --> E
     E3 -- "Akhiri Sesi" --> A
-    F --> A
-    G --> A
+    F -- "Kembali ke Hasil" --> H
+    G -- "Kembali ke Hasil" --> H
 ```
 
 ### Arsitektur Sistem
@@ -168,18 +177,19 @@ PHOTOBOOTH/
 │
 ├── frontend/
 │   ├── public/
-│   │   └── frames/               # Aset frame lokal (PNG master, WebP, dan thumbnail preview)
+│   │   ├── frames/               # Aset frame lokal (PNG master, WebP, dan thumbnail preview)
+│   │   └── images/               # Logo Manajemen Informatika dan D3 MI Polinela
 │   ├── src/
 │   │   ├── app/                  # Next.js App Router (/admin, /share/[token], page.tsx, layout.tsx)
 │   │   ├── components/
-│   │   │   ├── booth/            # Layar alur booth (Landing, FrameSelection, Camera, PhotoPreview)
+│   │   │   ├── booth/            # Layar booth (Landing, FrameSelection, Camera, PhotoReview, PhotoPreview)
 │   │   │   ├── editor/           # Panel filter editing foto (EditPanel)
 │   │   │   ├── export/           # Modal QR share & unduh (ExportDialog)
 │   │   │   ├── frame/            # Komponen pemilih dan pratinjau bingkai
 │   │   │   ├── print/            # Dialog konfigurasi cetak (PrintPreviewDialog)
-│   │   │   └── ui/               # Komponen desain sistem (Button, Slider, Modal, Card, Toast)
+│   │   │   └── ui/               # Komponen UI, header booth, serta ilustrasi/animasi ReceiptPrinter
 │   │   ├── hooks/                # Custom React hook (useCamera untuk webcam dan mirroring)
-│   │   ├── lib/                  # Utilitas (compositor canvas, frameMeta, api client, printAdapter)
+│   │   ├── lib/                  # Utilitas compositor, frameMeta, API, print4R, printAdapter, printQueue
 │   │   ├── store/                # State management Zustand (useAppStore, useAuthStore, useUIStore)
 │   │   └── types/                # TypeScript interface dan tipe data
 │   ├── next.config.ts
@@ -201,7 +211,27 @@ PHOTOBOOTH/
 
 ## Katalog & Kategori Frame
 
-Aplikasi dilengkapi dengan 20 desain frame siap pakai yang tersimpan di database dan folder aset:
+### Aset Lokal Saat Ini
+
+Snapshot pembaruan ini menyertakan 9 master PNG berikut beserta preview WebP di `frontend/public/frames/`:
+
+| Nama Frame | Jumlah Slot Foto |
+| :--- | :---: |
+| `Newspaper Collage` | 6 |
+| `Cinema Premiere` | 6 |
+| `Innovation 4 Force Split` | 1 |
+| `Innovation 4 Force World` | 1 |
+| `Jejak Kebersamaan` | 4 |
+| `OMG Checkerboard` | 6 |
+| `Pointer Newspaper` | 3 |
+| `Pointer Striped` | 6 |
+| `Purple Vintage Friends` | 6 |
+
+Daftar yang muncul pada aplikasi mengikuti frame aktif dari API/database, bukan semata-mata isi folder lokal. Sebelum mengaktifkan frame, pastikan URL master dan preview tersedia. Beberapa aset katalog lama sudah tidak disertakan dalam snapshot lokal; definisi pada seed/database tidak otomatis dihapus oleh perubahan folder ini.
+
+### Referensi Katalog Lama (Dipertahankan)
+
+Tabel 20 entri dari dokumentasi sebelumnya tetap disimpan di bawah ini sebagai referensi nama, kategori, dan jumlah slot. Tabel ini bukan jaminan bahwa semua asetnya masih tersedia secara lokal:
 
 | Kategori | Nama Frame | Jumlah Slot Foto |
 | :--- | :--- | :---: |
@@ -233,7 +263,7 @@ Setiap frame memiliki koordinat normalisasi (0–1) untuk `x`, `y`, `width`, `he
 ## Panduan Instalasi & Menjalankan Lokal
 
 ### Prasyarat Sistem
-- **Node.js**: v20.x atau lebih baru
+- **Node.js**: v20.x atau lebih baru untuk aplikasi; gunakan Node.js 24 untuk perintah tes frontend di bawah yang memuat TypeScript secara langsung.
 - **NPM**: v10.x atau lebih baru
 - **Database**: PostgreSQL (direkomendasikan Neon.tech)
 - **Object Storage**: Cloudflare R2 / Backblaze B2 (atau bucket S3-compatible lainnya)
@@ -358,8 +388,10 @@ Aplikasi photobooth siap diakses melalui browser di **[http://localhost:3000](ht
 Secara default, aplikasi menggunakan dialog cetak bawaan browser (*Native Window Print*). Untuk operasional booth otomatis dan tanpa supervisi:
 1. Pasang bridge server lokal pada mini-PC atau laptop kiosk yang terhubung ke printer fisik via USB/jaringan.
 2. Masukkan endpoint bridge pada `NEXT_PUBLIC_PRINT_BRIDGE_URL` (contoh: `http://localhost:8000/print`).
-3. Sistem akan mengirim payload gambar bersolusi tinggi beserta jumlah copy langsung ke printer tanpa memunculkan dialog pop-up.
+3. Sistem mengirim raster 4R 1200 × 1800 piksel, jumlah lembar, ukuran media 4R (101,6 × 152,4 mm), dan target 300 DPI. Bridge perlu memilih media fisik 4 × 6 inci dengan skala 100% dan margin nol / borderless jika didukung printer.
 4. Spesifikasi payload dan kontrak API dapat dilihat di [docs/PRINT_BRIDGE.md](docs/PRINT_BRIDGE.md).
+
+Untuk browser print, pilih kertas **4 × 6 inci / 4R**, **skala 100%**, **margin 0**, dan nonaktifkan header/footer. Jumlah lembar mengikuti pilihan salinan pada aplikasi. Animasi tombol PRINT pada ilustrasi adalah simulasi; cetak fisik dijalankan melalui tombol **Cetak Foto** lalu **Cetak 4R** pada dialog cetak. Status hasil fisik tetap dikonfirmasi operator.
 
 ---
 
@@ -397,6 +429,28 @@ Secara default, aplikasi menggunakan dialog cetak bawaan browser (*Native Window
 | `npm start` | Menjalankan server Next.js production build |
 | `npm run lint` | Memeriksa kepatuhan kode dan linting ESLint |
 | `npx tsc --noEmit` | Memeriksa tipe data TypeScript tanpa menghasilkan output file |
+| `node --test src/store/useAppStore.test.mjs src/lib/print4R.test.mjs` | Menjalankan 15 tes alur sesi/retake dan penempatan cetak 4R (Node.js 24) |
+
+---
+
+## Pembaruan Terbaru
+
+### 17 November 2026
+
+- Identitas antarmuka biru elektrik dengan aksen lime, landing yang lebih proporsional, logo dekorasi lokal, dan popup otorisasi yang lebih ringkas.
+- Tahap pemeriksaan foto sebelum animasi printer, dengan pilihan retake per kolom tanpa menghapus foto lainnya.
+- Printer diposisikan di kanan; pengaturan edit dan seluruh aksi berada dalam satu panel ringkas di kiri.
+- Cetak tetap 4R untuk semua bingkai, termasuk salinan dan opsi strip kembar, dengan raster yang sama pada preview dan pengiriman cetak.
+- Gambar cetak tetap tersedia di memori selama sesi ketika backend mengembalikan metadata antrean, sehingga retry mempertahankan raster yang telah disiapkan.
+- Tes regresi sesi/retake dan geometri cetak ditambahkan. Build frontend, pemeriksaan TypeScript, serta tes frontend menjadi pemeriksaan sebelum publikasi.
+
+#### Pratinjau Tampilan Terbaru
+
+![Landing POINTER PHOTOBOOTH](docs/screenshots/landing-2026-11-17.png)
+
+![Panel kontrol kiri dan printer kanan, menggunakan gambar contoh](docs/screenshots/hasil-foto-2026-11-17.jpg)
+
+Bagian instalasi, konfigurasi lingkungan, deployment, arsitektur, keamanan, dan referensi katalog lama tetap dipertahankan. Deskripsi yang berubah diberi konteks versi terbaru atau ditandai sebagai riwayat agar dokumentasi lama tidak hilang.
 
 ---
 

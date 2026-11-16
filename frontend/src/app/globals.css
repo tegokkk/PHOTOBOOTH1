@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -6,58 +6,59 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* Bright / Light Mode Palette */
-  --color-background: #FDF8F5;
-  --color-on-background: #0F0F0F;
-  
+  /* Modern Blue Photo Studio Palette */
+  --color-background: #F8FAFC;
+  --color-on-background: #0F172A;
+
   --color-surface: #FFFFFF;
-  --color-on-surface: #0F0F0F;
-  
-  --color-surface-container: #F0F0F0;
-  --color-surface-container-low: #F8F8F8;
+  --color-on-surface: #0F172A;
+
+  --color-surface-container: #F1F5F9;
+  --color-surface-container-low: #F8FAFC;
   --color-surface-container-lowest: #FFFFFF;
-  --color-surface-container-high: #E8E8E8;
-  --color-surface-container-highest: #E0E0E0;
+  --color-surface-container-high: #EFF6FF;
+  --color-surface-container-highest: #E2E8F0;
 
-  --color-primary: #FF90E8;
-  --color-on-primary: #0F0F0F;
-  --color-primary-container: #FFB3F0;
-  --color-on-primary-container: #0F0F0F;
-  
-  --color-secondary: #FFC900;
-  --color-on-secondary: #0F0F0F;
-  --color-secondary-container: #FFD940;
-  --color-on-secondary-container: #0F0F0F;
+  --color-primary: #2563EB;
+  --color-primary-hover: #1D4ED8;
+  --color-on-primary: #FFFFFF;
+  --color-primary-container: #EFF6FF;
+  --color-on-primary-container: #1E40AF;
 
-  --color-tertiary: #23A094;
+  --color-secondary: #EFF6FF;
+  --color-on-secondary: #1D4ED8;
+  --color-secondary-container: #DBEAFE;
+  --color-on-secondary-container: #1E3A8A;
+
+  --color-tertiary: #0284C7;
   --color-on-tertiary: #FFFFFF;
-  --color-tertiary-container: #90E8FF;
-  --color-on-tertiary-container: #0F0F0F;
+  --color-tertiary-container: #E0F2FE;
+  --color-on-tertiary-container: #0C4A6E;
 
-  --color-error-red: #FF3131;
-  --color-error: #FF3131;
+  --color-error-red: #DC2626;
+  --color-error: #DC2626;
   --color-on-error: #FFFFFF;
-  --color-error-container: #FF7B54;
-  --color-on-error-container: #0F0F0F;
+  --color-error-container: #FEE2E2;
+  --color-on-error-container: #991B1B;
 
-  --color-ink-black: #0F0F0F;
+  /* Semantic aliases mapped to the Modern Blue Photo Studio palette */
+  --color-ink-black: #0F172A;
   --color-stark-white: #FFFFFF;
-  --color-neon-yellow: #FFC900;
-  --color-cyber-purple: #9D4EDD;
-  --color-blueprint-blue: #3E82FC;
+  --color-neon-yellow: #2563EB;
+  --color-cyber-purple: #F8FAFC;
+  --color-blueprint-blue: #2563EB;
 
-  --color-outline: #0F0F0F;
-  --color-outline-variant: #666666;
-  --color-on-surface-variant: #333333;
+  --color-outline: #DBEAFE;
+  --color-outline-variant: #CBD5E1;
+  --color-on-surface-variant: #475569;
 
-  /* Aliases for backwards compatibility or general usage */
-  --color-paper-white: var(--color-stark-white);
-  --color-curtain-red: var(--color-error-red);
-  --color-border-thick: var(--color-ink-black);
+  --color-paper-white: #FFFFFF;
+  --color-curtain-red: #DC2626;
+  --color-border-thick: #DBEAFE;
 
-  --radius: 0.25rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
+  --radius: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
   --radius-full: 9999px;
 
   --spacing-stack-md: 1rem;
@@ -68,187 +69,214 @@
   --spacing-margin-mobile: 20px;
   --spacing-border-thin: 1px;
   --spacing-unit: 4px;
-  --spacing-border-thick: 3px;
+  --spacing-border-thick: 1px;
 
-  --font-body-lg: "Courier Prime", monospace;
-  --font-body-md: "Courier Prime", monospace;
-  --font-headline-xl: "Bricolage Grotesque", sans-serif;
-  --font-headline-lg: "Bricolage Grotesque", sans-serif;
-  --font-headline-lg-mobile: "Bricolage Grotesque", sans-serif;
-  --font-headline-md: "Bricolage Grotesque", sans-serif;
-  --font-tech-mono: "Courier Prime", monospace;
-  --font-label-caps: "Courier Prime", monospace;
-  --font-interactive-btn: "Bricolage Grotesque", sans-serif;
-  --font-sans: var(--font-headline-lg-mobile);
+  --font-body-lg: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body-md: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-headline-xl: "Bricolage Grotesque", "Plus Jakarta Sans", sans-serif;
+  --font-headline-lg: "Bricolage Grotesque", "Plus Jakarta Sans", sans-serif;
+  --font-headline-lg-mobile: "Bricolage Grotesque", "Plus Jakarta Sans", sans-serif;
+  --font-headline-md: "Bricolage Grotesque", "Plus Jakarta Sans", sans-serif;
+  --font-tech-mono: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-label-caps: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-interactive-btn: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
 
-  /* Typography scale used by the booth UI. */
-  --text-headline-xl: 3.5rem;
-  --text-headline-xl--line-height: 0.98;
-  --text-headline-lg: 2.5rem;
-  --text-headline-lg--line-height: 1.05;
-  --text-headline-lg-mobile: 2rem;
-  --text-headline-lg-mobile--line-height: 1.08;
-  --text-headline-md: 1.35rem;
-  --text-headline-md--line-height: 1.15;
-  --text-body-lg: 1.125rem;
-  --text-body-lg--line-height: 1.55;
-  --text-body-md: 1rem;
-  --text-body-md--line-height: 1.5;
+  /* Typography scale */
+  --text-headline-xl: 3.25rem;
+  --text-headline-xl--line-height: 1.08;
+  --text-headline-lg: 2.25rem;
+  --text-headline-lg--line-height: 1.15;
+  --text-headline-lg-mobile: 1.65rem;
+  --text-headline-lg-mobile--line-height: 1.2;
+  --text-headline-md: 1.25rem;
+  --text-headline-md--line-height: 1.25;
+  --text-body-lg: 1.0625rem;
+  --text-body-lg--line-height: 1.6;
+  --text-body-md: 0.9375rem;
+  --text-body-md--line-height: 1.55;
   --text-label-caps: 0.875rem;
-  --text-label-caps--line-height: 1.25;
-  --text-interactive-btn: 1.125rem;
-  --text-interactive-btn--line-height: 1.15;
-  --text-tech-mono: 0.75rem;
-  --text-tech-mono--line-height: 1.35;
+  --text-label-caps--line-height: 1.35;
+  --text-interactive-btn: 1rem;
+  --text-interactive-btn--line-height: 1.25;
+  --text-tech-mono: 0.8125rem;
+  --text-tech-mono--line-height: 1.4;
 
-  --shadow-hard: 4px 4px 0px 0px #0F0F0F;
-  --shadow-hard-lg: 8px 8px 0px 0px #0F0F0F;
+  --shadow-hard: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(37, 99, 235, 0.04);
+  --shadow-hard-lg: 0 12px 32px -4px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(37, 99, 235, 0.06);
 }
 
 @layer base {
   * {
-    @apply border-ink-black outline-ink-black/50;
+    @apply border-[#DBEAFE] outline-[#2563EB]/40;
   }
   body {
-    @apply bg-background text-on-background font-body-md selection:bg-neon-yellow selection:text-ink-black;
+    @apply bg-[#F8FAFC] text-[#0F172A] font-sans antialiased selection:bg-[#DBEAFE] selection:text-[#1D4ED8];
   }
   html {
-    @apply font-body-md;
+    @apply font-sans;
   }
 }
 
-/* Custom sketch-like styles (Cyber-Sketch) */
-.sketch-border {
-    border: 3px solid var(--color-ink-black);
-    /* No rounded doodle edges in Cyber-Sketch */
-}
-.sketch-border-thin {
-    border: 2px solid var(--color-ink-black);
-}
-.sketchy-border {
-    border: 3px solid var(--color-ink-black);
-}
-.sketchy-border-alt {
-    border: 2px solid var(--color-ink-black);
-}
-.hard-shadow {
-    box-shadow: 4px 4px 0px 0px var(--color-ink-black);
-}
-.hard-shadow-lg {
-    box-shadow: 8px 8px 0px 0px var(--color-ink-black);
-}
-.hard-shadow-sm {
-    box-shadow: 2px 2px 0px 0px var(--color-ink-black);
+/* Studio card & surface helper classes (replacing legacy sketch/brutalist classes) */
+.studio-card {
+  background-color: #FFFFFF;
+  border: 1px solid #DBEAFE;
+  border-radius: 1.25rem;
+  box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(37, 99, 235, 0.03);
 }
 
-/* Explicit utilities for the design vocabulary used by the booth screens. */
+.studio-panel {
+  background-color: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 1rem;
+}
+
+.sketch-border,
+.sketchy-border {
+  border: 1px solid #DBEAFE;
+  border-radius: 1rem;
+}
+
+.sketch-border-thin,
+.sketchy-border-alt {
+  border: 1px solid #E2E8F0;
+  border-radius: 0.75rem;
+}
+
+.hard-shadow {
+  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(37, 99, 235, 0.04);
+}
+
+.hard-shadow-lg {
+  box-shadow: 0 12px 32px -4px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(37, 99, 235, 0.06);
+}
+
+.hard-shadow-sm {
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05);
+}
+
 .border-border-thick {
-    border: 3px solid var(--color-ink-black);
+  border: 1px solid #DBEAFE;
 }
 .border-b-border-thick {
-    border-bottom: 3px solid var(--color-ink-black);
+  border-bottom: 1px solid #DBEAFE;
 }
 .border-t-border-thick {
-    border-top: 3px solid var(--color-ink-black);
+  border-top: 1px solid #DBEAFE;
 }
 .border-l-border-thick {
-    border-left: 3px solid var(--color-ink-black);
-}
-.jiggle-active:active {
-    box-shadow: none !important;
-    transform: translate(4px, 4px) !important;
+  border-left: 1px solid #DBEAFE;
 }
 
+.jiggle-active:active {
+  transform: scale(0.98);
+}
+
+/* Disable legacy pixel corners cleanly */
 .pixel-corners {
-    position: relative;
+  position: relative;
 }
 .pixel-corners::before,
 .pixel-corners::after,
 .pixel-corners-inner::before,
 .pixel-corners-inner::after {
-    content: '';
-    position: absolute;
-    width: 4px;
-    height: 4px;
-    background-color: #0F0F0F;
+  display: none !important;
+  content: none !important;
 }
-.pixel-corners::before { top: -3px; left: -3px; }
-.pixel-corners::after { top: -3px; right: -3px; }
-.pixel-corners-inner::before { bottom: -3px; left: -3px; }
-.pixel-corners-inner::after { bottom: -3px; right: -3px; }
 
-/* Tape corners are no longer standard tape, they are structural dog-ears if needed */
-.tape-corner-tl {
-    display: none; /* Disabled in Cyber-Sketch */
-}
+.tape-corner-tl,
 .tape-corner-br {
-    display: none;
+  display: none;
 }
 
-/* Background for specific cyber screens */
-.bg-cyber-grid {
-    background-image: radial-gradient(#6320EE 20%, transparent 20%),
-    radial-gradient(#6320EE 20%, transparent 20%);
-    background-color: #211e29;
-    background-position: 0 0, 10px 10px;
-    background-size: 20px 20px;
+/* Subtle studio background pattern -> Electric Blue #0038FF + 4rem grid */
+.bg-studio-pattern {
+  background-color: #0038FF;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.085) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.085) 1px, transparent 1px);
+  background-size: 4rem 4rem;
 }
 
-/* Loading scribble animation */
+.text-3d-blue {
+  font-family: "Arial Black", "Bricolage Grotesque", Impact, sans-serif;
+  text-shadow:
+    1px 1px 0 #001A99,
+    2px 2px 0 #001A99,
+    3px 3px 0 #001A99,
+    4px 4px 0 #001A99,
+    5px 5px 0 #001A99,
+    6px 6px 0 #001A99,
+    7px 7px 0 #001A99,
+    8px 8px 0 #001A99,
+    9px 9px 0 #001A99,
+    10px 10px 0 #001A99;
+}
+
+.text-3d-blue-sm {
+  font-family: "Arial Black", "Bricolage Grotesque", Impact, sans-serif;
+  text-shadow:
+    1px 1px 0 #001A99,
+    2px 2px 0 #001A99,
+    3px 3px 0 #001A99,
+    4px 4px 0 #001A99,
+    5px 5px 0 #001A99;
+}
+
+/* Loading spinner animation */
 .scribble-loader {
-    display: inline-block;
-    position: relative;
-    width: 80px;
-    height: 80px;
+  display: inline-block;
+  position: relative;
+  width: 64px;
+  height: 64px;
 }
 .scribble-loader svg {
-    animation: rotate 2s linear infinite;
+  animation: rotate 1.6s linear infinite;
 }
 .scribble-loader circle {
-    stroke: var(--color-ink-black);
-    stroke-width: 4;
-    stroke-dasharray: 1, 200;
-    stroke-dashoffset: 0;
-    animation: dash 1.5s ease-in-out infinite, color 6s ease-in-out infinite;
-    stroke-linecap: round;
+  stroke: #2563EB;
+  stroke-width: 4;
+  stroke-dasharray: 1, 200;
+  stroke-dashoffset: 0;
+  animation: dash 1.4s ease-in-out infinite;
+  stroke-linecap: round;
 }
 @keyframes rotate {
-    100% { transform: rotate(360deg); }
+  100% { transform: rotate(360deg); }
 }
 @keyframes dash {
-    0% { stroke-dasharray: 1, 200; stroke-dashoffset: 0; }
-    50% { stroke-dasharray: 89, 200; stroke-dashoffset: -35px; }
-    100% { stroke-dasharray: 89, 200; stroke-dashoffset: -124px; }
+  0% { stroke-dasharray: 1, 200; stroke-dashoffset: 0; }
+  50% { stroke-dasharray: 89, 200; stroke-dashoffset: -35px; }
+  100% { stroke-dasharray: 89, 200; stroke-dashoffset: -124px; }
 }
 
 /* Safe Area Insets for Mobile Notches */
 body {
-  /* Handle iPhone Notch and Android cutouts */
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
-  /* Make sure background extends behind the notch */
   background-color: var(--color-background);
 }
 
-/* Base minimum tap target for accessibility */
-button, 
-a, 
-input[type="button"], 
-input[type="submit"], 
+/* Base minimum tap target for touch kiosk accessibility */
+button,
+a,
+input[type="button"],
+input[type="submit"],
 input[type="reset"] {
   min-height: 44px;
-  min-width: 44px;
 }
 
 /* Hide scrollbar for clean UI but allow scrolling */
 .no-scrollbar::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -262,97 +290,68 @@ input[type="reset"] {
   }
 }
 
-/* The MVP print adapter uses the browser/system print dialog. */
+/* All browser print jobs use 4R: 4 × 6 inches (101.6 × 152.4 mm). */
 #photobooth-print-surface {
   display: none;
 }
 
 @media print {
   @page {
-    /* 0mm margins ensure borderless alignment to the far left of the paper roll/sheet */
-    margin: 0mm !important;
-    size: auto;
+    size: 4in 6in;
+    margin: 0;
   }
 
   html,
   body {
     margin: 0 !important;
     padding: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
+    width: 4in !important;
+    height: auto !important;
     background: #ffffff !important;
     overflow: visible !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* Hide regular UI elements when printing, keep only the dedicated print surface */
   body > *:not(#photobooth-print-surface) {
     display: none !important;
     visibility: hidden !important;
   }
 
   #photobooth-print-surface {
-    display: flex !important;
-    visibility: visible !important;
-    flex-direction: row !important;
-    align-items: flex-start !important;
-    justify-content: flex-start !important;
-    position: fixed !important;
-    left: 0 !important;
-    top: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    max-height: 100% !important;
-    max-width: 100% !important;
-    background: #ffffff !important;
-    box-sizing: border-box !important;
-    z-index: 99999999 !important;
-    overflow: hidden !important;
-  }
-
-  #photobooth-print-surface .photobooth-print-img,
-  #photobooth-print-surface img {
     display: block !important;
     visibility: visible !important;
-    width: auto !important;
-    object-fit: contain !important;
-    /* Pin image flush to the very top-left corner of the paper sheet */
-    object-position: left top !important;
+    position: static !important;
     margin: 0 !important;
     padding: 0 !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
+    width: 4in !important;
+    background: #ffffff !important;
+  }
+
+  #photobooth-print-surface .photobooth-print-page {
+    display: block !important;
+    width: 4in !important;
+    height: 6in !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    break-inside: avoid;
+    break-after: page;
+  }
+
+  #photobooth-print-surface .photobooth-print-page:last-child {
+    break-after: auto;
+  }
+
+  #photobooth-print-surface .photobooth-print-img {
+    display: block !important;
+    visibility: visible !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    object-fit: contain !important;
     image-rendering: auto !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  /* Size 1: Compact (Default) - ~145mm height, does NOT fill the whole paper */
-  #photobooth-print-surface.print-size-compact .photobooth-print-img,
-  #photobooth-print-surface.print-size-compact img,
-  #photobooth-print-surface:not(.print-size-mini):not(.print-size-full) .photobooth-print-img,
-  #photobooth-print-surface:not(.print-size-mini):not(.print-size-full) img {
-    height: 145mm !important;
-    max-height: min(70vh, 145mm) !important;
-    max-width: 70vw !important;
-  }
-
-  /* Size 2: Mini - ~115mm height (wallet / pocket size, maximum paper saving) */
-  #photobooth-print-surface.print-size-mini .photobooth-print-img,
-  #photobooth-print-surface.print-size-mini img {
-    height: 115mm !important;
-    max-height: min(52vh, 115mm) !important;
-    max-width: 55vw !important;
-  }
-
-  /* Size 3: Full Paper (100vh) */
-  #photobooth-print-surface.print-size-full .photobooth-print-img,
-  #photobooth-print-surface.print-size-full img {
-    height: 100vh !important;
-    max-height: 100vh !important;
-    max-width: 100vw !important;
   }
 }

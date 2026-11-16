@@ -20,7 +20,10 @@ export function SessionTimeout() {
 
     lastActivityRef.current = Date.now();
     const markActivity = (event: Event) => {
-      if (event.target instanceof Element && event.target.closest('[role="alertdialog"]')) {
+      if (
+        event.target instanceof Element &&
+        event.target.closest('[role="alertdialog"]')
+      ) {
         return;
       }
       lastActivityRef.current = Date.now();
@@ -43,7 +46,11 @@ export function SessionTimeout() {
       );
     }, 1000);
 
-    const events: Array<keyof WindowEventMap> = ["pointerdown", "touchstart", "keydown"];
+    const events: Array<keyof WindowEventMap> = [
+      "pointerdown",
+      "touchstart",
+      "keydown",
+    ];
     events.forEach((event) => window.addEventListener(event, markActivity));
 
     return () => {
@@ -66,33 +73,44 @@ export function SessionTimeout() {
 
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-ink-black/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm"
       role="alertdialog"
       aria-modal="true"
       aria-labelledby="session-timeout-title"
     >
-      <div className="w-full max-w-md bg-paper-white border-border-thick border-ink-black hard-shadow-lg p-6 text-center">
-        <span className="material-symbols-outlined text-5xl text-curtain-red" aria-hidden="true">timer</span>
-        <h2 id="session-timeout-title" className="mt-3 font-headline-lg-mobile text-headline-lg-mobile text-ink-black uppercase">
-          Sesi akan berakhir
+      <div className="w-full max-w-md bg-white rounded-[2.5rem] border-4 border-[#0038FF] shadow-[0_24px_60px_rgba(0,0,0,0.4)] p-6 md:p-8 text-center">
+        <div className="w-16 h-16 rounded-full bg-[#CCFF00] text-black flex items-center justify-center mx-auto shadow-md">
+          <span className="material-symbols-outlined text-4xl" aria-hidden="true">
+            timer
+          </span>
+        </div>
+        <h2
+          id="session-timeout-title"
+          className="mt-4 text-xl md:text-2xl font-black uppercase text-black"
+        >
+          Sesi Akan Berakhir
         </h2>
-        <p className="mt-2 font-body-md text-on-surface-variant">
-          Tidak ada aktivitas. Sesi akan direset dalam <strong className="text-ink-black">{secondsRemaining} detik</strong>.
+        <p className="mt-2 text-sm text-black/70 font-medium leading-relaxed">
+          Tidak ada aktivitas terdeteksi. Sesi otomatis kembali ke layar utama dalam{" "}
+          <strong className="text-[#0038FF] font-black">
+            {secondsRemaining} detik
+          </strong>
+          .
         </p>
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
           <button
             type="button"
             onClick={continueSession}
-            className="py-3 bg-neon-yellow text-ink-black font-label-caps text-label-caps font-bold border-border-thick border-ink-black hard-shadow jiggle-active"
+            className="min-h-[48px] py-3 px-4 rounded-full bg-[#CCFF00] hover:bg-[#b8e600] text-black font-black text-xs uppercase shadow-md active:scale-95 transition-all cursor-pointer"
           >
-            LANJUTKAN SESI
+            Lanjutkan Sesi
           </button>
           <button
             type="button"
             onClick={endSession}
-            className="py-3 bg-error-red text-stark-white font-label-caps text-label-caps font-bold border-border-thick border-ink-black hard-shadow jiggle-active"
+            className="min-h-[48px] py-3 px-4 rounded-full bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-black text-xs uppercase active:scale-95 transition-all cursor-pointer"
           >
-            AKHIRI SESI
+            Akhiri Sesi
           </button>
         </div>
       </div>

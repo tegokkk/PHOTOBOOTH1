@@ -17,10 +17,10 @@ interface AdminMetrics {
 export default function AdminDashboardPage() {
   const { showToast } = useUIStore();
   const router = useRouter();
-  
+
   const [pin, setPin] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
+
   const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [photos, setPhotos] = useState<AdminPhoto[]>([]);
@@ -48,19 +48,24 @@ export default function AdminDashboardPage() {
         fetch(`${API_URL}/api/admin/metrics`),
         fetch(`${API_URL}/api/admin/photos?limit=50`),
       ]);
-      const data = metricsResponse.ok && metricsResponse.headers.get("content-type")?.includes("application/json")
-        ? await metricsResponse.json().catch(() => null)
-        : null;
-      const photosData = photosResponse.ok && photosResponse.headers.get("content-type")?.includes("application/json")
-        ? await photosResponse.json().catch(() => null)
-        : null;
+      const data =
+        metricsResponse.ok &&
+        metricsResponse.headers.get("content-type")?.includes("application/json")
+          ? await metricsResponse.json().catch(() => null)
+          : null;
+      const photosData =
+        photosResponse.ok &&
+        photosResponse.headers.get("content-type")?.includes("application/json")
+          ? await photosResponse.json().catch(() => null)
+          : null;
 
       if (data?.success) {
         setMetrics(data.data);
       } else {
         showToast(data?.message || "Gagal memuat metrik.", "error");
       }
-      if (photosData?.success && Array.isArray(photosData.data)) setPhotos(photosData.data);
+      if (photosData?.success && Array.isArray(photosData.data))
+        setPhotos(photosData.data);
     } catch {
       showToast("Terjadi kesalahan saat menghubungi server.", "error");
     } finally {
@@ -70,23 +75,42 @@ export default function AdminDashboardPage() {
 
   if (!isAuthenticated) {
     return (
-      <main className="flex-grow w-full max-w-md mx-auto p-4 md:p-8 pt-24 pb-24 flex flex-col items-center justify-center">
-        <div className="bg-surface-container border-2 border-ink-black hard-shadow p-8 w-full">
-          <h1 className="font-headline-lg text-ink-black mb-6 text-center">Login Admin</h1>
-          <form onSubmit={handleLogin} className="flex flex-col gap-4">
+      <main className="flex-grow w-full min-h-[calc(100vh-76px)] bg-studio-pattern p-4 md:p-8 flex flex-col items-center justify-center">
+        <div className="bg-white rounded-[2.5rem] border-4 border-white shadow-[0_24px_60px_rgba(0,0,0,0.35)] p-6 md:p-8 w-full max-w-md">
+          <div className="w-14 h-14 rounded-full bg-[#CCFF00] text-black flex items-center justify-center mx-auto mb-4 shadow-md">
+            <span
+              className="material-symbols-outlined text-3xl"
+              style={{ fontVariationSettings: "'FILL' 1" }}
+            >
+              admin_panel_settings
+            </span>
+          </div>
+          <h1 className="text-2xl font-black uppercase text-black text-center">
+            Login Admin Studio
+          </h1>
+          <p className="text-xs font-semibold text-black/60 text-center mt-1 mb-6">
+            Masukkan PIN Operator untuk mengakses dasbor operasional.
+          </p>
+          <form onSubmit={handleLogin} className="flex flex-col gap-3.5">
             <input
               type="password"
+              inputMode="numeric"
               placeholder="Masukkan PIN Operator"
               value={pin}
               onChange={(e) => setPin(e.target.value)}
-              className="w-full bg-stark-white border-2 border-ink-black px-4 py-3 font-tech-mono text-center tracking-widest text-lg focus:outline-none focus:ring-4 focus:ring-neon-yellow"
+              className="w-full rounded-2xl bg-[#F8F9FA] border-2 border-gray-200 px-4 py-3.5 font-mono text-center tracking-[0.35em] text-lg font-black text-black focus:outline-none focus:border-[#0038FF] focus:bg-white"
               autoFocus
             />
-            <Button type="submit" variant="primary" className="w-full">
-              Masuk
+            <Button type="submit" variant="primary" fullWidth>
+              Masuk ke Dasbor
             </Button>
-            <Button type="button" variant="outline" className="w-full" onClick={() => router.push("/")}>
-              Kembali
+            <Button
+              type="button"
+              variant="outline"
+              fullWidth
+              onClick={() => router.push("/")}
+            >
+              Kembali ke Studio
             </Button>
           </form>
         </div>
@@ -95,85 +119,127 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <main className="flex-grow w-full max-w-5xl mx-auto p-4 md:p-8 pt-6 pb-24">
-      <div className="flex items-center justify-between mb-8 border-b-2 border-ink-black pb-4">
-        <div>
-          <h1 className="font-headline-lg text-ink-black flex items-center gap-2">
-            <span className="material-symbols-outlined text-3xl text-curtain-red" style={{ fontVariationSettings: "'FILL' 1" }}>
-              admin_panel_settings
-            </span>
-            Dashboard Admin
-          </h1>
-          <p className="font-body-md text-on-surface-variant mt-1">
-            Pantau aktivitas dan statistik aplikasi.
-          </p>
+    <main className="flex-grow w-full min-h-[calc(100vh-76px)] bg-studio-pattern">
+      <div className="max-w-6xl mx-auto p-4 md:p-8 pt-6 pb-24 space-y-6">
+        <div className="bg-white rounded-[2rem] shadow-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-full bg-[#CCFF00] text-black flex items-center justify-center shrink-0 shadow-sm">
+              <span
+                className="material-symbols-outlined text-2xl"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
+                admin_panel_settings
+              </span>
+            </div>
+            <div>
+              <h1 className="text-xl md:text-2xl font-black uppercase text-black">
+                Dashboard Admin
+              </h1>
+              <p className="text-xs md:text-sm font-semibold text-black/60">
+                Pantau aktivitas sesi, penyimpanan, dan antrean cetak foto.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Button variant="secondary" size="sm" onClick={() => fetchData()}>
+              <span className="material-symbols-outlined mr-1.5 text-lg">
+                refresh
+              </span>
+              Segarkan
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push("/")}
+            >
+              Ke Photobooth
+            </Button>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={handleLogout}
+              aria-label="Keluar dari akun admin"
+            >
+              <span className="material-symbols-outlined mr-1.5 text-lg" aria-hidden="true">
+                logout
+              </span>
+              Keluar
+            </Button>
+          </div>
         </div>
-        <Button variant="outline" onClick={handleLogout} aria-label="Keluar dari akun admin">
-          <span className="material-symbols-outlined mr-2" aria-hidden="true">logout</span>
-          Keluar
-        </Button>
-      </div>
 
-      {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-32 bg-surface-container-high animate-pulse sketch-border" />
-          ))}
-        </div>
-      ) : metrics ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <MetricCard 
-            title="Total Foto" 
-            value={metrics.totalPhotos?.toString() || "0"} 
-            icon="photo_library"
-            color="bg-paper-white text-ink-black" 
-          />
-          <MetricCard 
-            title="Foto Hari Ini" 
-            value={metrics.photosToday?.toString() || "0"} 
-            icon="today"
-            color="bg-yellow-300 text-ink-black" 
-          />
-          <MetricCard 
-            title="Penyimpanan" 
-            value={`${metrics.totalStorageMB || 0} MB`} 
-            icon="storage"
-            color="bg-curtain-red text-paper-white" 
-          />
-        </div>
-      ) : (
-        <div className="bg-red-50 text-red-800 p-4 border-2 border-red-800 sketch-border flex items-center gap-2">
-          <span className="material-symbols-outlined">error</span>
-          <span>Gagal memuat data dasbor. Pastikan Backend menyala.</span>
-        </div>
-      )}
-      
-      <div className="mt-8 pt-8 border-t-2 border-ink-black">
-        <h2 className="font-headline-lg-mobile text-ink-black mb-4">Aksi Cepat</h2>
-        <div className="flex gap-4">
-          <Button variant="secondary" onClick={() => fetchData()}>
-            <span className="material-symbols-outlined mr-2">refresh</span>
-            Refresh Metrik
-          </Button>
-          <Button variant="outline" onClick={() => router.push("/")}>
-            Kembali ke Beranda
-          </Button>
-        </div>
-      </div>
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-32 rounded-[2rem] bg-white animate-pulse p-6 shadow-xl"
+              />
+            ))}
+          </div>
+        ) : metrics ? (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <MetricCard
+              title="Total Foto Tersimpan"
+              value={metrics.totalPhotos?.toString() || "0"}
+              icon="photo_library"
+              highlight="bg-[#CCFF00] text-black"
+            />
+            <MetricCard
+              title="Foto Hari Ini"
+              value={metrics.photosToday?.toString() || "0"}
+              icon="today"
+              highlight="bg-[#0038FF] text-white"
+            />
+            <MetricCard
+              title="Total Penyimpanan"
+              value={`${metrics.totalStorageMB || 0} MB`}
+              icon="storage"
+              highlight="bg-black text-[#CCFF00]"
+            />
+          </div>
+        ) : (
+          <div className="bg-red-50 text-red-800 p-4 rounded-2xl border border-red-200 flex items-center gap-2.5 text-sm font-bold shadow-lg">
+            <span className="material-symbols-outlined text-red-600">error</span>
+            <span>Gagal memuat data dasbor. Pastikan server backend menyala.</span>
+          </div>
+        )}
 
-      <AdminPhotoQueue photos={photos} token={""} />
+        <AdminPhotoQueue photos={photos} token={""} />
+      </div>
     </main>
   );
 }
 
-function MetricCard({ title, value, icon, color }: { title: string, value: string, icon: string, color: string }) {
+function MetricCard({
+  title,
+  value,
+  icon,
+  highlight,
+}: {
+  title: string;
+  value: string;
+  icon: string;
+  highlight: string;
+}) {
   return (
-    <div className={`p-6 border-2 border-ink-black sketch-border hard-shadow flex flex-col justify-between ${color}`}>
-      <div className="flex items-start justify-between mb-4">
-        <h3 className="font-label-caps text-sm opacity-90">{title}</h3>
-        <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>{icon}</span>
+    <div className="p-6 rounded-[2rem] bg-white shadow-2xl flex flex-col justify-between">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-xs font-black uppercase tracking-wider text-black/55">
+          {title}
+        </h3>
+        <div
+          className={`w-10 h-10 rounded-full flex items-center justify-center shadow-xs ${highlight}`}
+        >
+          <span
+            className="material-symbols-outlined text-xl"
+            style={{ fontVariationSettings: "'FILL' 1" }}
+          >
+            {icon}
+          </span>
+        </div>
       </div>
-      <p className="font-headline-lg text-4xl truncate">{value}</p>
+      <p className="text-3xl font-black text-black truncate">{value}</p>
     </div>
   );
 }

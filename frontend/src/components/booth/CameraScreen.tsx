@@ -1,22 +1,39 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useCamera } from "@/hooks/useCamera";
 import { useAppStore } from "@/store/useAppStore";
 import { useUIStore } from "@/store/useUIStore";
 import { getFramePreviewUrl, getFrameMetaFromFrame } from "@/lib/frameMeta";
 import { CameraOverlays } from "./camera/CameraOverlays";
+import { BoothHeader } from "./BoothHeader";
 
 export function CameraScreen() {
-  const { 
-    videoRef, hasPermission, requestPermission, capturePhoto, error, stopCamera,
-    hasMultipleCameras, switchCamera, facingMode
+  const {
+    videoRef,
+    hasPermission,
+    requestPermission,
+    capturePhoto,
+    error,
+    stopCamera,
+    hasMultipleCameras,
+    switchCamera,
+    facingMode,
   } = useCamera();
   const {
-    capturedPhotos, addCapturedPhoto, clearPhotos, setCurrentStep,
-    selectedFrameId, frames,
-    currentPhotoIndex, totalPhotosNeeded, setPhotoSession, advancePhotoIndex, resetPhotoSession,
-    timerDuration, setTimerDuration,
+    capturedPhotos,
+    completePhotoCapture,
+    clearPhotos,
+    setCurrentStep,
+    selectedFrameId,
+    frames,
+    currentPhotoIndex,
+    setPhotoSession,
+    resetPhotoSession,
+    retakeQueue,
+    cancelRetake,
+    timerDuration,
+    setTimerDuration,
   } = useAppStore();
   const { showToast } = useUIStore();
 
@@ -24,6 +41,9 @@ export function CameraScreen() {
   const [isCapturing, setIsCapturing] = useState(false);
   const [flashVisible, setFlashVisible] = useState(false);
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
+  const captureFinishRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const captureBusyRef = useRef(false);
+  const isRetaking = retakeQueue.length > 0;
 
   const currentFrame = frames.find((f) => f.id === selectedFrameId) || null;
   const previewFrameUrl = currentFrame ? getFramePreviewUrl(currentFrame) : "";
@@ -38,44 +58,47 @@ export function CameraScreen() {
     if (hasPermission === null) {
       requestPermission();
     }
-  }, [photoCount, hasPermission, currentPhotoIndex, capturedPhotos.length, requestPermission, setPhotoSession]);
-
-  /** Flash animation */
-  const triggerFlash = () => {
-    setFlashVisible(true);
-    setTimeout(() => setFlashVisible(false), 300);
-  };
+  }, [
+    photoCount,
+    hasPermission,
+    currentPhotoIndex,
+    capturedPhotos.length,
+    requestPermission,
+    setPhotoSession,
+  ]);
 
   /** Do the actual capture → store photo → decide next step */
-  const doCapture = () => {
+  const doCapture = useCallback(() => {
     const photo = capturePhoto();
     if (!photo) {
+      captureBusyRef.current = false;
+      setIsCapturing(false);
       showToast("Gagal mengambil foto. Coba lagi.", "error");
       return;
     }
 
-    triggerFlash();
-    addCapturedPhoto(photo);
-
-    // Give state time to update, then check if all photos are filled
-    setTimeout(() => {
-      const photos = useAppStore.getState().capturedPhotos;
-      const filledCount = photos.filter(Boolean).length;
-
-      if (filledCount >= totalPhotosNeeded) {
-        showToast("Semua foto diambil!", "success");
-        setTimeout(() => setCurrentStep("preview"), 350);
+    setFlashVisible(true);
+    captureFinishRef.current = setTimeout(() => {
+      setFlashVisible(false);
+      setIsCapturing(false);
+      captureBusyRef.current = false;
+      completePhotoCapture(photo, facingMode === "user");
+      const session = useAppStore.getState();
+      if (session.currentStep === "review") {
+        showToast("Foto selesai. Periksa hasil dan pilih kolom untuk retake jika perlu.", "success");
       } else {
-        advancePhotoIndex();
-        const nextIndex = useAppStore.getState().currentPhotoIndex;
-        showToast(`Slot ${nextIndex + 1}/${totalPhotosNeeded} — ambil foto! 📸`, "info");
+        showToast(
+          `Siap untuk kolom ${session.currentPhotoIndex + 1}/${session.totalPhotosNeeded}.`,
+          "info"
+        );
       }
-    }, 0);
-  };
+    }, 300);
+  }, [capturePhoto, completePhotoCapture, facingMode, showToast]);
 
   /** Countdown with user-selected duration (3s, 5s, 10s) then capture */
-  const startCountdown = () => {
-    if (isCapturing || countdown !== null) return;
+  const startCountdown = useCallback(() => {
+    if (captureBusyRef.current || !hasPermission) return;
+    captureBusyRef.current = true;
     setIsCapturing(true);
     let n = timerDuration;
     setCountdown(n);
@@ -83,34 +106,38 @@ export function CameraScreen() {
       n--;
       if (n <= 0) {
         clearInterval(countdownRef.current!);
+        countdownRef.current = null;
         setCountdown(null);
-        setIsCapturing(false);
         doCapture();
       } else {
         setCountdown(n);
       }
     }, 1000);
-  };
+  }, [timerDuration, hasPermission, doCapture]);
 
-  /** Trigger capture sequence (with countdown) */
   const handleSnap = () => {
     if (countdown !== null) return;
     startCountdown();
   };
 
-  /** Cancel active countdown sequence */
-  const handleCancelCountdown = () => {
+  const handleCancelCountdown = useCallback(() => {
     if (countdownRef.current) {
       clearInterval(countdownRef.current);
       countdownRef.current = null;
     }
     setCountdown(null);
     setIsCapturing(false);
-    showToast("Hitung mundur dibatalkan ❌", "info");
-  };
+    captureBusyRef.current = false;
+    showToast("Hitung mundur dibatalkan", "info");
+  }, [showToast]);
 
   const handleChangeFrame = () => {
-    if (capturedPhotos.some(Boolean) && !window.confirm("Foto yang sudah diambil akan dihapus. Yakin ingin mengganti frame?")) {
+    if (
+      capturedPhotos.some(Boolean) &&
+      !window.confirm(
+        "Foto yang sudah diambil akan dihapus. Yakin ingin mengganti frame?"
+      )
+    ) {
       return;
     }
 
@@ -129,199 +156,228 @@ export function CameraScreen() {
     countdownRef.current = null;
     setCountdown(null);
     setIsCapturing(false);
+    captureBusyRef.current = false;
+    if (isRetaking) {
+      cancelRetake();
+      return;
+    }
     clearPhotos();
     resetPhotoSession();
     showToast("Sesi foto diulang dengan frame yang sama.", "info");
   };
 
-  // Keyboard shortcut: Space or Enter to trigger shutter, Escape to cancel countdown
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.code === "Escape") {
+        if (countdown !== null) {
+          e.preventDefault();
+          handleCancelCountdown();
+        }
+        return;
+      }
+      if (
+        e.target instanceof Element &&
+        e.target.closest("button, a, input, textarea, select, [contenteditable='true']")
+      )
+        return;
       if (e.code === "Space" || e.code === "Enter") {
         e.preventDefault();
         if (countdown === null && currentPhotoIndex < photoCount) {
           startCountdown();
         }
-      } else if (e.code === "Escape") {
-        if (countdown !== null) {
-          e.preventDefault();
-          handleCancelCountdown();
-        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [countdown, currentPhotoIndex, photoCount]);
+  }, [countdown, currentPhotoIndex, photoCount, startCountdown, handleCancelCountdown]);
 
-  // Cleanup countdown on unmount
   useEffect(() => {
     return () => {
       if (countdownRef.current) clearInterval(countdownRef.current);
+      if (captureFinishRef.current) clearTimeout(captureFinishRef.current);
     };
   }, []);
 
+  const filledCount = capturedPhotos.filter(Boolean).length;
+
   return (
-    <div className="flex-1 flex flex-col w-full min-h-screen bg-cyber-purple relative overflow-x-hidden">
-      {/* TopAppBar inside the view */}
-      <header className="flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 w-full z-50 bg-background border-b-border-thick border-ink-black sticky top-0">
-        <div className="flex items-center gap-4">
-          <h1 className="font-headline-md text-headline-md text-primary tracking-tighter">POINTER PHOTOBOOTH</h1>
-          <div className="hidden md:flex h-6 border-l-2 border-outline-variant mx-2"></div>
-          <span className="hidden md:block font-tech-mono text-tech-mono uppercase text-neon-yellow font-bold">LANGKAH 2 • AMBIL FOTO</span>
-        </div>
-        <div className="flex items-center gap-4 text-neon-yellow">
-          <span className="material-symbols-outlined text-[24px]">wifi_tethering</span>
-          <div className="flex items-center gap-1 font-tech-mono text-xs font-bold bg-ink-black text-neon-yellow px-2.5 py-1 border border-neon-yellow hard-shadow-sm">
+    <div className="flex-1 flex flex-col w-full min-h-screen bg-studio-pattern relative overflow-x-hidden">
+      <BoothHeader
+        currentStep={2}
+        rightSlot={
+          <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#CCFF00] text-black text-xs font-black uppercase shadow-sm">
             <span className="material-symbols-outlined text-[16px]">timer</span>
-            <span>{timerDuration}S</span>
-          </div>
-        </div>
-      </header>
+            <span>{timerDuration} Detik</span>
+          </span>
+        }
+      />
 
-      {/* Mobile Step Indicator */}
-      <div className="md:hidden bg-ink-black p-2 border-b-border-thick border-ink-black flex justify-center z-40 relative">
-        <span className="font-tech-mono text-tech-mono uppercase text-neon-yellow font-bold">LANGKAH 2 • AMBIL FOTO</span>
-      </div>
-
-      <main className="flex-grow p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center relative pb-8">
-        {/* Background pattern */}
-        <div className="absolute inset-0 pointer-events-none opacity-10" style={{ backgroundImage: "radial-gradient(#DFFF00 1px, transparent 1px)", backgroundSize: "16px 16px" }}></div>
-
-        {/* 3-Column Layout: Left (Opsi Foto), Center (Live Viewfinder), Right (Kontrol Shutter) */}
-        <div className="w-full max-w-[1440px] flex flex-col lg:flex-row items-center lg:items-center justify-center gap-6 relative z-10">
-
-          {/* LEFT: OPSI FOTO */}
-          <div className="w-full max-w-md lg:max-w-none lg:w-72 xl:w-80 flex-shrink-0 order-2 lg:order-1 bg-stark-white border-border-thick border-ink-black hard-shadow p-5 md:p-6 pixel-corners flex flex-col gap-4">
-            <div className="pixel-corners-inner"></div>
-
-            {/* Header */}
-            <div className="flex items-center gap-2 border-b-2 border-ink-black pb-2">
-              <span className="material-symbols-outlined text-cyber-purple font-bold">tune</span>
-              <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-ink-black uppercase tracking-tighter">
-                OPSI FOTO
-              </h2>
+      <main className="flex-grow p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center relative">
+        <div className="w-full max-w-[1440px] flex flex-col lg:flex-row items-center lg:items-stretch justify-center gap-6 relative z-10">
+          {/* LEFT: Pengaturan & Status Frame */}
+          <div className="w-full max-w-md lg:max-w-none lg:w-72 xl:w-80 flex-shrink-0 order-3 lg:order-1 bg-white rounded-[2rem] shadow-2xl p-5 md:p-6 flex flex-col gap-4">
+            <div className="flex items-center gap-3 border-b border-gray-100 pb-3.5">
+              <div className="w-10 h-10 rounded-full bg-[#0038FF] text-white flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-xl">tune</span>
+              </div>
+              <div>
+                <h2 className="text-base md:text-lg font-black uppercase text-black leading-tight">
+                  Opsi Studio
+                </h2>
+                <p className="text-xs font-semibold text-black/55">
+                  Bingkai & kamera
+                </p>
+              </div>
             </div>
 
-            {/* Frame Details Badge */}
-            <div className="bg-surface-container border-2 border-ink-black p-3.5 hard-shadow-sm flex flex-col gap-1">
-              <span className="font-tech-mono text-[10px] text-on-surface-variant uppercase tracking-widest font-bold">
-                FRAME AKTIF
+            {/* Active Frame Summary */}
+            <div className="rounded-[1.5rem] bg-[#F8F9FA] border border-gray-100 p-4 flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-black/50">
+                  Bingkai Aktif
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-[#CCFF00] text-black text-[11px] font-black uppercase">
+                  {isRetaking ? "Retake" : `${photoCount} Pose`}
+                </span>
+              </div>
+              <span className="font-black text-sm text-black truncate">
+                {currentFrame?.name || "Tanpa Bingkai"}
               </span>
-              <span className="font-tech-mono text-ink-black font-black text-sm uppercase truncate">
-                {currentFrame?.name || "SYS_FRAME"}
-              </span>
-              <span className="font-label-caps text-xs text-cyber-purple font-bold">
-                {photoCount} SLOT FOTO
+
+              {/* Visual Slot Progress Pills */}
+              <div className="pt-1 flex items-center gap-1.5">
+                {Array.from({ length: photoCount }).map((_, idx) => {
+                  const isDone = Boolean(capturedPhotos[idx]);
+                  const isCurrent = idx === currentPhotoIndex;
+                  return (
+                    <div
+                      key={idx}
+                      className={`h-2.5 flex-1 rounded-full transition-all ${
+                        isDone
+                          ? "bg-[#CCFF00] ring-1 ring-black/15"
+                          : isCurrent
+                          ? "bg-[#0038FF]"
+                          : "bg-gray-200"
+                      }`}
+                    />
+                  );
+                })}
+              </div>
+              <span className="text-[11px] text-black/60 font-bold">
+                {isRetaking ? `Retake kolom ${currentPhotoIndex + 1} · ${retakeQueue.length} kolom tersisa` : `${filledCount} dari ${photoCount} foto selesai`}
               </span>
             </div>
 
-            {/* Ganti Frame Button */}
-            <button
-              onClick={handleChangeFrame}
-              disabled={countdown !== null}
-              className="w-full py-3.5 px-4 bg-neon-yellow text-ink-black border-border-thick border-ink-black font-tech-mono font-bold text-sm uppercase hard-shadow jiggle-active hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-              aria-label="Ganti Frame"
-            >
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>filter_frames</span>
-              <span>GANTI FRAME</span>
-            </button>
-
-            {/* Ulangi Button */}
-            <button
-              onClick={handleRetake}
-              disabled={countdown !== null || (currentPhotoIndex === 0 && capturedPhotos.length === 0)}
-              className="w-full py-3.5 px-4 bg-stark-white text-ink-black border-border-thick border-ink-black font-tech-mono font-bold text-sm uppercase hard-shadow-sm jiggle-active hover:bg-error-red hover:text-stark-white hover:border-ink-black transition-all flex items-center justify-center gap-2 disabled:opacity-40"
-              aria-label="Ulangi Foto"
-            >
-              <span className="material-symbols-outlined font-bold">undo</span>
-              <span>ULANGI</span>
-            </button>
-
-            {/* Switch Camera Button (if multiple cameras) */}
-            {hasMultipleCameras && (
+            {/* Action Pill Buttons */}
+            <div className="flex flex-col gap-2.5">
               <button
-                onClick={switchCamera}
-                disabled={countdown !== null}
-                className="w-full py-3 px-4 bg-surface-container-high text-ink-black border-2 border-ink-black font-tech-mono font-bold text-xs uppercase hard-shadow-sm jiggle-active hover:bg-neon-yellow transition-all flex items-center justify-center gap-2"
-                aria-label="Tukar Kamera"
+                type="button"
+                onClick={handleChangeFrame}
+                disabled={isCapturing}
+                className="w-full min-h-[48px] py-3 px-4 rounded-full bg-[#0038FF] hover:bg-[#002db3] text-white font-black text-xs uppercase tracking-wide flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 cursor-pointer shadow-md"
+                aria-label="Ganti Frame"
               >
-                <span className="material-symbols-outlined text-[18px]">flip_camera_ios</span>
-                <span>TUKAR KAMERA</span>
+                <span className="material-symbols-outlined text-lg">
+                  filter_frames
+                </span>
+                <span>Ganti Bingkai</span>
               </button>
-            )}
 
-            {/* Tips Card */}
-            <div className="mt-auto border-t-2 border-ink-black/20 pt-3">
-              <p className="font-tech-mono text-[11px] text-ink-black/70 leading-relaxed uppercase">
-                ℹ Tips: Pastikan wajah berada tepat di dalam area slot frame sebelum memotret.
+              <button
+                type="button"
+                onClick={handleRetake}
+                disabled={
+                  isCapturing ||
+                  (currentPhotoIndex === 0 && capturedPhotos.length === 0)
+                }
+                className="w-full min-h-[48px] py-3 px-4 rounded-full bg-[#F8F9FA] hover:bg-red-50 text-black hover:text-red-600 border border-gray-200 hover:border-red-200 font-black text-xs uppercase tracking-wide flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-40 cursor-pointer"
+                aria-label={isRetaking ? "Kembali ke pemeriksaan" : "Ulangi Foto"}
+              >
+                <span className="material-symbols-outlined text-lg">undo</span>
+                <span>{isRetaking ? "Kembali ke Pemeriksaan" : "Ulangi dari Awal"}</span>
+              </button>
+
+              {hasMultipleCameras && (
+                <button
+                  type="button"
+                  onClick={switchCamera}
+                  disabled={isCapturing}
+                  className="w-full min-h-[48px] py-3 px-4 rounded-full bg-[#F8F9FA] hover:bg-gray-200 text-black border border-gray-200 font-black text-xs uppercase tracking-wide flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+                  aria-label="Tukar Kamera"
+                >
+                  <span className="material-symbols-outlined text-lg text-[#0038FF]">
+                    flip_camera_ios
+                  </span>
+                  <span>Tukar Kamera</span>
+                </button>
+              )}
+            </div>
+
+            <div className="mt-auto rounded-2xl bg-[#CCFF00]/30 border border-[#CCFF00] p-3.5 flex items-start gap-2.5">
+              <span className="material-symbols-outlined text-black text-lg shrink-0 mt-0.5">
+                tips_and_updates
+              </span>
+              <p className="text-xs font-semibold text-black/80 leading-relaxed">
+                Pastikan posisi wajah berada di dalam kotak slot sebelum hitung mundur selesai.
               </p>
             </div>
           </div>
 
-          {/* CENTER: Window Module for Camera Viewfinder */}
-          <div className="w-full max-w-md lg:max-w-none lg:w-auto flex-shrink order-1 lg:order-2 bg-stark-white border-border-thick border-ink-black hard-shadow-lg flex flex-col relative pixel-corners">
-            <div className="pixel-corners-inner"></div>
-
-            {/* OS Window Header */}
-            <div className="h-8 bg-ink-black flex items-center justify-between px-4 border-b-border-thick border-ink-black">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-stark-white"></div>
-                <div className="w-3 h-3 bg-neon-yellow"></div>
-                <div className="w-3 h-3 bg-error-red"></div>
-                <span className="ml-2 text-stark-white font-tech-mono text-xs uppercase tracking-widest">LIVE CAMERA</span>
+          {/* CENTER: Main Live Camera Stage */}
+          <div className="w-full max-w-md lg:max-w-none lg:w-auto flex-shrink order-1 lg:order-2 bg-white rounded-[2rem] shadow-2xl flex flex-col overflow-hidden">
+            <div className="px-5 py-3.5 bg-white border-b border-gray-100 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2.5">
+                <span className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
+                <span className="font-black text-sm uppercase text-black">
+                  {isRetaking ? `Retake Kolom ${currentPhotoIndex + 1}` : "Live Studio Camera"}
+                </span>
               </div>
-              <div className="flex items-center gap-2 text-neon-yellow">
-                <span className="w-2 h-2 rounded-full bg-error-red animate-ping"></span>
-                <span className="font-tech-mono text-[10px] uppercase font-bold tracking-wider">REC</span>
-              </div>
+              <span className="px-3 py-1 rounded-full bg-[#CCFF00] text-black text-xs font-black uppercase">
+                Pose {Math.min(currentPhotoIndex + 1, photoCount)} / {photoCount}
+              </span>
             </div>
 
-            <div className="p-4 md:p-6 flex flex-col items-center">
-              {/* Viewfinder Frame Ratio Container */}
-              <div className="relative w-fit max-w-full bg-ink-black border-border-thick border-ink-black p-2 flex items-center justify-center overflow-hidden group">
-                {/* Pixel art corner accents */}
-                <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-neon-yellow -translate-x-2 -translate-y-2 z-30"></div>
-                <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-neon-yellow translate-x-2 translate-y-2 z-30"></div>
-
-                {/* The invisible image keeps the viewfinder at the frame's natural ratio. */}
+            <div className="p-4 md:p-5 flex-1 flex flex-col items-center justify-center bg-[#F8F9FA]">
+              <div className="relative w-fit max-w-full rounded-[1.5rem] bg-black p-2 shadow-inner flex items-center justify-center overflow-hidden">
                 {previewFrameUrl ? (
-                  <img 
+                  <img
                     src={previewFrameUrl}
                     alt=""
-                    className="relative block w-auto h-auto max-w-full max-h-[min(65vh,680px)] object-contain opacity-0 pointer-events-none" 
-                    aria-hidden="true" 
+                    className="relative block w-auto h-auto max-w-full max-h-[min(64vh,660px)] object-contain opacity-0 pointer-events-none"
+                    aria-hidden="true"
                   />
                 ) : (
-                  <div className="w-[min(92vw,500px)] aspect-[4/3]" />
+                  <div className="w-[min(90vw,500px)] aspect-[4/3]" />
                 )}
 
-                {/* Previously Captured Photos */}
-                {photoCount > 1 && frameMeta?.slots && frameMeta.slots.map((slot, i) => {
-                  if (i >= currentPhotoIndex || !capturedPhotos[i]) return null;
-                  return (
-                    <img
-                      key={i}
-                      src={capturedPhotos[i]}
-                      alt={`Slot ${i + 1}`}
-                      className="absolute object-cover z-10"
-                      style={{
-                        left: `${slot.x * 100}%`,
-                        top: `${slot.y * 100}%`,
-                        width: `${slot.width * 100}%`,
-                        height: `${slot.height * 100}%`
-                      }}
-                    />
-                  );
-                })}
+                {photoCount > 1 &&
+                  frameMeta?.slots &&
+                  frameMeta.slots.map((slot, i) => {
+                    if (i === currentPhotoIndex || !capturedPhotos[i]) return null;
+                    return (
+                      <img
+                        key={i}
+                        src={capturedPhotos[i]}
+                        alt={`Slot ${i + 1}`}
+                        className="absolute object-cover z-10"
+                        style={{
+                          left: `${slot.x * 100}%`,
+                          top: `${slot.y * 100}%`,
+                          width: `${slot.width * 100}%`,
+                          height: `${slot.height * 100}%`,
+                        }}
+                      />
+                    );
+                  })}
 
-                {/* Video stream (bounded to active slot) */}
                 <video
                   ref={videoRef}
                   autoPlay
                   playsInline
                   muted
-                  className={`absolute object-cover transition-all duration-300 z-10 filter ${facingMode === 'user' ? 'transform scale-x-[-1]' : ''}`}
+                  className={`absolute object-cover transition-all duration-300 z-10 ${
+                    facingMode === "user" ? "transform scale-x-[-1]" : ""
+                  }`}
                   style={
                     frameMeta?.slots && frameMeta.slots[currentPhotoIndex]
                       ? {
@@ -330,20 +386,18 @@ export function CameraScreen() {
                           width: `${frameMeta.slots[currentPhotoIndex].width * 100}%`,
                           height: `${frameMeta.slots[currentPhotoIndex].height * 100}%`,
                         }
-                      : { left: 0, top: 0, width: '100%', height: '100%' }
+                      : { left: 0, top: 0, width: "100%", height: "100%" }
                   }
                 />
 
-                {/* Frame Overlay (with transparent holes) */}
                 {previewFrameUrl && (
-                  <img 
+                  <img
                     src={previewFrameUrl}
-                    alt="Frame Overlay" 
-                    className="absolute inset-0 w-full h-full object-fill z-20 pointer-events-none [image-rendering:auto]" 
+                    alt="Frame Overlay"
+                    className="absolute inset-0 w-full h-full object-fill z-20 pointer-events-none [image-rendering:auto]"
                   />
                 )}
 
-                {/* Overlays (countdown, flash, slot indicators, scanlines) */}
                 <div className="absolute inset-0 z-30 pointer-events-none">
                   <CameraOverlays
                     hasPermission={hasPermission}
@@ -358,114 +412,133 @@ export function CameraScreen() {
                 </div>
               </div>
 
-              {/* Viewfinder Footer Meta */}
-              <div className="mt-4 flex items-center justify-between w-full border-t-border-thick border-ink-black pt-3">
-                <div className="flex flex-col">
-                  <span className="font-tech-mono text-ink-black font-bold text-sm uppercase">
-                    SLOT {Math.min(currentPhotoIndex + 1, photoCount)} / {photoCount}
-                  </span>
-                  <span className="font-label-caps text-on-surface-variant text-[10px] uppercase">
-                    {photoCount - currentPhotoIndex - 1 > 0 ? `${photoCount - currentPhotoIndex - 1} FOTO LAGI` : "SLOT TERAKHIR"}
-                  </span>
-                </div>
+              <div className="mt-3.5 flex items-center justify-between w-full px-1">
+                <span className="text-xs font-bold text-black/60">
+                  {isRetaking ? `${retakeQueue.length} kolom pilihan tersisa` : photoCount - currentPhotoIndex - 1 > 0
+                    ? `${photoCount - currentPhotoIndex - 1} pose tersisa`
+                    : "Pose terakhir"}
+                </span>
                 {countdown !== null ? (
                   <button
                     type="button"
                     onClick={handleCancelCountdown}
-                    className="font-tech-mono text-[10px] text-stark-white bg-error-red px-2 py-1 border border-ink-black font-bold flex items-center gap-1 hover:bg-error-red/90 cursor-pointer jiggle-active"
+                    className="text-xs text-white bg-red-600 hover:bg-red-700 px-3.5 py-1 rounded-full font-black uppercase flex items-center gap-1 cursor-pointer transition-colors"
                     aria-label="Batalkan Countdown"
                   >
-                    <span className="material-symbols-outlined text-[13px]">close</span>
-                    BATAL ({countdown}S)
+                    <span className="material-symbols-outlined text-[14px]">
+                      close
+                    </span>
+                    Batal ({countdown}s)
                   </button>
                 ) : (
-                  <span className="font-tech-mono text-[10px] text-ink-black bg-neon-yellow px-2 py-1 border border-ink-black font-bold">
-                    TIMER: {timerDuration}S
+                  <span className="text-[11px] font-black uppercase text-white bg-[#0038FF] px-3 py-1 rounded-full">
+                    {facingMode === "user" ? "Kamera Depan (Mirror)" : "Kamera Belakang"}
                   </span>
                 )}
               </div>
             </div>
           </div>
 
-          {/* RIGHT: KONTROL SHUTTER */}
-          <div className="w-full max-w-md lg:max-w-none lg:w-72 xl:w-80 flex-shrink-0 order-3 lg:order-3 bg-stark-white border-border-thick border-ink-black hard-shadow p-5 md:p-6 pixel-corners flex flex-col items-center justify-center gap-5 text-center">
-            <div className="pixel-corners-inner"></div>
-
-            {/* Header */}
-            <div className="w-full flex items-center justify-center gap-2 border-b-2 border-ink-black pb-2">
-              <span className="material-symbols-outlined text-cyber-purple font-bold">photo_camera</span>
-              <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-ink-black uppercase tracking-tighter">
-                AMBIL FOTO
-              </h2>
+          {/* RIGHT: Kontrol Pemotretan (Shutter & Timer) */}
+          <div className="w-full max-w-md lg:max-w-none lg:w-72 xl:w-80 flex-shrink-0 order-2 lg:order-3 bg-white rounded-[2rem] shadow-2xl p-5 md:p-6 flex flex-col items-center justify-between gap-5 text-center">
+            <div className="w-full flex items-center gap-3 border-b border-gray-100 pb-3.5 text-left">
+              <div className="w-10 h-10 rounded-full bg-[#CCFF00] text-black flex items-center justify-center shrink-0">
+                <span
+                  className="material-symbols-outlined text-xl"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  photo_camera
+                </span>
+              </div>
+              <div>
+                <h2 className="text-base md:text-lg font-black uppercase text-black leading-tight">
+                  {isRetaking ? "Retake Foto" : "Ambil Foto"}
+                </h2>
+                <p className="text-xs font-semibold text-black/55">
+                  Pose {Math.min(currentPhotoIndex + 1, photoCount)} dari {photoCount}
+                </p>
+              </div>
             </div>
 
-            {/* Counter Chip */}
-            <div className="w-full bg-ink-black text-neon-yellow border-2 border-ink-black py-2 px-3 hard-shadow-sm">
-              <span className="font-tech-mono font-bold text-sm uppercase tracking-wider">
-                FOTO {Math.min(currentPhotoIndex + 1, photoCount)} DARI {photoCount}
-              </span>
-            </div>
-
-            {/* Shutter Button (Clicking during countdown will cancel) */}
-            <button
-              onClick={countdown !== null ? handleCancelCountdown : handleSnap}
-              disabled={currentPhotoIndex >= photoCount}
-              className="relative group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed jiggle-active transition-all my-2"
-              aria-label={countdown !== null ? "Batalkan Countdown" : "Ambil Foto"}
-            >
-              <div className={`w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-ink-black bg-stark-white hard-shadow flex items-center justify-center transition-transform group-hover:scale-105 group-active:scale-95 ${
-                countdown !== null ? "ring-4 ring-error-red ring-offset-2" : ""
-              }`}>
-                <div className={`w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-ink-black flex items-center justify-center transition-colors ${
-                  countdown !== null ? "bg-error-red text-stark-white animate-pulse" : "bg-neon-yellow"
-                }`}>
-                  <div className="w-9 h-9 md:w-11 md:h-11 rounded-full border-2 border-ink-black bg-stark-white flex items-center justify-center">
+            {/* Tactile Hero Shutter Button */}
+            <div className="flex flex-col items-center gap-3 my-1">
+              <button
+                type="button"
+                onClick={countdown !== null ? handleCancelCountdown : handleSnap}
+                disabled={currentPhotoIndex >= photoCount || !hasPermission || (isCapturing && countdown === null)}
+                className="relative group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                aria-label={countdown !== null ? "Batalkan Countdown" : "Ambil Foto"}
+              >
+                <div
+                  className={`w-28 h-28 md:w-32 md:h-32 rounded-full p-2.5 flex items-center justify-center transition-all duration-200 group-hover:scale-105 group-active:scale-95 ${
+                    countdown !== null
+                      ? "bg-red-100 border-4 border-red-500 shadow-xl"
+                      : "bg-[#0038FF]/15 border-4 border-[#0038FF] shadow-[0_14px_30px_rgba(0,56,255,0.28)]"
+                  }`}
+                >
+                  <div
+                    className={`w-full h-full rounded-full flex items-center justify-center transition-colors shadow-inner ${
+                      countdown !== null
+                        ? "bg-red-600 text-white animate-pulse"
+                        : "bg-[#CCFF00] group-hover:bg-[#d8ff33] text-black"
+                    }`}
+                  >
                     {countdown !== null ? (
-                      <span className="font-tech-mono font-black text-error-red text-xl animate-pulse">{countdown}</span>
+                      <span className="text-4xl font-black">{countdown}</span>
                     ) : (
-                      <span className="material-symbols-outlined text-ink-black text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>photo_camera</span>
+                      <span
+                        className="material-symbols-outlined text-4xl"
+                        style={{ fontVariationSettings: "'FILL' 1" }}
+                      >
+                        photo_camera
+                      </span>
                     )}
                   </div>
                 </div>
-              </div>
-            </button>
+              </button>
 
-            {/* Action Area: Cancel Button when counting down, or Shutter prompt when standby */}
-            {countdown !== null ? (
-              <div className="w-full flex flex-col items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleCancelCountdown}
-                  className="w-full py-3 px-4 bg-error-red text-stark-white border-2 border-ink-black font-tech-mono font-black text-sm uppercase tracking-wider hard-shadow hover:bg-error-red/90 active:scale-95 transition-all flex items-center justify-center gap-2 jiggle-active cursor-pointer"
-                  aria-label="Batalkan Pengambilan Foto"
-                >
-                  <span className="material-symbols-outlined text-lg font-bold">cancel</span>
-                  BATALKAN ({countdown}S)
-                </button>
-                <span className="font-tech-mono text-[10px] text-on-surface-variant uppercase tracking-wider">
-                  KLIK BATAL ATAU TEKAN [ESC]
-                </span>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-1">
-                <span className="font-headline-md text-headline-md text-ink-black uppercase tracking-tight">
-                  TEKAN SHUTTER
-                </span>
-                <span className="font-tech-mono text-[10px] text-ink-black/70 uppercase tracking-widest bg-surface-container px-2 py-1 border border-ink-black font-bold">
-                  ATAU TEKAN [SPASI]
-                </span>
-              </div>
-            )}
+              {countdown !== null ? (
+                <div className="flex flex-col items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={handleCancelCountdown}
+                    className="min-h-[44px] px-5 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white font-black text-xs uppercase flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-base">
+                      cancel
+                    </span>
+                    Batalkan ({countdown}s)
+                  </button>
+                  <span className="text-[11px] font-bold text-black/50">
+                    Atau tekan tombol [ESC]
+                  </span>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-1">
+                  <span className="font-black text-base uppercase text-black">
+                    Tekan Shutter
+                  </span>
+                  <span className="text-xs font-semibold text-black/55">
+                    Atau tekan{" "}
+                    <kbd className="px-2 py-0.5 rounded-md bg-[#F8F9FA] border border-gray-200 font-mono text-[11px] text-black">
+                      Spasi
+                    </kbd>
+                  </span>
+                </div>
+              )}
+            </div>
 
-            {/* Timer Selector Options */}
-            <div className="w-full bg-surface-container border-2 border-ink-black p-3 flex flex-col gap-2 hard-shadow-sm">
-              <div className="flex items-center justify-between text-ink-black">
-                <span className="font-tech-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[16px]">timer</span>
-                  PILIH TIMER
+            {/* Timer Duration Selector */}
+            <div className="w-full rounded-[1.5rem] bg-[#F8F9FA] border border-gray-100 p-3.5 flex flex-col gap-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black uppercase text-black flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px] text-[#0038FF]">
+                    timer
+                  </span>
+                  Timer
                 </span>
-                <span className="font-tech-mono text-xs font-black text-cyber-purple bg-stark-white px-2 py-0.5 border border-ink-black">
-                  {timerDuration} DETIK
+                <span className="text-xs font-black text-[#0038FF]">
+                  {timerDuration} Detik
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-2 w-full">
@@ -477,31 +550,23 @@ export function CameraScreen() {
                       type="button"
                       onClick={() => {
                         setTimerDuration(seconds);
-                        showToast(`Timer diatur ke ${seconds} detik ⏱`, "info");
+                        showToast(`Timer diatur ke ${seconds} detik`, "info");
                       }}
-                      disabled={countdown !== null}
-                      className={`py-2 px-1 font-tech-mono font-bold text-xs border-2 border-ink-black uppercase transition-all flex items-center justify-center gap-1 disabled:opacity-50 jiggle-active ${
+                      disabled={isCapturing}
+                      className={`min-h-[44px] py-2 px-2 rounded-full font-black text-xs uppercase transition-all flex items-center justify-center disabled:opacity-50 cursor-pointer ${
                         isSelected
-                          ? "bg-neon-yellow text-ink-black hard-shadow-sm scale-[1.02]"
-                          : "bg-stark-white text-ink-black/70 hover:bg-neon-yellow/30 hover:text-ink-black"
+                          ? "bg-[#0038FF] text-white shadow-md"
+                          : "bg-white text-black/70 border border-gray-200 hover:border-[#0038FF] hover:text-[#0038FF]"
                       }`}
                       aria-label={`Timer ${seconds} detik`}
                     >
-                      <span className="font-black text-sm">{seconds}s</span>
+                      {seconds}s
                     </button>
                   );
                 })}
               </div>
             </div>
-
-            {/* Status Footer */}
-            <div className="w-full border-t-2 border-ink-black/20 pt-3">
-              <p className="font-tech-mono text-[10px] text-on-surface-variant uppercase tracking-wider">
-                TIMER AKTIF: {timerDuration} DETIK
-              </p>
-            </div>
           </div>
-
         </div>
       </main>
     </div>
