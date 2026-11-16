@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./docs/banner.png" alt="POINTER Photobooth" width="100%" />
+  <img src="./docs/screenshots/landing-2026-11-17.png" alt="POINTER PHOTOBOOTH — tampilan landing biru elektrik dengan aksen lime dan logo MI Polinela" width="100%" />
 </p>
 
 <h1 align="center">POINTER PHOTOBOOTH</h1>
