@@ -61,7 +61,7 @@ Sistem ini memisahkan antarmuka kiosk (*frontend*) dari layanan backend (*API & 
 
 ### 1. Pengalaman Kiosk Tamu (Guest Kiosk Flow)
 - **Landing Screen**: Judul POINTER PHOTOBOOTH STUDIO berukuran responsif, tombol mulai yang jelas, serta kartu dekorasi memakai logo Manajemen Informatika dan D3 MI Polinela dari aset lokal. Ukuran judul, dekorasi, dan tombol disesuaikan agar tidak memenuhi layar.
-- **Otorisasi Sesi Operator**: Modal PIN yang lebih ringkas, dilengkapi keypad sentuh, untuk membuka sesi foto baru. PIN bawaan `0606` dapat dikonfigurasi melalui `NEXT_PUBLIC_OPERATOR_PIN`.
+- **Otorisasi Sesi Operator**: Modal PIN yang lebih ringkas, dilengkapi keypad sentuh, untuk membuka sesi foto baru yang dikonfigurasi melalui `NEXT_PUBLIC_OPERATOR_PIN`.
 - **Pilih Frame Interaktif**: Katalog frame dengan filter kategori dinamis (`Semua`, `Aesthetic`, `Basic`, `Classic`, `Creative`, `Cute`, `Event`, `Party`, `Vintage`) lengkap dengan dialog pratinjau.
 - **Kamera Kiosk Cerdas**:
   - Live framing overlay (melihat posisi wajah langsung di dalam lubang slot frame sebelum memotret).
@@ -86,7 +86,7 @@ Sistem ini memisahkan antarmuka kiosk (*frontend*) dari layanan backend (*API & 
 - **Download Lokal**: Mendukung ekspor format `.png` (kualitas master) dan `.jpg`.
 
 ### 3. Dashboard Admin & Monitoring
-- **Admin Dashboard (`/admin`)**: Dilindungi otorisasi PIN (`0606`) untuk melihat metrik total sesi, total foto tercetak, foto terunduh, serta antrean cetak aktif.
+- **Admin Dashboard (`/admin`)**: Dilindungi otorisasi PIN operator untuk melihat metrik total sesi, total foto tercetak, foto terunduh, serta antrean cetak aktif.
 - **Health & Readiness Check**: Endpoint `/health` dan `/ready` untuk monitoring uptime kiosk dan ketersediaan koneksi database.
 
 ---
@@ -99,7 +99,7 @@ Setelah pemotretan, tamu memeriksa setiap kolom dan bisa memilih satu atau beber
 
 ```mermaid
 flowchart TD
-    A["1. Landing Screen (PIN Operator: 0606)"] --> B["2. Pilih Frame (Kategori & Preview)"]
+    A["1. Landing Screen (Otorisasi PIN Operator)"] --> B["2. Pilih Frame (Kategori & Preview)"]
     B --> C["3. Kamera Kiosk (Countdown & Live Slot Overlay)"]
     C --> D{"Semua Target Pengambilan Selesai?"}
     D -- Belum --> C
@@ -321,7 +321,7 @@ cp .env.example .env
 Pastikan konfigurasi di `frontend/.env` telah sesuai:
 ```env
 NEXT_PUBLIC_API_URL="http://localhost:5000"
-NEXT_PUBLIC_OPERATOR_PIN="0606"
+NEXT_PUBLIC_OPERATOR_PIN="your_operator_pin"
 ```
 
 Jalankan server frontend:
@@ -353,7 +353,7 @@ Aplikasi photobooth siap diakses melalui browser di **[http://localhost:3000](ht
 | Variabel | Keterangan | Nilai Default |
 | :--- | :--- | :--- |
 | `NEXT_PUBLIC_API_URL` | URL endpoint backend | `http://localhost:5000` |
-| `NEXT_PUBLIC_OPERATOR_PIN` | PIN otorisasi pembukaan sesi kiosk dan login admin | `0606` |
+| `NEXT_PUBLIC_OPERATOR_PIN` | PIN otorisasi pembukaan sesi kiosk dan login admin | *Dikonfigurasi di `.env`* |
 | `NEXT_PUBLIC_PRINT_BRIDGE_URL` | Endpoint service Print Bridge lokal (opsional) | `""` *(kosong = browser print)* |
 
 ---
@@ -365,7 +365,7 @@ Aplikasi photobooth siap diakses melalui browser di **[http://localhost:3000](ht
 2. Atur **Root Directory** ke: `frontend`.
 3. Masukkan Environment Variable:
    - `NEXT_PUBLIC_API_URL`: URL backend produksi (contoh: `https://api-photobooth.domain.com`).
-   - `NEXT_PUBLIC_OPERATOR_PIN`: PIN operator kiosk (contoh: `0606`).
+   - `NEXT_PUBLIC_OPERATOR_PIN`: PIN rahasia operator kiosk sesuai kebutuhan acara.
 4. Pastikan domain live menggunakan protokol **HTTPS** agar browser mengizinkan akses ke kamera perangkat.
 
 ### Deploy Backend (Vercel Serverless / VPS / Render)

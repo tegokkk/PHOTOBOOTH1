@@ -16,16 +16,25 @@ export default function TopAppBar() {
       className="bg-[#0038FF] flex justify-between items-center px-6 py-4 md:px-10 md:py-5 w-full sticky top-0 z-50 border-b border-white/15"
       aria-label="Navigasi utama"
     >
-      <Link href="/" className="flex items-center gap-1.5 group min-h-[44px]">
-        <div className="bg-white text-black font-black tracking-tight text-xs md:text-sm px-3.5 py-1.5 rounded-2xl rounded-bl-sm relative shadow-sm">
-          POINTER
-          <div
-            className="absolute -bottom-1.5 left-0 w-3 h-3 bg-white"
-            style={{ clipPath: "polygon(0 0, 100% 0, 0 100%)" }}
+      <Link href="/" className="flex items-center gap-2 group min-h-[44px]">
+        <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-white p-1 shadow-sm flex items-center justify-center shrink-0">
+          <img
+            src="/pointer-photobooth-icon.svg"
+            alt="Pointer Photobooth Logo"
+            className="w-full h-full object-contain"
           />
         </div>
-        <div className="bg-[#CCFF00] text-black font-black text-xs md:text-sm px-3.5 py-1.5 rounded-full border-[1.5px] border-white shadow-sm">
-          BOOTH
+        <div className="flex items-center gap-1.5">
+          <div className="bg-white text-black font-black tracking-tight text-xs md:text-sm px-3.5 py-1.5 rounded-2xl rounded-bl-sm relative shadow-sm">
+            POINTER
+            <div
+              className="absolute -bottom-1.5 left-0 w-3 h-3 bg-white"
+              style={{ clipPath: "polygon(0 0, 100% 0, 0 100%)" }}
+            />
+          </div>
+          <div className="bg-[#CCFF00] text-black font-black text-xs md:text-sm px-3.5 py-1.5 rounded-full border-[1.5px] border-white shadow-sm">
+            BOOTH
+          </div>
         </div>
       </Link>
 

@@ -1,16 +1,21 @@
 {
-  "name": "TEGO Photobooth",
-  "short_name": "Photobooth",
-  "description": "Premium Photobooth App",
+  "name": "Pointer Photobooth Studio",
+  "short_name": "Pointer Booth",
+  "description": "Studio Photobooth Digital Modern — Abadikan Momen Terbaikmu",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#0038FF",
+  "theme_color": "#0038FF",
   "icons": [
     {
-      "src": "/favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "/pointer-photobooth-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/pointer-photobooth-logo.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
     }
   ]
 }

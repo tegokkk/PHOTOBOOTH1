@@ -18,17 +18,26 @@ export function BoothHeader({ currentStep, rightSlot }: BoothHeaderProps) {
   return (
     <header className="sticky top-0 z-50 w-full bg-[#0038FF]/90 backdrop-blur-md border-b border-white/15">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-3">
-        {/* Dual-Pill Logo (matching hero.tsx) */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          <div className="bg-white text-black font-black tracking-tight text-xs md:text-sm px-3.5 py-1.5 rounded-2xl rounded-bl-sm relative shadow-sm">
-            POINTER
-            <div
-              className="absolute -bottom-1.5 left-0 w-3 h-3 bg-white"
-              style={{ clipPath: "polygon(0 0, 100% 0, 0 100%)" }}
+        {/* Brand Mark + Dual-Pill Logo */}
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-white p-1 shadow-sm flex items-center justify-center shrink-0">
+            <img
+              src="/pointer-photobooth-icon.svg"
+              alt="Pointer Photobooth Logo"
+              className="w-full h-full object-contain"
             />
           </div>
-          <div className="bg-[#CCFF00] text-black font-black text-xs md:text-sm px-3.5 py-1.5 rounded-full border-[1.5px] border-white shadow-sm">
-            BOOTH
+          <div className="flex items-center gap-1.5">
+            <div className="bg-white text-black font-black tracking-tight text-xs md:text-sm px-3.5 py-1.5 rounded-2xl rounded-bl-sm relative shadow-sm">
+              POINTER
+              <div
+                className="absolute -bottom-1.5 left-0 w-3 h-3 bg-white"
+                style={{ clipPath: "polygon(0 0, 100% 0, 0 100%)" }}
+              />
+            </div>
+            <div className="bg-[#CCFF00] text-black font-black text-xs md:text-sm px-3.5 py-1.5 rounded-full border-[1.5px] border-white shadow-sm">
+              BOOTH
+            </div>
           </div>
         </div>
 

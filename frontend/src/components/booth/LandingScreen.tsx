@@ -88,17 +88,26 @@ export function LandingScreen() {
 
       {/* Navbar */}
       <nav className="relative z-20 flex items-center justify-between gap-3 px-4 py-4 md:px-8 md:py-5 max-w-6xl mx-auto w-full">
-        {/* Dual-Pill Logo */}
-        <div className="flex items-center gap-1.5">
-          <div className="bg-white text-black font-black tracking-tight text-xs md:text-sm px-3.5 py-1.5 rounded-2xl rounded-bl-sm relative shadow-sm">
-            POINTER
-            <div
-              className="absolute -bottom-1.5 left-0 w-3 h-3 bg-white"
-              style={{ clipPath: "polygon(0 0, 100% 0, 0 100%)" }}
+        {/* Brand Mark + Dual-Pill Logo */}
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-white p-1 shadow-sm flex items-center justify-center shrink-0">
+            <img
+              src="/pointer-photobooth-icon.svg"
+              alt="Pointer Photobooth Logo"
+              className="w-full h-full object-contain"
             />
           </div>
-          <div className="bg-[#CCFF00] text-black font-black text-xs md:text-sm px-3.5 py-1.5 rounded-full border-[1.5px] border-white shadow-sm">
-            BOOTH
+          <div className="flex items-center gap-1.5">
+            <div className="bg-white text-black font-black tracking-tight text-xs md:text-sm px-3.5 py-1.5 rounded-2xl rounded-bl-sm relative shadow-sm">
+              POINTER
+              <div
+                className="absolute -bottom-1.5 left-0 w-3 h-3 bg-white"
+                style={{ clipPath: "polygon(0 0, 100% 0, 0 100%)" }}
+              />
+            </div>
+            <div className="bg-[#CCFF00] text-black font-black text-xs md:text-sm px-3.5 py-1.5 rounded-full border-[1.5px] border-white shadow-sm">
+              BOOTH
+            </div>
           </div>
         </div>
 
