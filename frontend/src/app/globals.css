@@ -306,6 +306,7 @@ input[type="reset"] {
     margin: 0 !important;
     padding: 0 !important;
     width: 4in !important;
+    min-height: 0 !important;
     height: auto !important;
     background: #ffffff !important;
     overflow: visible !important;

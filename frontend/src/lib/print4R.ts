@@ -8,15 +8,24 @@ export const PRINT_4R = {
 } as const;
 
 export type PrintLayout = "single" | "twin";
+export type PrintFitMode = "cover" | "contain";
 
-/** Fit the complete frame into a 4R sheet, preserving its aspect ratio. */
-export function get4RPlacements(width: number, height: number, layout: PrintLayout) {
+/** Place a frame into 4R cells ("contain" keeps entire frame; "cover" fills 100% of 4R). */
+export function get4RPlacements(
+  width: number,
+  height: number,
+  layout: PrintLayout,
+  fitMode: PrintFitMode = "contain"
+) {
   if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
     throw new Error("Ukuran foto tidak valid untuk dicetak.");
   }
   const columns = layout === "twin" && width / height < 0.65 ? 2 : 1;
   const cellWidth = PRINT_4R.widthPx / columns;
-  const scale = Math.min(cellWidth / width, PRINT_4R.heightPx / height);
+  const scale =
+    fitMode === "cover"
+      ? Math.max(cellWidth / width, PRINT_4R.heightPx / height)
+      : Math.min(cellWidth / width, PRINT_4R.heightPx / height);
   const drawWidth = width * scale;
   const drawHeight = height * scale;
   return Array.from({ length: columns }, (_, column) => ({
@@ -28,7 +37,11 @@ export function get4RPlacements(width: number, height: number, layout: PrintLayo
 }
 
 /** The same 1200 × 1800 raster is used by preview, browser print and bridge. */
-export async function prepare4RPrint(source: string, layout: PrintLayout) {
+export async function prepare4RPrint(
+  source: string,
+  layout: PrintLayout,
+  fitMode: PrintFitMode = "contain"
+) {
   const image = await new Promise<HTMLImageElement>((resolve, reject) => {
     const loaded = new Image();
     loaded.crossOrigin = "anonymous";
@@ -36,7 +49,13 @@ export async function prepare4RPrint(source: string, layout: PrintLayout) {
     loaded.onerror = () => reject(new Error("Foto gagal dimuat untuk cetak 4R."));
     loaded.src = source;
   });
-  const placements = get4RPlacements(image.naturalWidth, image.naturalHeight, layout);
+  const placements = get4RPlacements(
+    image.naturalWidth,
+    image.naturalHeight,
+    layout,
+    fitMode
+  );
+  const cellWidth = PRINT_4R.widthPx / placements.length;
   const canvas = document.createElement("canvas");
   canvas.width = PRINT_4R.widthPx;
   canvas.height = PRINT_4R.heightPx;
@@ -46,9 +65,14 @@ export async function prepare4RPrint(source: string, layout: PrintLayout) {
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.imageSmoothingEnabled = true;
   context.imageSmoothingQuality = "high";
-  for (const placement of placements) {
+  placements.forEach((placement, column) => {
+    context.save();
+    context.beginPath();
+    context.rect(column * cellWidth, 0, cellWidth, PRINT_4R.heightPx);
+    context.clip();
     context.drawImage(image, placement.x, placement.y, placement.width, placement.height);
-  }
+    context.restore();
+  });
   return {
     imageDataUrl: canvas.toDataURL("image/png"),
     isStrip: image.naturalWidth / image.naturalHeight < 0.65,

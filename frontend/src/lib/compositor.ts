@@ -16,13 +16,107 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
+type DrawablePhoto = HTMLImageElement | HTMLCanvasElement;
+
+function getDrawableSize(photo: DrawablePhoto) {
+  if (photo instanceof HTMLCanvasElement) {
+    return { width: photo.width, height: photo.height };
+  }
+  return {
+    width: photo.naturalWidth || photo.width,
+    height: photo.naturalHeight || photo.height,
+  };
+}
+
+/**
+ * Apply a subtle 5-tap unsharp mask to webcam captures so hair, eyes, and
+ * details look sharper when composited onto high-DPI frames.
+ */
+function sharpenPhoto(photo: HTMLImageElement, strength = 0.24): DrawablePhoto {
+  const width = photo.naturalWidth || photo.width;
+  const height = photo.naturalHeight || photo.height;
+  if (width < 4 || height < 4 || strength <= 0) return photo;
+
+  try {
+    const offscreen = document.createElement('canvas');
+    offscreen.width = width;
+    offscreen.height = height;
+    const ctx = offscreen.getContext('2d');
+    if (!ctx) return photo;
+
+    ctx.drawImage(photo, 0, 0, width, height);
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const src = imageData.data;
+    const out = new Uint8ClampedArray(src.length);
+    const centerWeight = 1 + 4 * strength;
+    const rowStride = width * 4;
+
+    // Preserve 1px outer border unchanged
+    out.set(src.subarray(0, rowStride), 0);
+    out.set(src.subarray((height - 1) * rowStride), (height - 1) * rowStride);
+
+    for (let y = 1; y < height - 1; y++) {
+      const rowOffset = y * rowStride;
+      // Copy left/right edge pixels
+      out[rowOffset] = src[rowOffset];
+      out[rowOffset + 1] = src[rowOffset + 1];
+      out[rowOffset + 2] = src[rowOffset + 2];
+      out[rowOffset + 3] = src[rowOffset + 3];
+
+      const lastCol = rowOffset + rowStride - 4;
+      out[lastCol] = src[lastCol];
+      out[lastCol + 1] = src[lastCol + 1];
+      out[lastCol + 2] = src[lastCol + 2];
+      out[lastCol + 3] = src[lastCol + 3];
+
+      for (let x = 1; x < width - 1; x++) {
+        const i = rowOffset + x * 4;
+        const up = i - rowStride;
+        const down = i + rowStride;
+        const left = i - 4;
+        const right = i + 4;
+
+        out[i] = src[i] * centerWeight - strength * (src[up] + src[down] + src[left] + src[right]);
+        out[i + 1] = src[i + 1] * centerWeight - strength * (src[up + 1] + src[down + 1] + src[left + 1] + src[right + 1]);
+        out[i + 2] = src[i + 2] * centerWeight - strength * (src[up + 2] + src[down + 2] + src[left + 2] + src[right + 2]);
+        out[i + 3] = src[i + 3];
+      }
+    }
+
+    imageData.data.set(out);
+    ctx.putImageData(imageData, 0, 0);
+    return offscreen;
+  } catch {
+    return photo;
+  }
+}
+
+function encodeCompositeDataUrl(
+  canvas: HTMLCanvasElement,
+  format: 'png' | 'jpg'
+): string {
+  if (format === 'png') {
+    return canvas.toDataURL('image/png', 1.0);
+  }
+
+  // Try highest JPEG clarity first; step down only if payload nears serverless body limits.
+  const maxSafeLength = 4_200_000;
+  for (const quality of [0.97, 0.93, 0.88]) {
+    const encoded = canvas.toDataURL('image/jpeg', quality);
+    if (encoded.length <= maxSafeLength || quality === 0.88) {
+      return encoded;
+    }
+  }
+  return canvas.toDataURL('image/jpeg', 0.92);
+}
+
 /**
  * Draw a photo into a rectangular slot using object-fit: cover semantics.
  * Captured photos are drawn in their natural orientation.
  */
 function drawPhotoIntoSlot(
   ctx: CanvasRenderingContext2D,
-  photo: HTMLImageElement,
+  photo: DrawablePhoto,
   slotX: number,   // pixels
   slotY: number,
   slotW: number,
@@ -31,9 +125,10 @@ function drawPhotoIntoSlot(
   rotation = 0
 ) {
   const { brightness, contrast, saturation } = filters;
+  const { width, height } = getDrawableSize(photo);
 
   // object-fit: cover
-  const photoRatio = photo.width / photo.height;
+  const photoRatio = width / height;
   const slotRatio = slotW / slotH;
   let drawW = slotW;
   let drawH = slotH;
@@ -94,34 +189,38 @@ export async function compositeToDataUrl(
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('No 2D canvas context');
 
-  // ── Case 1: No frame → single photo fills canvas ───────────────────────────
+  // ── Case 1: No frame → single photo fills canvas at HD resolution ──────────
   if (!frame || !getFrameMasterUrl(frame)) {
-    const photo = await loadImage(photos[0]);
-    canvas.width = photo.width;
-    canvas.height = photo.height;
+    const rawPhoto = await loadImage(photos[0]);
+    const enhanced = sharpenPhoto(rawPhoto);
+    const { width, height } = getDrawableSize(enhanced);
+    const minHeight = 2400;
+    const scale = height < minHeight ? minHeight / height : 1;
+    canvas.width = Math.round(width * scale);
+    canvas.height = Math.round(height * scale);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
-    drawPhotoIntoSlot(ctx, photo, 0, 0, canvas.width, canvas.height, filters);
+    drawPhotoIntoSlot(ctx, enhanced, 0, 0, canvas.width, canvas.height, filters);
 
-    const mimeType = format === 'jpg' ? 'image/jpeg' : 'image/png';
-    return canvas.toDataURL(mimeType, format === 'jpg' ? 0.98 : 1.0);
+    return encodeCompositeDataUrl(canvas, format);
   }
 
   // ── Load frame PNG ──────────────────────────────────────────────────────────
   // Build correct URL (frames are served from /public/frames/... → /frames/...)
   const frameImg = await loadImage(getFrameMasterUrl(frame));
 
-  // Ensure high resolution canvas so frame edges and photos are never blurred or downsampled,
-  // while capping at 3600px max dimension (~600 DPI print quality) to prevent browser canvas memory exhaustion.
-  const minTargetHeight = 2400;
-  const maxTargetDimension = 3600;
+  // Target ultra-HD resolution (3600px+ height, ~600 DPI on 4R) while capping max dimension
+  // at 4800px so frame artwork, typography, and photos stay sharp without exhausting mobile RAM.
+  const minTargetHeight = 3600;
+  const maxTargetDimension = 4800;
   let scale = 1;
 
   const maxNatural = Math.max(frameImg.naturalWidth, frameImg.naturalHeight);
   if (frameImg.naturalHeight < minTargetHeight) {
     scale = minTargetHeight / frameImg.naturalHeight;
-  } else if (maxNatural > maxTargetDimension) {
+  }
+  if (maxNatural * scale > maxTargetDimension) {
     scale = maxTargetDimension / maxNatural;
   }
 
@@ -129,6 +228,17 @@ export async function compositeToDataUrl(
   canvas.height = Math.round(frameImg.naturalHeight * scale);
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
+
+  // Cache sharpened photos by source URL so repeated slots only sharpen once
+  const sharpenedCache = new Map<string, DrawablePhoto>();
+  const loadAndSharpen = async (url: string): Promise<DrawablePhoto> => {
+    const cached = sharpenedCache.get(url);
+    if (cached) return cached;
+    const img = await loadImage(url);
+    const crisp = sharpenPhoto(img);
+    sharpenedCache.set(url, crisp);
+    return crisp;
+  };
 
   // ── Case 2: Frame with slot metadata (multi or single slot) ────────────────
   const meta = getFrameMetaFromFrame(frame);
@@ -138,11 +248,11 @@ export async function compositeToDataUrl(
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 1. Preload all photos concurrently
+    // 1. Preload & sharpen all photos concurrently
     const loadedPhotos = await Promise.all(
       meta.slots.map(async (_, i) => {
         const photoUrl = photos[Math.min(i, photos.length - 1)]; // fallback to last photo
-        return loadImage(photoUrl);
+        return loadAndSharpen(photoUrl);
       })
     );
 
@@ -173,7 +283,7 @@ export async function compositeToDataUrl(
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Photo fills the full canvas (BEHIND)
-    const photo = await loadImage(photos[0]);
+    const photo = await loadAndSharpen(photos[0]);
     drawPhotoIntoSlot(ctx, photo, 0, 0, canvas.width, canvas.height, filters);
 
     // Draw frame ON TOP
@@ -184,9 +294,10 @@ export async function compositeToDataUrl(
     ctx.restore();
   }
 
-  const mimeType = format === 'jpg' ? 'image/jpeg' : 'image/png';
-  return canvas.toDataURL(mimeType, format === 'jpg' ? 0.98 : 1.0);
+  return encodeCompositeDataUrl(canvas, format);
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
 // compositeAndDownload
 // ─────────────────────────────────────────────────────────────────────────────
 

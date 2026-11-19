@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { useUIStore } from "@/store/useUIStore";
 import { hasPrintBridge, retryPrintJob, sendPrintJob } from "@/lib/printAdapter";
 import { createPrintJob, PrintJob, updatePrintJob } from "@/lib/printQueue";
-import { prepare4RPrint, type PrintLayout } from "@/lib/print4R";
+import { prepare4RPrint, type PrintFitMode, type PrintLayout } from "@/lib/print4R";
 
 interface PrintPreviewDialogProps {
   isOpen: boolean;
@@ -27,9 +27,11 @@ export function PrintPreviewDialog({
   const [isPrinting, setIsPrinting] = useState(false);
   const [copies, setCopies] = useState(1);
   const [printLayout, setPrintLayout] = useState<PrintLayout>("single");
+  const [fitMode, setFitMode] = useState<PrintFitMode>("cover");
   const [preparedPrint, setPreparedPrint] = useState<{
     source: string;
     layout: PrintLayout;
+    fitMode: PrintFitMode;
     imageDataUrl?: string;
     isStrip?: boolean;
     error?: string;
@@ -41,20 +43,25 @@ export function PrintPreviewDialog({
   useEffect(() => {
     if (!isOpen || !compositeDataUrl) return;
     let active = true;
-    void prepare4RPrint(compositeDataUrl, printLayout).then((result) => {
-      if (active) setPreparedPrint({ source: compositeDataUrl, layout: printLayout, ...result });
+    void prepare4RPrint(compositeDataUrl, printLayout, fitMode).then((result) => {
+      if (active) setPreparedPrint({ source: compositeDataUrl, layout: printLayout, fitMode, ...result });
     }).catch((error: unknown) => {
       if (active) setPreparedPrint({
         source: compositeDataUrl,
         layout: printLayout,
+        fitMode,
         error: error instanceof Error ? error.message : "Gagal menyiapkan cetak 4R.",
       });
     });
     return () => { active = false; };
-  }, [isOpen, compositeDataUrl, printLayout]);
+  }, [isOpen, compositeDataUrl, printLayout, fitMode]);
 
-  const currentPrint = preparedPrint?.source === compositeDataUrl && preparedPrint.layout === printLayout
-    ? preparedPrint : null;
+  const currentPrint =
+    preparedPrint?.source === compositeDataUrl &&
+    preparedPrint.layout === printLayout &&
+    preparedPrint.fitMode === fitMode
+      ? preparedPrint
+      : null;
   const printImage = currentPrint?.imageDataUrl;
   const isStrip = Boolean(preparedPrint?.source === compositeDataUrl && preparedPrint.isStrip);
 
@@ -287,11 +294,53 @@ export function PrintPreviewDialog({
               <div className="rounded-2xl border border-blue-100 bg-blue-50 p-3.5">
                 <p className="text-sm font-bold text-[#0038FF]">Ukuran tetap: 4R · 10,16 × 15,24 cm</p>
                 <p className="mt-1 text-xs leading-relaxed text-slate-600">
-                  Bingkai dicetak utuh dan proporsional pada kertas 4R. Area yang tidak terisi akan berwarna putih.
+                  {fitMode === "cover"
+                    ? "Mode Penuh 4R mengisi 100% kertas 4 × 6 inci (1200 × 1800 px) tanpa tepi putih atas/bawah."
+                    : "Mode Utuh menjaga seluruh tepi bingkai tetap terlihat dengan area sisa berwarna putih."}
                 </p>
                 <p className="mt-2 text-xs leading-relaxed text-slate-600">
-                  Pilih kertas 4 × 6 inci (4R), skala 100%, margin 0, dan matikan header/footer pada dialog printer.
+                  Pada dialog printer: pilih kertas <strong>4 × 6 inci (102 × 152 mm)</strong>, <strong>Margins: None</strong>, <strong>Scale: 100% / Actual size</strong>, matikan header/footer, dan aktifkan <strong>Borderless</strong> jika printer mendukung.
                 </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2 bg-[#F8F9FA] p-3.5 rounded-[1.5rem] border border-gray-100">
+              <span className="font-black uppercase text-xs text-black">
+                Skala Bingkai pada Kertas 4R
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setFitMode("cover")}
+                  disabled={isPrinting || Boolean(printJob)}
+                  aria-pressed={fitMode === "cover"}
+                  className={`min-h-[44px] py-2 px-3 rounded-full font-black text-xs uppercase flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    fitMode === "cover"
+                      ? "bg-[#0038FF] text-white shadow-md"
+                      : "bg-white text-black/70 border border-gray-200"
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-base">
+                    fit_screen
+                  </span>
+                  Penuh 4R (Fill)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFitMode("contain")}
+                  disabled={isPrinting || Boolean(printJob)}
+                  aria-pressed={fitMode === "contain"}
+                  className={`min-h-[44px] py-2 px-3 rounded-full font-black text-xs uppercase flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    fitMode === "contain"
+                      ? "bg-[#0038FF] text-white shadow-md"
+                      : "bg-white text-black/70 border border-gray-200"
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-base">
+                    crop_free
+                  </span>
+                  Utuh (Fit)
+                </button>
               </div>
             </div>
 

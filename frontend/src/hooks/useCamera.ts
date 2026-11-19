@@ -55,8 +55,8 @@ export function useCamera() {
 
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
+          width: { ideal: 3840 },
+          height: { ideal: 2160 },
           facingMode: mode
         },
         audio: false
@@ -105,7 +105,9 @@ export function useCamera() {
     
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
-    
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
     // Mirror the canvas if facingMode is 'user' so that the final captured image
     // exactly matches the mirrored preview the user sees on screen.
     if (facingMode === 'user') {
@@ -113,9 +115,9 @@ export function useCamera() {
       ctx.scale(-1, 1);
     }
     ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-    
-    // JPEG keeps the iPad memory footprint manageable during multi-shot sessions.
-    return canvas.toDataURL('image/jpeg', 0.92);
+
+    // High-quality JPEG (0.98) keeps full HD clarity while staying fast on multi-shot sessions.
+    return canvas.toDataURL('image/jpeg', 0.98);
   }, [facingMode]);
 
   // Sync stream to video element

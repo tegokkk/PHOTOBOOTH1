@@ -46,3 +46,25 @@ test("invalid dimensions are rejected", () => {
     assert.throws(() => get4RPlacements(width, height, "single"));
   }
 });
+
+test("cover mode fills 100% of each 4R cell without distortion for all frame ratios", () => {
+  for (const [width, height, layout] of [
+    [2169, 3072, "single"], // Pointer Newspaper
+    [1728, 3072, "single"], // Innovation 4 Force
+    [2046, 3072, "single"], // Cinema Premiere / Jejak Kebersamaan
+    [1800, 1800, "single"], // Square
+    [600, 1800, "twin"],    // Twin 2x6 strips
+  ]) {
+    const placements = get4RPlacements(width, height, layout, "cover");
+    const cellWidth = PRINT_4R.widthPx / placements.length;
+    placements.forEach((rect, column) => {
+      assert.ok(rect.width >= cellWidth - 1e-9);
+      assert.ok(rect.height >= PRINT_4R.heightPx - 1e-9);
+      assert.ok(Math.abs(rect.width / rect.height - width / height) < 1e-9);
+      const expectedX = column * cellWidth + (cellWidth - rect.width) / 2;
+      const expectedY = (PRINT_4R.heightPx - rect.height) / 2;
+      assert.ok(Math.abs(rect.x - expectedX) < 1e-9);
+      assert.ok(Math.abs(rect.y - expectedY) < 1e-9);
+    });
+  }
+});
